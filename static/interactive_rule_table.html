@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Bar Table</title>
+
+    <style>
+      text{
+          font-family: sans-serif;
+          fill: "black";
+       }
+
+	     .legend text {
+          font: 12px Courier New;
+        }
+
+        .grid-row line {
+          stroke-width: .5;
+        }
+
+        .grid-col line {
+          stroke-width: .5;
+        }
+
+        rect {
+          stroke-width: .5;
+        }
+
+        .rule-fill {
+          mask: url(#mask-stripe)
+        }
+
+    </style>
+
+  </head>
+
+  <body>
+  	<div style="display: flex; flex-direction: row;">
+        <svg id="svg1"></svg>   
+        <svg id="legend1"></svg>
+    </div>
+    <!-- <div style="display: flex; flex-direction: row;">
+        <svg id="svg7"></svg>   
+    </div> -->
+    
+    <!-- <div style="display: flex; flex-direction: row;">
+        <svg id="svg2">
+          <defs>
+            <pattern id="pattern-stripe" 
+              width="4" height="4" 
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(45)">
+              <rect width="2" height="4" transform="translate(0,0)" fill="white"></rect>
+            </pattern>
+            <mask id="mask-stripe">
+              <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" />
+            </mask>      
+          </defs>
+
+        </svg>   
+        <svg id="legend2">
+          <defs>
+            <pattern id="pattern-stripe" 
+              width="4" height="4" 
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(45)">
+              <rect width="2" height="4" transform="translate(0,0)" fill="white"></rect>
+            </pattern>
+            <mask id="mask-stripe">
+              <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" />
+            </mask>      
+          </defs>
+        </svg>
+    </div> -->
+
+    <!-- <div style="display: flex; flex-direction: row;">
+        <svg id="svg3">
+          <defs>
+            <pattern id="pattern-stripe" 
+              width="4" height="4" 
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(45)">
+              <rect width="2" height="4" transform="translate(0,0)" fill="white"></rect>
+            </pattern>
+            <mask id="mask-stripe">
+              <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" />
+            </mask>      
+          </defs>
+        </svg>   
+    </div>
+
+    <div style="display: flex; flex-direction: row;">
+        <svg id="svg4">
+          <defs>
+            <pattern id="pattern-stripe" 
+              width="4" height="4" 
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(45)">
+              <rect width="2" height="4" transform="translate(0,0)" fill="white"></rect>
+            </pattern>
+            <mask id="mask-stripe">
+              <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" />
+            </mask>      
+          </defs>
+        </svg>   
+    </div> -->
+    <svg>
+      <defs>
+        <pattern id="seq4band" patternUnits="userSpaceOnUse" width="76" height="25">
+          <image xlink:href="seq4band.png" x="0" y="0" width="76" height="25" />
+        </pattern>
+      </defs>
+    </svg>
+    <div style="display: flex; flex-direction: row;">
+        <div>
+            
+        </div>
+        <div>
+          <svg id="svg1"></svg>   
+          <svg id="legend1"></svg>
+        </div>
+    </div>
+<!--      <div style="display: flex; flex-direction: row;">
+        <svg id="svg8"></svg>   
+    </div> -->
+	<!-- load the d3.js library -->	
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script src="https://d3js.org/d3-queue.v3.min.js"></script>
+  <script src="./const.js"></script>
+  <script src="./legend.js"></script>
+	<script src="./interactive_table.js"></script>
+  </body>
+</html>
