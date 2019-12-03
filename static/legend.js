@@ -1,8 +1,13 @@
 var legendHeight = 350, legendWidth = 200;
 
 var colors = ["steelblue", "#fb9a99"];
+var conf_colors = ['#2887a1', '#cf597e'];
 // var text_colors = ['#ffffcc', '#c2e699', '#78c679', '#238443'];
 var text_colors = ['#ffffcc', '#a1dab4', '#41b6c4', '#2c7fb8', '#253494'];
+
+let colorSeq4 = ['#ffffcc', '#a1dab4', '#41b6c4', '#225ea8'];
+let colorDiv7 = ['#008080', '#70a494', '#b4c8a8', '#f6edbd', '#edbb8a', '#de8a5a', '#ca562c'];
+let colorDiv5 = ['#008080', '#70a494', '#f6edbd', '#de8a5a', '#ca562c'];
 
 var handleColor = "#969696", ruleColor = "#d9d9d9", gridColor = "#D3D3D3";
 var font_family = "Times New Roman";
