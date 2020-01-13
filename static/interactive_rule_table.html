@@ -6,9 +6,25 @@
     <title>Bar Table</title>
 
     <style>
+      div {
+        display: flex; 
+      }
+
       text{
           font-family: sans-serif;
           fill: "black";
+       }
+
+       td {
+         width: 20px;
+       }
+
+       #controlview {
+          font-size: 15px;
+       }
+
+       .selection {
+          border: 1px solid lightgrey;
        }
 
 	     .legend text {
@@ -27,6 +43,14 @@
           stroke-width: .5;
         }
 
+        .slider-div p {
+          margin-top: 2px;
+        }
+
+        .slider-div {
+          margin: 10px 5px 10px 5px;
+        }
+
     </style>
 
   </head>
@@ -41,25 +65,96 @@
         </pattern>    
       </defs> 
     </svg>
-    <div>
-      <div>
+    <div style="flex-direction: row;">
+      <!-- Control view -->
+      <div id="controlview" style="flex-direction: column;  width: 400px">
+        <!-- Summary -->
+        <div>
+          <svg id="legend1"></svg>
+        </div>
+        <!-- Tree Overview -->
+        <div style="overflow: auto; display: flex; flex-direction: column;">
+          <span>Tree Summary</span>
+          <svg id="summary_view" style="border: 1px solid lightgrey; margin: 5px">
+          </svg>
+        </div>
+        <!-- Sliders -->
+        <div class="slider-div" style="flex-direction: column;">
+          <p id="support-text" style="margin-bottom: 1px">Support</p>
+          <div id="slider-support"></div>
+
+          <p id="fidelity-text" style="margin-bottom: 1px">Fidelity</p>
+          <div id="slider-fidelity"></div>
+
+          <p id="accuracy-text" style="margin-bottom: 1px">Accuracy</p>
+          <div id="slider-accuracy"></div>
+        </div>
         
+        <!-- Range Selection -->
+        <div class="selection" style="flex-direction: column; 
+          width: 220px;
+          height: 300px; overflow: scroll;">
+          <h4>Features</h4>
+          <div id="selected-div"></div>
+          <div id="feature-ranges" style="flex-direction: column;"></div>
+        </div>
+        
+
       </div>
-      <div style="display: flex; flex-direction: row;">
-          <svg id="svg1"></svg>   
-          <!-- <svg id="legend1"></svg> -->
+
+      <!-- Main view of the rules -->
+      <div style="flex-direction: column; 
+        border: 1px solid lightgrey; 
+        margin-left: 10px
+        height: 700">
+        <div style="height: 600px; overflow: scroll;">
+          <svg id="svg1">
+          </svg>
+          <svg id="stat"></svg>             
+        </div>
+        <div id="datatable" style="flex-direction: column; height: 100px; overflow: scroll;">
+          <h4>Raw Data</h4>
+          <table style="width: 800px; margin-left: 50px; border: 1px solid black">
+            <tr>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+              <td>10</td>
+            </tr>
+          </table>
+        </div>
       </div>  
     </div>
+    <canvas id="myCanvas" width="0" height="0"></canvas>
   	
-<!--      <div style="display: flex; flex-direction: row;">
-        <svg id="svg8"></svg>   
-    </div> -->
 	<!-- load the d3.js library -->	
 	<script src="http://d3js.org/d3.v4.min.js"></script>
 	<script src="https://d3js.org/d3-queue.v3.min.js"></script>
   <script src="https://d3js.org/d3-scale.v3.min.js"></script>
+  <script src="https://unpkg.com/d3-simple-slider"></script>
+
   <script src="./const.js"></script>
   <script src="./legend.js"></script>
-	<script src="./interactive_table.js"></script>
+  <script src="./util.js"></script>
+  <script src="./summary_view.js"></script>
+  <script src="./interactive_table.js"></script>
   </body>
 </html>

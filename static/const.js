@@ -1,21 +1,4 @@
-const rule_used_values = [
-// {'feature': 0, 'value': 4.0},
- {'feature': 0, 'value': 52.0},
- {'feature': 0, 'value': 104.0},
- // {'feature': 0, 'value': 383.0},
- {'feature': 1, 'value': 0.0},
- {'feature': 1, 'value': 35.0},
- // {'feature': 1, 'value': 150.0},
- {'feature': 2, 'value': 0.0},
- {'feature': 2, 'value': 86.0},
- {'feature': 2, 'value': 95.0},
- // {'feature': 2, 'value': 100.0},
- {'feature': 3, 'value': 0.0},
- {'feature': 3, 'value': 20.0},
- {'feature': 3, 'value': 62.0},
- // {'feature': 3, 'value': 232.0},
- {'feature': 4, 'value': 0.0},
- {'feature': 4, 'value': 2.0},
- {'feature': 4, 'value': 5.0},
- // {'feature': 4, 'value': 32.0}
- ];
+const BAND_RULE_VIS = "band_range";
+const GRADIENT_RULE_VIS = "gradient_range";
+const MEDIAN_RULE_VIS = "median_range";
+const MEDIAN_VAL_VIS = "median_val_vis";
