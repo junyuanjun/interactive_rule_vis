@@ -764,6 +764,16 @@ function update_rule_rendering(listData) {
     d3.select("#rule_svg")
         .attr("width", width + margin.right + margin.left)
         .attr("height", height + margin.top + margin.bottom);
+
+    d3.select("#rule_div div")
+        .style("height", `${height + margin.bottom}px`)
+
+    d3.select("#rule_svg")
+        .attr("height", height + margin.bottom);
+
+    d3.select("#stat_div div")
+        .style("height", `${height + margin.bottom}px`);
+
     // scale for placing cells
     yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
     d3.select("#rule-num")
@@ -833,7 +843,7 @@ function update_rule_rendering(listData) {
             id = id.replace(/\./g, '_');
             return `url(#linear-gradient-${id})`
         })
-    render_size_circle(rule_svg, listData);
+    render_size_circle(stat_svg, listData);
 }
 
 function render_data_table() {
