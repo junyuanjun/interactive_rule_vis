@@ -1,4 +1,4 @@
-var legendHeight = 50, legendWidth = 300;
+var legendHeight = 50, legendWidth = 600;
 
 var colors = ["steelblue", "#fb9a99"];
 var conf_colors = ['#2887a1', '#cf597e'];
@@ -10,10 +10,11 @@ let colorDiv7 = ['#008080', '#70a494', '#b4c8a8', '#f6edbd', '#edbb8a', '#de8a5a
 let colorDiv5 = ['#008080', '#70a494', '#f6edbd', '#de8a5a', '#ca562c'];
 let colorCate = ['#6babc1', '#e68882', '#edc867', '#67a879', '#806691',];
 let borderColor = ['white', 'black'];
+let gradientColor = [d3.lab("#91bfdb"),d3.lab("#ffffbf"),d3.lab("#fc8d59")]
 
 var handleColor = "#969696", ruleColor = "#d9d9d9", gridColor = "#D3D3D3";
 var font_family = "Times New Roman";
-var font_size = 16;
+var font_size = 10;
 var font = font_size + "px " + font_family;
 
 var threshold_values = [
@@ -36,16 +37,16 @@ function render_legend_label(id) {
 		.attr("class", "legend");
 
 	var yoffset = 20;
-	rectWidth = rectWidth * .6
 	// color legend
 	var r = 5;
-	g.append("text")
-		.attr("x", 0)
-		.attr("y", indent)
-		.style("font", "16px Arial")
-		.text("Label");
+	// g.append("text")
+	// 	.attr("x", 0)
+	// 	.attr("y", indent)
+	// 	.style("font", "16px Arial")
+	// 	.text("Label");
 
-	yoffset += indent;
+	// yoffset += indent;
+
 	let xoffset = 0;
 	target_names.forEach((name, i) => {
 		g.append("circle")
@@ -56,9 +57,48 @@ function render_legend_label(id) {
 		g.append("text")
 			.attr("x", indent + 2 * r + xoffset)
 			.attr("y", yoffset + r)
-			.style("font-family", "Arial")
 			.text(name);
 		xoffset += ctx.measureText(name).width + r * 4 + indent;
 	});
+
+	// legend for range bar
+	let linear_gradient = legend.append('defs')
+	  .append('linearGradient')
+      .attr('class','linear_gradient')
+      .attr('id', function(d) {
+        return "linear-gradient-legend";
+      })
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "100%")
+      .attr("y2", "0%");
+
+    linear_gradient.append('stop')
+      .attr('class','linear_gradient_start')
+      .attr('offset', '0%')
+      .attr('stop-color', gradientColor[0]);
+
+    linear_gradient.append('stop')
+      .attr('class','linear_gradient_mid')
+      .attr('offset', '50%')
+      .attr('stop-color', gradientColor[1]);
+
+    linear_gradient.append('stop')
+      .attr('class','linear_gradient_end')
+      .attr('offset', '100%')
+      .attr('stop-color', gradientColor[2]);
+
+    xoffset += indent;
+    g.append('rect')
+    	.attr('x', xoffset)
+    	.attr('y', yoffset-r)
+    	.attr('width', rectWidth)
+    	.attr('height', 10)
+    	.attr('fill', `url(#linear-gradient-legend)`)
+
+    g.append('text')
+    	.attr('x', xoffset + rectWidth + 5)
+    	.attr('y', yoffset+r)
+    	.text('range: low→median→high')
 }
 

@@ -19,8 +19,16 @@
          width: 20px;
        }
 
+      input {
+        border: 0;
+        outline: 0;
+        background: transparent;
+        border-bottom: 1px solid grey;
+        width: 15px;
+      }
+
        #controlview {
-          font-size: 15px;
+          font-size: 12px;
        }
 
        .selection {
@@ -51,6 +59,23 @@
           margin: 10px 5px 10px 5px;
         }
 
+        .flex-col {
+          display: flex;
+          flex-direction: column; 
+        }
+
+        .flex-row {
+          display: flex;
+          flex-direction: row; 
+        }
+
+        .title {
+          margin-top: 5px;
+          margin-bottom: 5px;
+          font-weight: bold;
+          font-size: 12px;
+        }
+
     </style>
 
   </head>
@@ -65,56 +90,137 @@
         </pattern>    
       </defs> 
     </svg>
-    <div style="flex-direction: row;">
+    <div class="flex-row">
       <!-- Control view -->
-      <div id="controlview" style="flex-direction: column;  width: 400px">
-        <!-- Summary -->
-        <div>
-          <svg id="legend1"></svg>
+      <div id="controlview" class="flex-col" 
+        style="width: 300px; border: 1px solid lightgrey; margin-right: 5px">
+        <!-- Parameters for pruning rules -->
+        <div class="flex-col">
+          <!-- <div class="title">
+            <span>Pruning Parameters</span>
+          </div>
+          <div id="prune_paramaters" class="flex-row" style="justify-content: space-around;" >
+            <div>
+              <span title="lower bound of support">Support: </span>
+              <input id="support_val" value=0>
+              <span>%</span>
+            </div>
+            <div>
+              <span title="lower bound of Fidelity">Fidelity: </span>
+              <input id="fidelity_val" value=0>
+              <span>%</span>
+            </div>
+            <div>
+              <span title="upper bound of the number of features in a rule">
+                #Featuers: 
+              </span>
+              <input id="number_val" value=20>
+            </div>
+            <button onclick="prune_nodes()">Prune</button>
+
+          </div> -->
         </div>
         <!-- Tree Overview -->
-        <div style="overflow: auto; display: flex; flex-direction: column;">
-          <span>Tree Summary</span>
+        <div class="flex-col" style="overflow: auto;">
+          <div class="title">
+            <span>Tree Summary</span>            
+          </div>
           <svg id="summary_view" style="border: 1px solid lightgrey; margin: 5px">
           </svg>
         </div>
         <!-- Sliders -->
-        <div class="slider-div" style="flex-direction: column;">
-          <p id="support-text" style="margin-bottom: 1px">Support</p>
+        <div class="slider-div flex-col">
+          <div class="title">
+            <span>Filters</span>
+          </div>
+
+          <p id="support-text" style="margin-bottom: 1px">Support: 0-100%</p>
           <div id="slider-support"></div>
 
-          <p id="fidelity-text" style="margin-bottom: 1px">Fidelity</p>
+          <p id="fidelity-text" style="margin-bottom: 1px">Fidelity: 0-100%</p>
           <div id="slider-fidelity"></div>
 
-          <p id="accuracy-text" style="margin-bottom: 1px">Accuracy</p>
+          <p id="accuracy-text" style="margin-bottom: 1px">Accuracy: 0-100%</p>
           <div id="slider-accuracy"></div>
+
+          <p id="number-text" style="margin-bottom: 1px">#Feature < 20</p>
+          <div id="slider-number"></div>
+          
+          <div class="flex-row" style="justify-content: space-around;">
+            <button id="update" onclick="update_rules()">update rules</button>
+          </div>
+          
         </div>
         
         <!-- Range Selection -->
-        <div class="selection" style="flex-direction: column; 
+        <!-- <div class="selection flex-col" style="
           width: 220px;
           height: 300px; overflow: scroll;">
           <h4>Features</h4>
           <div id="selected-div"></div>
-          <div id="feature-ranges" style="flex-direction: column;"></div>
-        </div>
-        
-
+          <div id="feature-ranges" class="flex-col"></div>
+        </div>   -->
       </div>
 
       <!-- Main view of the rules -->
       <div style="flex-direction: column; 
         border: 1px solid lightgrey; 
-        margin-left: 10px
-        height: 700">
-        <div style="height: 600px; overflow: scroll;">
-          <svg id="svg1">
-          </svg>
-          <svg id="stat"></svg>             
+        margin-left: 5px;
+        width: 950px;
+        height: 700px">
+        <!-- Rules -->
+        <div class="flex-col">
+          <div title>Legend</div>
+          <svg id="legend1"></svg>
+        </div>
+        <div class='flex-row' style="justify-content: flex-start;">
+          <div class="title" style="margin-right: 20px">
+            <span>Number of Rules: </span>
+            <span id="rule-num" style="font-weight: normal;"></span>
+          </div>
+          <div class='flex-row' style="margin-right: 20px">
+            <div class="title"><span>Sorting Features by: </span></div>
+            <select>
+              <option>Feature Frequency</option>
+            </select>
+          </div>
+
+          <div class='flex-row'>
+            <div class="title"><span>Sorting Rules by: </span></div>
+            <select>
+              <option>Accuracy</option>
+              <option>F1</option>
+              <option>Recall</option>
+              <option>Precision</option>
+              <option>Support</option>
+              <option>Fedelity</option>
+              <option>Dissimilarity</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex-col">
+          <div id="column_div" style="max-width: 800px; overflow-x: scroll;">
+            <div>
+              <svg id="column_svg"></svg>            
+            </div>
+          </div>
+          <div style="max-height: 600px; max-width: 950px; overflow: scroll;">
+            <div id="rule_div" style="height: 600px; max-width: 800px; overflow: scroll;">
+              <div>
+                <svg id="rule_svg"></svg>            
+              </div>
+            </div>
+            <div id="stat_div" style="max-height: 600px; max-width: 100px; overflow-y: scroll;">
+              <div>
+                <svg id="stat"></svg>              
+              </div>
+            </div>
+          </div>
+          <!-- <svg id="stat"></svg>              -->
         </div>
         <div id="datatable" style="flex-direction: column; height: 100px; overflow: scroll;">
-          <h4>Raw Data</h4>
-          <table style="width: 800px; margin-left: 50px; border: 1px solid black">
+          <!-- <h4>Raw Data</h4> -->
+          <!-- <table style="width: 800px; margin-left: 50px; border: 1px solid black">
             <tr>
               <td>10</td>
               <td>10</td>
@@ -138,7 +244,7 @@
               <td>10</td>
               <td>10</td>
               <td>10</td>
-            </tr>
+            </tr> -->
           </table>
         </div>
       </div>  
@@ -151,10 +257,10 @@
   <script src="https://d3js.org/d3-scale.v3.min.js"></script>
   <script src="https://unpkg.com/d3-simple-slider"></script>
 
-  <script src="./const.js"></script>
-  <script src="./legend.js"></script>
-  <script src="./util.js"></script>
-  <script src="./summary_view.js"></script>
-  <script src="./interactive_table.js"></script>
+  <script src="/static/const.js"></script>
+  <script src="/static/legend.js"></script>
+  <script src="/static/util.js"></script>
+  <script src="/static/summary_view.js"></script>
+  <script src="/static/interactive_table.js"></script>
   </body>
 </html>

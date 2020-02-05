@@ -1,5 +1,5 @@
 let depth_height = 20;
-let view_width = 300;
+let view_width = 280;
 let max_r = 15;
 
 let summary_x,
@@ -25,8 +25,8 @@ function intialize_scales(max_depth) {
 		.range([view_margin.top, tree_height]);
 
 	summary_size = d3.scaleLinear()
-		.domain([0, 1])
-		.range([1, max_r]);
+		.domain([1e-8, 1])
+		.range([1.5, max_r]);
 
 	// summary_opacity = d3.scaleLinear()
 	// 	.domain([0, 1])
@@ -67,10 +67,13 @@ function render_summary(node_info, max_depth) {
     	.attr('class', 'rule-node')
     	.attr('cx', d => summary_x(d['fidelity']))
     	.attr('cy', d => summary_y(d['depth']))
-    	.attr('r', d => summary_size(d['support']))
+    	.attr('r', d => summary_size(d['support']+(1e-8)))
     	.attr('stroke', 'none')
     	.attr('fill', d => summary_color(d['accuracy']))
-    	.attr('fill-opacity', .8);
+    	.attr('fill-opacity', .8)
+      .append('title')
+      .text(d => `Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};
+        \nFidelity: ${d['fidelity']}\nAccuracy: ${d['accuracy']}`);
 
 
     // color legend
@@ -104,7 +107,7 @@ function render_summary(node_info, max_depth) {
     	.attr('fill', `url(#summary-linear-gradient)`)
 
     view.append('text')
-    	.attr('x', view_margin.left + 60)
+    	.attr('x', view_margin.left + 80)
     	.attr('y', tree_height + view_margin.top + 10)
     	.text('accuracy: [0, 100%]')
 }
@@ -113,7 +116,7 @@ function update_summary(node_info, ) {
   let view = d3.select('#summary_view')
 
   view.selectAll('.rule-node').remove();
-  
+
   view.selectAll('.rule-node')
       .data(node_info)
       .enter()
@@ -124,6 +127,10 @@ function update_summary(node_info, ) {
       .attr('r', d => summary_size(d['support']))
       .attr('stroke', 'none')
       .attr('fill', d => summary_color(d['accuracy']))
-      .attr('fill-opacity', .8);
+      .attr('fill-opacity', .8)
+      .append('title')
+      .text(d=>`Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};
+        \nFidelity: ${d['fidelity']};\nAccuracy: ${d['accuracy']}`);
+;
 }
 

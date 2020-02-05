@@ -1,19 +1,28 @@
-let margin = {top: 60, right: 5, bottom: 20, left: 10},
+let margin = {top: 5, right: 5, bottom: 20, left: 10},
+    column_height = 120,
     width = 860 - margin.right - margin.left,
     height,
     // height = 300 - margin.top - margin.bottom
     indent = 40;
+let overviewWidth = 250;
 
 let folder = "fico";
 
-height = 650 - margin.top - margin.bottom
+height = 650 - margin.top - margin.bottom;
 
-
-let svg1 = d3.select("#svg1")
-    .attr("width", width + margin.right + margin.left)
-    .attr("height", height + margin.top + margin.bottom)
+let rule_svg = d3.select("#rule_svg")
+    .attr("width", width + margin.right)
+    .attr("height", height + margin.bottom)
     .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", `translate(${margin.left})`);
+
+
+let column_svg = d3.select("#column_svg")
+    .style("height", `${column_height}px`);
+
+d3.select("#column_div")
+    .style("height", `${column_height}px`);
+
 let stat_svg = d3.select('#stat')
     .attr("width", 80)
     .attr("height", height + margin.top + margin.bottom)
@@ -46,8 +55,11 @@ let rules_to_keep = [];
 let i = 0,
     duration = 750,
     root,
+    listData,
     real_min,
     real_max,
+    real_5_1, real_5_2, real_5_3, real_5_4,
+    support, true_support, false_support, class_support, tot_data,
     raw_data,
     attrs,
     median,
@@ -57,112 +69,159 @@ let i = 0,
 
 let RULE_MODE = GRADIENT_RULE_VIS;
 
+let added_filters = [];
+
 function loadData() {
-    let path = "../" + folder;
+    let path = "/data/" + folder;
+
+    fetch(domain + "initialize/" + folder);
+
     d3.queue()
         .defer(d3.json, path + "/test.json")
         .defer(d3.json, path + "/list.json")
         .defer(d3.json, path + "/support.json")
         .defer(d3.json, path + "/node_info.json")
         .await((err, file1, file2, file3, file4) => {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        // assign values
-        attrs = file1["columns"];
-        raw_data = file1["data"];
-        real_min = file1["real_min"];
-        real_max = file1["real_max"];
-        median = file1["median"]
-        real_5_1 = file1['real_5_1']
-        real_5_2 = file1['real_5_2']
-        real_5_3 = file1['real_5_3']
-        real_5_4 = file1['real_5_4']
-        listData = file2["rule_lists"];
-        target_names = file2["target_names"];
-        support = file3['support'];
-        true_support = file3['true_support'];
-        false_support = file3['false_support'];
-        class_support = file3['class_support'];
-        tot_data = file1['data'].length;
-        node_info = file4['node_info_arr'];
-        max_depth = file4['max_depth'];
+            if (err) {
+                console.log(err);
+                return;
+            }
+            // assign values
+            attrs = file1["columns"];
+            raw_data = file1["data"];
+            real_min = file1["real_min"];
+            real_max = file1["real_max"];
+            median = file1["median"]
+            real_5_1 = file1['real_5_1']
+            real_5_2 = file1['real_5_2']
+            real_5_3 = file1['real_5_3']
+            real_5_4 = file1['real_5_4']
+            listData = file2["rule_lists"];
+            target_names = file2["target_names"];
+            support = file3['support'];
+            true_support = file3['true_support'];
+            false_support = file3['false_support'];
+            class_support = file3['class_support'];
+            tot_data = file1['data'].length;
+            node_info = file4['node_info_arr'];
+            max_depth = file4['max_depth'];
 
-        // adjust width and height
-        if (RULE_MODE === MEDIAN_VAL_VIS) {
-            glyphCellWidth *= 2;
-            rectMarginH = 1;
-            rectMarginBottom = 1;
-            rectMarginTop = 1;
+            // adjust width and height
+            if (RULE_MODE === MEDIAN_VAL_VIS) {
+                glyphCellWidth *= 2;
+                rectMarginH = 1;
+                rectMarginBottom = 1;
+                rectMarginTop = 1;
 
-            width = attrs.length * (glyphCellWidth + rectMarginH);
-        } else {
-            width = attrs.length * (glyphCellWidth * 5 + rectMarginH * 2);
-        }
-        height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
-        d3.select("#svg1")
-            .attr("width", width + margin.right + margin.left)
-            .attr("height", height + margin.top + margin.bottom);
+                width = attrs.length * (glyphCellWidth + rectMarginH);
+            } else {
+                width = attrs.length * (glyphCellWidth * 5 + rectMarginH * 2);
+            }
 
-        // scale for placing cells
-        xScale = d3.scaleBand(d3.range(attrs.length+1),[0, width]);
-        yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
+            height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
 
-        // scale for render the support bar
-        supportScale = d3.scaleLinear([0, d3.max(support)], [5, supportRectWidth]);
+            scroll_functions(width, height);
 
-        // scale for filling rule ranges
-        // rectHeight = yScale.bandwidth() - rectMarginTop - rectMarginBottom;
-        rectHeight = glyphCellHeight;
-        rectWidth = glyphCellWidth * 5;
-        handleHeight = rectHeight + handleLedge * 2;
-        widthScale = [];
-        colorScale = [];
-        valueStops = [];
-        attrs.forEach((d, i) => {
-            widthScale.push(d3.scaleLinear()
-                .range([0, rectWidth])
-                .domain([real_min[i], real_max[i]]));
+            // scale for placing cells
+            xScale = d3.scaleBand(d3.range(attrs.length+1),[0, width]);
+            yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
 
-            colorScale.push(d3.scaleLinear()
-                .domain([real_min[i], (real_min[i]+real_max[i])/2, real_max[i]])
-                .range([d3.lab("#91bfdb"),d3.lab("#ffffbf"),d3.lab("#fc8d59")])
-                .interpolate(d3.interpolateLab));
-        });
-        
-        attrs.forEach((d, i) => {
-            // let step = (real_max[i] - real_min[i]) / 5;
-            // let rangeArr = [real_min[i]+step, real_min[i]+step*2, real_min[i]+step*3, real_min[i]+step*4];
-            let rangeArr = [real_5_1[i], real_5_2[i], real_5_3[i], real_5_4[i]];
-            valueStops.push(rangeArr);
-        });
+            // scale for render the support bar
+            supportScale = d3.scaleLinear([0, d3.max(support)], [5, supportRectWidth]);
 
-        render_slider();
-        render_feature_ranges();
-        switch (RULE_MODE) {
-            case BAND_RULE_VIS:
-                generate_band_bars(listData);
-                break;
-            case GRADIENT_RULE_VIS:
-                generate_gradient_bars(listData);
-                break;
-            case MEDIAN_VAL_VIS:
-                generate_value_cells(listData);
-                break;
-        }
+            // scale for filling rule ranges
+            // rectHeight = yScale.bandwidth() - rectMarginTop - rectMarginBottom;
+            rectHeight = glyphCellHeight;
+            rectWidth = glyphCellWidth * 5;
+            handleHeight = rectHeight + handleLedge * 2;
+            widthScale = [];
+            colorScale = [];
+            valueStops = [];
 
-        render_legend_label("#legend1");
-        render_summary(node_info, max_depth);
+            attrs.forEach((d, i) => {
+                widthScale.push(d3.scaleLinear()
+                    .range([0, rectWidth])
+                    .domain([real_min[i], real_max[i]]));
+
+                colorScale.push(d3.scaleLinear()
+                    .domain([real_min[i], (real_min[i]+real_max[i])/2, real_max[i]])
+                    .range([d3.lab("#91bfdb"),d3.lab("#ffffbf"),d3.lab("#fc8d59")])
+                    .interpolate(d3.interpolateLab));
+            });
+
+
+            attrs.forEach((d, i) => {
+                // let step = (real_max[i] - real_min[i]) / 5;
+                // let rangeArr = [real_min[i]+step, real_min[i]+step*2, real_min[i]+step*3, real_min[i]+step*4];
+                let rangeArr = [real_5_1[i], real_5_2[i], real_5_3[i], real_5_4[i]];
+                valueStops.push(rangeArr);
+            });
+
+
+            render_slider();
+
+            d3.select("#rule-num")
+                .text(listData.length);
+
+            switch (RULE_MODE) {
+                case BAND_RULE_VIS:
+                    generate_band_bars(listData);
+                    break;
+                case GRADIENT_RULE_VIS:
+                    generate_gradient_bars(listData);
+                    break;
+                case MEDIAN_VAL_VIS:
+                    generate_value_cells(listData);
+                    break;
+            }
+
+            render_legend_label("#legend1");
+
+            render_summary(node_info, max_depth);
     });
 }
 
+function scroll_functions(width, height) {
+    d3.select("#rule_div div")
+        .style("height", `${height + margin.bottom}px`)
+        .style("width", `${margin.left + width + margin.right}px`);
 
-function render_feature_names_and_grid(svg, id) {
-    let column = svg.selectAll(".column").data(attrs)
+    d3.select("#rule_svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.bottom);
+
+    d3.select("#column_div div")
+        .style("width", `${margin.left + width + margin.right}px`);
+
+    d3.select("#column_svg")
+        .style("width", `${margin.left + width + margin.right}px`);
+
+    d3.select("#stat_div div")
+        .style("height", `${height + margin.bottom}px`);
+
+    d3.select("#stat")
+        .attr("height", height + margin.bottom);
+
+    d3.select('#rule_div').on('scroll', function () {
+        document.getElementById('column_div').scrollLeft = this.scrollLeft;
+        document.getElementById('stat_div').scrollTop = this.scrollTop;
+    });
+
+    d3.select('#column_div').on('scroll', function () {
+        document.getElementById('rule_div').scrollLeft = this.scrollLeft;
+    });
+
+    d3.select('#stat_div').on('scroll', function () {
+        document.getElementById('rule_div').scrollTop = this.scrollTop;
+    });
+}
+
+function render_feature_names_and_grid() {
+    let column = column_svg.selectAll(".column").data(attrs)
         .enter().append("g")
         .attr("class", "column")
-        .attr("transform", function(d, i) { return `translate(${xScale(i)}, ${yScale(0)-font_size})rotate(330)`; });
+        .attr("transform", function(d, i) { return `translate(${xScale(i)}, 
+            ${column_height+yScale(0)-font_size*2})rotate(330)`; });
 
     column.append("text")
         .attr("x", 6)
@@ -173,7 +232,7 @@ function render_feature_names_and_grid(svg, id) {
             let textLength = ctx.measureText(d).width;
             let text = d;
             let txt = d;
-            while (textLength > margin.top*2) {
+            while (textLength > column_height) {
                 text = text.slice(0, -1);
                 textLength = ctx.measureText(text+'...').width;
                 txt = text+'...';
@@ -183,44 +242,8 @@ function render_feature_names_and_grid(svg, id) {
         .append('title')
         .text(d => d);
 
-    // render median line on the top
-    if (median !== undefined) {
-        let median_line = svg.selectAll(".median_line").data(median)
-            .enter().append("g")
-            .attr("class", "median_line")
-            .attr("transform", function(d, i) { return "translate(" + xScale(i) + ","+ margin.top + ")"; });
-
-        if (id==6) {
-            median_line.append("line")
-                .attr("x1", rectMarginH)
-                .attr("x2", rectMarginH + rectWidth)
-                .attr("y1", -10)
-                .attr("y2", -10)
-                .style("fill", "grey")
-                .style("stroke", "grey")
-                .style("stroke-width", 1);
-
-            median_line.append("circle")
-                .attr("cx", function(d,i) { return rectMarginH+widthScale[i](d); })
-                .attr("cy", -10)
-                .attr("r", 2)
-                .style("stroke", "none")
-                .style("fill", "dimgrey");
-
-            font_size = 12;
-            font = font_size + "px " + font_family;
-            median_line.append("text")
-                .attr("x", function(d,i) { return rectMarginH+widthScale[i](d); })
-                .attr("y", -16)
-                .attr("text-anchor", "middle")
-                .style("font", font)
-                .text((d)=>d.toFixed(0))
-        } 
-    }
-
-
     // grid
-    svg.selectAll(".grid-row")
+    rule_svg.selectAll(".grid-row")
         .data(yScale.domain())
         .enter().append("g")
         .attr("class", "grid-row")
@@ -252,7 +275,7 @@ function render_feature_names_and_grid(svg, id) {
     //         return str;
     //     });
 
-    svg.selectAll(".grid-col")
+    rule_svg.selectAll(".grid-col")
         .data(xScale.domain())
         .enter().append("g")
         .attr("class", "grid-col")
@@ -264,13 +287,14 @@ function render_feature_names_and_grid(svg, id) {
 }
 
 function render_slider() {
+    
     let slider_support = d3
         .sliderHorizontal()
         .min(0)
         .max(100)
         .marks([0,20,40,60,80,100])
         .step(1)
-        .width(legendWidth*.9)
+        .width(overviewWidth*.9)
         .default([0, 100])
         .fill('#2196f3')
         .on('onchange', val => {
@@ -278,17 +302,19 @@ function render_slider() {
             d3.select('#support-text').text(`Support: ${val.map(d => d3.format('.2%')(d/100)).join('-')}`);
             // filter the nodes
             filter_threshold['support'] = [+val[0]/100, +val[1]/100];
-            new_nodes = filter_nodes(node_info);
+            new_nodes = filter_nodes(node_info,);
             update_summary(new_nodes);
+
         });
  
     d3.select('#slider-support')
         .append('svg')
-        .attr('width', legendWidth)
+        .attr('width', overviewWidth)
         .attr('height', 45)
         .append('g')
         .attr('transform', 'translate(15,10)')
         .call(slider_support);
+
 
     let slider_fidelity = d3
         .sliderHorizontal()
@@ -296,7 +322,7 @@ function render_slider() {
         .max(100)
         .marks([0,20,40,60,80,100])
         .step(1)
-        .width(legendWidth*.9)
+        .width(overviewWidth*.9)
         .default([0, 100])
         .fill('#2196f3')
         .on('onchange', val => {
@@ -304,13 +330,14 @@ function render_slider() {
             d3.select('#fidelity-text').text(`Fidelity: ${val.map(d => d3.format('.2%')(d/100)).join('-')}`);
             // filter the nodes
             filter_threshold['fidelity'] = [+val[0]/100, +val[1]/100];
-            new_nodes = filter_nodes(node_info);
+            new_nodes = filter_nodes(node_info,);
             update_summary(new_nodes);
+
         });
  
     d3.select('#slider-fidelity')
         .append('svg')
-        .attr('width', legendWidth)
+        .attr('width', overviewWidth)
         .attr('height', 45)
         .append('g')
         .attr('transform', 'translate(15,10)')
@@ -322,7 +349,7 @@ function render_slider() {
         .max(100)
         .marks([0,20,40,60,80,100])
         .step(1)
-        .width(legendWidth*.9)
+        .width(overviewWidth*.9)
         .default([0, 100])
         .fill('#2196f3')
         .on('onchange', val => {
@@ -332,24 +359,62 @@ function render_slider() {
             filter_threshold['accuracy'] = [+val[0]/100, +val[1]/100];
             new_nodes = filter_nodes(node_info,);
             update_summary(new_nodes);
+
         });
  
     d3.select('#slider-accuracy')
         .append('svg')
-        .attr('width', legendWidth)
+        .attr('width', overviewWidth)
         .attr('height', 45)
         .append('g')
         .attr('transform', 'translate(15,10)')
         .call(slider_accuracy);
 }
 
-function filter_rules() {
+function update_rules() {
+    console.log("update");
 
+    new_nodes = filter_nodes(node_info);
+    update_summary(new_nodes);
+    find_leaf_rules(new_nodes, node_info, listData);   
+}
+
+function prune_nodes() {
+    let support_val, fidelity_val, number_val; 
+    d3.select('#support_val')
+        .attr('value', function() {
+            support_val = this.value;
+            return this.value;
+        });
+    d3.select('#fidelity_val')
+        .attr('value', function() {
+            fidelity_val = this.value;
+            return this.value;
+        });
+    d3.select('#number_val')
+        .attr('value', function() {
+            number_val = this.value;
+            return this.value;
+        });
+    support_val = parseFloat(support_val);
+    fidelity_val = parseFloat(fidelity_val);
+    number_val = parseInt(number_val);
+
+    filter_threshold['support'] = [support_val/100, 1];
+    filter_threshold['fidelity'] = [fidelity_val/100, 1];
+    // TODO: add threshold for number_val
+
+    // re-render rules
+    new_nodes = filter_nodes(node_info,);
+    update_summary(new_nodes);
+    let rules = find_leaf_rules(new_nodes, node_info, listData);
 }
 
 function render_feature_ranges() {
+    console.log("1");
     let feat_selection = d3.select('#feature-ranges');
     ctx.font= "15 sans-serif";
+    console.log("2");
 
     attrs.forEach((d, i) => {
         let feat_r = feat_selection.append('div')
@@ -402,22 +467,26 @@ function render_feature_ranges() {
 
 
 function render_size_circle(svg, listData) {
+    svg.selectAll(".label_circle").remove();
+
     let circles = svg.selectAll(".label_circle")
         .data(listData)
         .enter()
         .append("circle")
         .attr("class", "label_circle")
-        .attr("cx", xScale(xScale.domain().length-1) + xScale.bandwidth()/2)
+        .attr("cx", xScale.bandwidth()/2)
         .attr("cy", (d, i) => {
             return yScale(i) + yScale.bandwidth()/2
         })
         // .attr("r", d => radiusScale(d["coverage"]))
         .attr("r", 7)
-        .attr("fill", d => conf_colors[d["label"]])
+        .attr("fill", d => colorCate[d["label"]])
         .attr("stroke", "none")
 }
 
 function render_confusion_bars(svg) {
+    svg.select('.support').remove();
+
     let res = svg.append('g')
         .attr('class', 'support')
     // suppose we have the confusion matrix for each rule
@@ -433,7 +502,7 @@ function render_confusion_bars(svg) {
                 for (let j = 0; j < idx; j++) {
                     offset += class_support[i][j];
                 }
-                return xScale(attrs.length) + supportScale(offset) + 10;
+                return supportScale(offset) + 10;
             })
             .attr('y', yScale(i))
             .attr('width', d => supportScale(d))
@@ -447,13 +516,13 @@ function render_confusion_bars(svg) {
 }
 
 function generate_value_cells(listData) {
-    render_feature_names_and_grid(svg1);
+    render_feature_names_and_grid();
     
     // get the median values
 
 
     // render rectangles
-    let row = svg1.selectAll(".row")
+    let row = rule_svg.selectAll(".row")
         .data(listData)
         .enter().append("g")
         .attr("class", "row")
@@ -491,9 +560,9 @@ function generate_value_cells(listData) {
 }
 
 function generate_band_bars(listData) {
-    render_feature_names_and_grid(svg1);
+    render_feature_names_and_grid(rule_svg);
 
-    let row = svg1.selectAll(".row")
+    let row = rule_svg.selectAll(".row")
         .data(listData)
         .enter().append("g")
         .attr("class", "row")
@@ -567,7 +636,7 @@ function generate_band_bars(listData) {
 }
 
 function generate_gradient_bars(listData) {
-    render_feature_names_and_grid(svg1);
+    render_feature_names_and_grid();
 
     // prepare ranges for rendering
     let filtered_data = {};
@@ -606,7 +675,7 @@ function generate_gradient_bars(listData) {
     filtered_data = Object.keys(filtered_data).map((d) => filtered_data[d]);
 
     // define linear gradients
-    let linear_gradient = svg1.append('defs')
+    let linear_gradient = rule_svg.append('defs')
         .selectAll('.linear_gradient')
         .data(filtered_data).enter()
         .append('linearGradient')
@@ -634,7 +703,7 @@ function generate_gradient_bars(listData) {
       });
 
     // render by rows
-    let row = svg1.selectAll(".row")
+    let row = rule_svg.selectAll(".row")
         .data(listData)
         .enter().append("g")
         .attr("class", "row")
@@ -678,7 +747,93 @@ function generate_gradient_bars(listData) {
         .attr("height", glyphCellHeight)
         .attr("fill", d => `url(#linear-gradient-${d.id})`)
 
-    render_confusion_bars(stat_svg);
+    render_size_circle(stat_svg, listData);
+    // render_confusion_bars(stat_svg);
+
+}
+
+function update_rule_rendering(listData) {
+    // remove the column lines and the outdated rules
+    rule_svg.selectAll(".grid-col").remove();
+    rule_svg.selectAll(".grid-row").remove();
+    rule_svg.selectAll(".column").remove();
+    rule_svg.selectAll(".row").remove();
+
+    // re-render column lines
+    height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
+    d3.select("#rule_svg")
+        .attr("width", width + margin.right + margin.left)
+        .attr("height", height + margin.top + margin.bottom);
+    // scale for placing cells
+    yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
+    d3.select("#rule-num")
+        .text(listData.length);
+    render_feature_names_and_grid(rule_svg);
+
+    // render by rows
+    let row = rule_svg.selectAll(".row")
+        .data(listData)
+        .enter().append("g")
+        .attr("class", "row")
+        .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; });
+
+    // render the horizontal_line
+    row.selectAll(".middle")
+        .data(function(d) { return d["rules"]; })
+        .enter().append("line")
+        .attr("class", "middle")
+        .attr("x1", function(d) { return xScale(d["feature"]) ; })
+        .attr("x2", function(d) { return xScale(d["feature"])+ glyphCellWidth * 5; })
+        .attr("y1", glyphCellHeight/2)
+        .attr("y2", glyphCellHeight/2)
+        .style("stroke", "lightgrey")
+        .style("stroke-width", 1);
+
+    // render the rule ranges
+    row.selectAll(".rule-fill")
+        .data(d => d["rules"])
+        .enter().append("rect")
+        .attr("x", function(d) { 
+            if (d["sign"] === "<=") {
+                return xScale(d["feature"]);
+            } else if (d["sign"] === ">") {
+                return xScale(d["feature"]) + widthScale[d["feature"]](d["threshold"])
+            } else {
+                return xScale(d["feature"]) + widthScale[d["feature"]](d["threshold0"])
+            }
+        })
+        .attr("width", function(d) {
+            if (d["sign"] === "<=") {
+                return widthScale[d["feature"]](d["threshold"]);
+            } else if (d["sign"] === ">"){
+                return rectWidth - widthScale[d["feature"]](d["threshold"]);
+            } else if (d["sign"] === "range") {
+                return (widthScale[d["feature"]](d["threshold1"]-d["threshold0"]))
+            }
+        })
+        .attr("y",  0)
+        .attr("height", glyphCellHeight)
+        .attr("fill", rule => {
+            let left, right;
+            if (rule['sign'] == 'range') {
+                left = rule['threshold0'];
+                right = rule['threshold1'];
+            } else if (rule['sign'] == '<=') {
+                left = real_min[rule['feature']];
+                right = rule['threshold'];
+            } else if (rule['sign'] == '>') {
+                left = rule['threshold'];
+                right = real_max[rule['feature']];
+            } else {
+                console.log('invalid rule');
+            }
+            left = left.toFixed(1);
+            right = right.toFixed(1);
+            let id = `range-${rule['feature']}-${left}-${right}`
+            id = id.replace(/\./g, '_');
+            return `url(#linear-gradient-${id})`
+        })
+    render_size_circle(rule_svg, listData);
 }
 
 function render_data_table() {
