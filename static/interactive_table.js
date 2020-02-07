@@ -1,5 +1,5 @@
-let margin = {top: 5, right: 5, bottom: 20, left: 10},
-    column_height = 120,
+let margin = {top: 0, right: 50, bottom: 5, left: 10},
+    column_height = 80,
     width = 860 - margin.right - margin.left,
     height,
     // height = 300 - margin.top - margin.bottom
@@ -46,7 +46,7 @@ let barHeight = (rectHeight - rectMarginTop - rectMarginBottom) / 2;
 
 let c = document.getElementById("myCanvas");
 let ctx = c.getContext("2d");
-ctx.font = '12 sans-serif';
+ctx.font = '10px sans-serif';
 
 let selected_range = [];
 let rule_attr_ranges = [];
@@ -66,6 +66,8 @@ let i = 0,
     node_info,
     max_depth,
     target_names;
+
+let present_rules;
 
 let RULE_MODE = GRADIENT_RULE_VIS;
 
@@ -105,6 +107,8 @@ function loadData() {
             tot_data = file1['data'].length;
             node_info = file4['node_info_arr'];
             max_depth = file4['max_depth'];
+
+            present_rules = listData;
 
             // adjust width and height
             if (RULE_MODE === MEDIAN_VAL_VIS) {
@@ -163,12 +167,14 @@ function loadData() {
             d3.select("#rule-num")
                 .text(listData.length);
 
+            let col_order = column_order_by_feat_freq(listData);
+
             switch (RULE_MODE) {
                 case BAND_RULE_VIS:
                     generate_band_bars(listData);
                     break;
                 case GRADIENT_RULE_VIS:
-                    generate_gradient_bars(listData);
+                    generate_gradient_bars(listData, col_order);
                     break;
                 case MEDIAN_VAL_VIS:
                     generate_value_cells(listData);
@@ -220,19 +226,21 @@ function render_feature_names_and_grid() {
     let column = column_svg.selectAll(".column").data(attrs)
         .enter().append("g")
         .attr("class", "column")
-        .attr("transform", function(d, i) { return `translate(${xScale(i)}, 
+        .attr("id", (d, i) => `col-title-${i}`)
+        .attr("transform", function(d, i) { 
+            return `translate(${xScale(col_order[i])}, 
             ${column_height+yScale(0)-font_size*2})rotate(330)`; });
 
     column.append("text")
         .attr("x", 6)
-        .attr("y", yScale.bandwidth() / 1.5)
+        .attr("y", yScale.bandwidth() / 1.5 - 5)
         .attr("dy", ".32em")
         .attr("text-anchor", "start")
         .text((d) => {
             let textLength = ctx.measureText(d).width;
             let text = d;
             let txt = d;
-            while (textLength > column_height) {
+            while (textLength > column_height * 2 - 50) {
                 text = text.slice(0, -1);
                 textLength = ctx.measureText(text+'...').width;
                 txt = text+'...';
@@ -287,21 +295,26 @@ function render_feature_names_and_grid() {
 }
 
 function render_slider() {
-    
+    let max_support = d3.sum(node_info[0]['value']);
+    filter_threshold['support'] = [0, max_support];
+
     let slider_support = d3
         .sliderHorizontal()
         .min(0)
-        .max(100)
-        .marks([0,20,40,60,80,100])
+        .max(max_support)
+        .tickValues([0, Math.floor(max_support/5), 
+            Math.floor(max_support/5)*2, Math.floor(max_support/5)*3,
+            Math.floor(max_support/5)*4, max_support])
+        .tickFormat(d3.format('0d'))
         .step(1)
-        .width(overviewWidth*.9)
-        .default([0, 100])
+        .width(overviewWidth)
+        .default([0, max_support])
         .fill('#2196f3')
         .on('onchange', val => {
             // change the text
-            d3.select('#support-text').text(`Support: ${val.map(d => d3.format('.2%')(d/100)).join('-')}`);
+            d3.select('#support-text').text(`Support: ${val.map(d => d3.format('0d')(d)).join('-')} (tot: ${max_support})`);
             // filter the nodes
-            filter_threshold['support'] = [+val[0]/100, +val[1]/100];
+            filter_threshold['support'] = [+val[0], +val[1]];
             new_nodes = filter_nodes(node_info,);
             update_summary(new_nodes);
 
@@ -309,8 +322,8 @@ function render_slider() {
  
     d3.select('#slider-support')
         .append('svg')
-        .attr('width', overviewWidth)
-        .attr('height', 45)
+        .attr('width', overviewWidth * 1.2)
+        .attr('height', 50)
         .append('g')
         .attr('transform', 'translate(15,10)')
         .call(slider_support);
@@ -320,9 +333,8 @@ function render_slider() {
         .sliderHorizontal()
         .min(0)
         .max(100)
-        .marks([0,20,40,60,80,100])
         .step(1)
-        .width(overviewWidth*.9)
+        .width(overviewWidth)
         .default([0, 100])
         .fill('#2196f3')
         .on('onchange', val => {
@@ -337,8 +349,8 @@ function render_slider() {
  
     d3.select('#slider-fidelity')
         .append('svg')
-        .attr('width', overviewWidth)
-        .attr('height', 45)
+        .attr('width', overviewWidth*1.2)
+        .attr('height', 50)
         .append('g')
         .attr('transform', 'translate(15,10)')
         .call(slider_fidelity);
@@ -347,9 +359,8 @@ function render_slider() {
         .sliderHorizontal()
         .min(0)
         .max(100)
-        .marks([0,20,40,60,80,100])
         .step(1)
-        .width(overviewWidth*.9)
+        .width(overviewWidth)
         .default([0, 100])
         .fill('#2196f3')
         .on('onchange', val => {
@@ -364,11 +375,40 @@ function render_slider() {
  
     d3.select('#slider-accuracy')
         .append('svg')
-        .attr('width', overviewWidth)
-        .attr('height', 45)
+        .attr('width', overviewWidth*1.2)
+        .attr('height', 50)
         .append('g')
         .attr('transform', 'translate(15,10)')
         .call(slider_accuracy);
+
+    filter_threshold['num_feat'] = [0, attrs.length];
+    let slider_feat = d3
+        .sliderHorizontal()
+        .min(0)
+        .max(attrs.length)
+        .step(1)
+        .width(overviewWidth)
+        .default([0, 100])
+        .fill('#2196f3')
+        .on('onchange', val => {
+            // change the text
+            d3.select('#feat-text').text(`#Feature: ${val.map(d => d3.format('0d')(d)).join('-')}`);
+            // filter the nodes
+            filter_threshold['num_feat'] = [+val[0], +val[1]];
+            // depth is used when num_feat is not defined
+            filter_threshold['depth'] = [+val[0], +val[1]];
+            new_nodes = filter_nodes(node_info,);
+            update_summary(new_nodes);
+
+        });
+ 
+    d3.select('#slider-feat')
+        .append('svg')
+        .attr('width', overviewWidth*1.2)
+        .attr('height', 50)
+        .append('g')
+        .attr('transform', 'translate(15,10)')
+        .call(slider_feat);
 }
 
 function update_rules() {
@@ -411,10 +451,8 @@ function prune_nodes() {
 }
 
 function render_feature_ranges() {
-    console.log("1");
     let feat_selection = d3.select('#feature-ranges');
-    ctx.font= "15 sans-serif";
-    console.log("2");
+    ctx.font= "12 sans-serif";
 
     attrs.forEach((d, i) => {
         let feat_r = feat_selection.append('div')
@@ -436,7 +474,7 @@ function render_feature_ranges() {
             .attr('class', 'rangeband')
             .attr('width', 5 * (2 * glyphCellWidth + 2))
             .attr('height', glyphCellHeight + 2 * 2)
-            .style("margin-left", 10);
+            .style("margin-left", "10px");
         let range_clicked = []
         d3.range(0,5).forEach((idx) => {
             range_clicked.push(0);
@@ -714,8 +752,14 @@ function generate_gradient_bars(listData) {
         .data(function(d) { return d["rules"]; })
         .enter().append("line")
         .attr("class", "middle")
-        .attr("x1", function(d) { return xScale(d["feature"]) ; })
-        .attr("x2", function(d) { return xScale(d["feature"])+ glyphCellWidth * 5; })
+        .attr("x1", function(d) { 
+            return xScale(col_order[d["feature"]]);
+            // return xScale(d["feature"]); 
+        })
+        .attr("x2", function(d) { 
+            return xScale(col_order[d["feature"]])+ glyphCellWidth * 5;
+            // return xScale(d["feature"])+ glyphCellWidth * 5; 
+        })
         .attr("y1", glyphCellHeight/2)
         .attr("y2", glyphCellHeight/2)
         .style("stroke", "lightgrey")
@@ -726,12 +770,13 @@ function generate_gradient_bars(listData) {
         .data(d => d["rules"])
         .enter().append("rect")
         .attr("x", function(d) { 
+            let xOffset = xScale(col_order[d["feature"]])
             if (d["sign"] === "<=") {
-                return xScale(d["feature"]);
+                return xOffset;
             } else if (d["sign"] === ">") {
-                return xScale(d["feature"]) + widthScale[d["feature"]](d["threshold"])
+                return xOffset + widthScale[d["feature"]](d["threshold"])
             } else {
-                return xScale(d["feature"]) + widthScale[d["feature"]](d["threshold0"])
+                return xOffset + widthScale[d["feature"]](d["threshold0"])
             }
         })
         .attr("width", function(d) {
@@ -747,12 +792,31 @@ function generate_gradient_bars(listData) {
         .attr("height", glyphCellHeight)
         .attr("fill", d => `url(#linear-gradient-${d.id})`)
 
+    // add click event to row
+    d3.select("#rule_svg")
+        .on("click", function() {
+            ypos = d3.mouse(d3.select("#rule_svg").node())[1];
+            rule_idx = Math.floor((ypos - yScale(0)) / (yScale(1)-yScale(0)));
+            d3.select("#node-"+listData[rule_idx]['node_id'])
+                .attr('stroke', "black")
+        })
+
     render_size_circle(stat_svg, listData);
     // render_confusion_bars(stat_svg);
 
 }
 
-function update_rule_rendering(listData) {
+function update_column_rendering() {
+    for (let i = 0; i<attrs.length; i++) {
+        d3.select(`#col-title-${i}`)
+            .attr("transform", ()=> { 
+                return `translate(${xScale(col_order[i])}, 
+                ${column_height+yScale(0)-font_size*2})rotate(330)`; 
+            });    
+    }
+}
+
+function update_rule_rendering(listData, col_order, row_order) {
     // remove the column lines and the outdated rules
     rule_svg.selectAll(".grid-col").remove();
     rule_svg.selectAll(".grid-row").remove();
@@ -789,11 +853,21 @@ function update_rule_rendering(listData) {
 
     // render the horizontal_line
     row.selectAll(".middle")
-        .data(function(d) { return d["rules"]; })
+        .data(function(d, i) { 
+            if (row_order !== undefined) {
+                return listData[row_order[i]]['rules'];
+            } else {
+                return d["rules"]; 
+            }
+        })
         .enter().append("line")
         .attr("class", "middle")
-        .attr("x1", function(d) { return xScale(d["feature"]) ; })
-        .attr("x2", function(d) { return xScale(d["feature"])+ glyphCellWidth * 5; })
+        .attr("x1", function(d) { 
+            return xScale(col_order[d["feature"]]) ; 
+        })
+        .attr("x2", function(d) { 
+            return xScale(col_order[d["feature"]])+ glyphCellWidth * 5; 
+        })
         .attr("y1", glyphCellHeight/2)
         .attr("y2", glyphCellHeight/2)
         .style("stroke", "lightgrey")
@@ -804,12 +878,13 @@ function update_rule_rendering(listData) {
         .data(d => d["rules"])
         .enter().append("rect")
         .attr("x", function(d) { 
+            let xoffset = xScale(col_order[d["feature"]])
             if (d["sign"] === "<=") {
-                return xScale(d["feature"]);
+                return xoffset;
             } else if (d["sign"] === ">") {
-                return xScale(d["feature"]) + widthScale[d["feature"]](d["threshold"])
+                return xoffset + widthScale[d["feature"]](d["threshold"])
             } else {
-                return xScale(d["feature"]) + widthScale[d["feature"]](d["threshold0"])
+                return xoffset + widthScale[d["feature"]](d["threshold0"])
             }
         })
         .attr("width", function(d) {
@@ -844,6 +919,8 @@ function update_rule_rendering(listData) {
             return `url(#linear-gradient-${id})`
         })
     render_size_circle(stat_svg, listData);
+    // render_confusion_bars(stat_svg);
+
 }
 
 function render_data_table() {

@@ -4,6 +4,7 @@
     <meta charset="utf-8">
 
     <title>Bar Table</title>
+<!--     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
 
     <style>
       div {
@@ -11,13 +12,17 @@
       }
 
       text{
-          font-family: sans-serif;
-          fill: "black";
-       }
+        font-family: sans-serif;
+        font-size: 12px;  
+      }
 
-       td {
-         width: 20px;
-       }
+      span{
+        font-family: sans-serif;
+      }
+
+      td {
+       width: 20px;
+      }
 
       input {
         border: 0;
@@ -35,8 +40,12 @@
           border: 1px solid lightgrey;
        }
 
-	     .legend text {
+	     /*.legend text {
           font: 12px Courier New;
+        }*/
+
+        .column {
+          font-size: 12px;
         }
 
         .grid-row line {
@@ -71,7 +80,7 @@
 
         .title {
           margin-top: 5px;
-          margin-bottom: 5px;
+          margin-bottom: 10px;
           font-weight: bold;
           font-size: 12px;
         }
@@ -81,15 +90,6 @@
   </head>
 
   <body>
-    <svg width='0' height='0'>
-      <defs>
-        <pattern id="pattern-stripe" 
-          width="4" height="4" 
-          patternUnits="userSpaceOnUse">
-          <path d='M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2' stroke='#000000' stroke-width="1"></path>
-        </pattern>    
-      </defs> 
-    </svg>
     <div class="flex-row">
       <!-- Control view -->
       <div id="controlview" class="flex-col" 
@@ -134,17 +134,17 @@
             <span>Filters</span>
           </div>
 
-          <p id="support-text" style="margin-bottom: 1px">Support: 0-100%</p>
+          <p id="support-text" style="margin-bottom: 1px">Support:</p>
           <div id="slider-support"></div>
 
-          <p id="fidelity-text" style="margin-bottom: 1px">Fidelity: 0-100%</p>
+          <p id="fidelity-text" style="margin-bottom: 1px">Fidelity:</p>
           <div id="slider-fidelity"></div>
 
-          <p id="accuracy-text" style="margin-bottom: 1px">Accuracy: 0-100%</p>
+          <p id="accuracy-text" style="margin-bottom: 1px">Accuracy:</p>
           <div id="slider-accuracy"></div>
 
-          <p id="number-text" style="margin-bottom: 1px">#Feature < 20</p>
-          <div id="slider-number"></div>
+          <p id="feat-text" style="margin-bottom: 1px">#Feature:</p>
+          <div id="slider-feat"></div>
           
           <div class="flex-row" style="justify-content: space-around;">
             <button id="update" onclick="update_rules()">update rules</button>
@@ -170,18 +170,21 @@
         height: 650px">
         <!-- Rules -->
         <div class="flex-col">
-          <div title>Legend</div>
+          <div title>
+            <span>Legend</span>
+          </div>
           <svg id="legend1"></svg>
         </div>
-        <div class='flex-row' style="justify-content: flex-start;">
+        <div class='flex-row' style="justify-content: flex-start; margin-bottom: 5px">
           <div class="title" style="margin-right: 20px">
             <span>Number of Rules: </span>
             <span id="rule-num" style="font-weight: normal;"></span>
           </div>
           <div class='flex-row' style="margin-right: 20px">
             <div class="title"><span>Sorting Features by: </span></div>
-            <select>
-              <option>Feature Frequency</option>
+            <select id="col_sort">
+              <!-- <option value="none">None</option> -->
+              <option value="feat_freq">Feature Frequency</option>
             </select>
           </div>
 
@@ -196,6 +199,9 @@
               <option>Fedelity</option>
               <option>Dissimilarity</option>
             </select>
+          </div>
+          <div>
+            <button>reset</button>             
           </div>
         </div>
         <div class="flex-col">
@@ -261,6 +267,7 @@
   <script src="/static/legend.js"></script>
   <script src="/static/util.js"></script>
   <script src="/static/summary_view.js"></script>
+  <script src="/static/rule_view_controller.js"></script>
   <script src="/static/interactive_table.js"></script>
   </body>
 </html>

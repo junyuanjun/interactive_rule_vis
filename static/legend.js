@@ -1,4 +1,4 @@
-var legendHeight = 50, legendWidth = 600;
+var legendHeight = 40, legendWidth = 600;
 
 var colors = ["steelblue", "#fb9a99"];
 var conf_colors = ['#2887a1', '#cf597e'];
