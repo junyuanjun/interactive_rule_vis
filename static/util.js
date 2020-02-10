@@ -1,19 +1,21 @@
 filter_threshold = {
-	'support': [0, 1],
-	'fidelity': [0, 1],
+	'support': 20,
+	'fidelity': 0.8,
 	'accuracy': [0, 1],
   'num_feat': [0, 20],
   'depth': [0, 20],
 }
+
+leaf_nodes = [];
 
 
 function filter_nodes(node_info) {
 	let new_nodes = [];
 
 	node_info.forEach(d => {
-		if (d['support'] >= filter_threshold['support'][0] && d['support'] <= filter_threshold['support'][1]
+		if (d3.sum(d['value']) >= filter_threshold['support']
+      && d['fidelity'] >= filter_threshold['fidelity']
 			&& d['accuracy'] >= filter_threshold['accuracy'][0] && d['accuracy'] <= filter_threshold['accuracy'][1]
-			&& d['fidelity'] >= filter_threshold['fidelity'][0] && d['fidelity'] <= filter_threshold['fidelity'][1]
       && d['num_feat'] >= filter_threshold['num_feat'][0] && d['num_feat'] <= filter_threshold['num_feat'][1]
     ) {
 			new_nodes.push(d);
@@ -33,8 +35,14 @@ function find_leaf_rules(new_nodes, node_info, listData) {
 		let rules = leaf_rules['rule_lists'];
     present_rules = rules;
     col_order = column_order_by_feat_freq(rules);
+    leaf_nodes = []
+    rules.forEach(d => leaf_nodes.push(d['node_id']))
     update_column_rendering();
-		update_rule_rendering(rules, col_order); 
+		update_rule_rendering(rules, col_order);
+
+    if (!param_set) {
+      update_summary(new_nodes)
+    }
 	})
 }
 

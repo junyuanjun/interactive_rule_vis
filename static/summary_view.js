@@ -11,6 +11,7 @@ let summary_x,
 let summary_color;
 let stop_colors = ['#fc8d59', '#ffffbf', '#91bfdb'];
 stop_colors = ['#d7191c', '#ffffbf', '#2c7bb6'];
+stop_colors = ['#e66101', '#f3eeea', '#7b3294', ]
 
 let view_margin = {left:5, right:5, top:max_r, bottom:20};
 
@@ -69,7 +70,9 @@ function render_summary(node_info, max_depth) {
     	.attr('cx', d => summary_x(d['fidelity']))
     	.attr('cy', d => summary_y(d['depth']))
     	.attr('r', d => summary_size(d['support']+(1e-8)))
-    	.attr('stroke', 'none')
+    	.attr("stroke", d => {
+        return leaf_nodes[d['node_id']] !== undefined ? 'black' : 'none';
+      })
     	.attr('fill', d => summary_color(d['accuracy']))
     	.attr('fill-opacity', .8)
       .append('title')
@@ -130,6 +133,9 @@ function update_summary(node_info, ) {
       .attr('stroke', 'none')
       .attr('fill', d => summary_color(d['accuracy']))
       .attr('fill-opacity', .8)
+      .attr("stroke", d => {
+        return leaf_nodes[d['node_id']] !== undefined ? 'black' : 'none';
+      })
       .append('title')
       .text(d=>`Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};
         \nFidelity: ${d['fidelity']};\nAccuracy: ${d['accuracy']}`);

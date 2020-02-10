@@ -74,7 +74,7 @@ class Forest():
 				})
 		return {
 			"label": int(np.argmax(self.node_info[node_id]['value'])),
-			"node": node_id,
+			"node_id": node_id,
             "rules": rules,
 		}
 					

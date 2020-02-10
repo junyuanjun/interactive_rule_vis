@@ -52,6 +52,8 @@ let selected_range = [];
 let rule_attr_ranges = [];
 let rules_to_keep = [];
 
+let param_set = false;
+
 let i = 0,
     duration = 750,
     root,
@@ -109,6 +111,7 @@ function loadData() {
             max_depth = file4['max_depth'];
 
             present_rules = listData;
+            summary_nodes = filter_nodes(node_info);
 
             // adjust width and height
             if (RULE_MODE === MEDIAN_VAL_VIS) {
@@ -131,7 +134,7 @@ function loadData() {
             yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
 
             // scale for render the support bar
-            supportScale = d3.scaleLinear([0, d3.max(support)], [5, supportRectWidth]);
+            supportScale = d3.scaleLinear([0, 100], [1, supportRectWidth]);
 
             // scale for filling rule ranges
             // rectHeight = yScale.bandwidth() - rectMarginTop - rectMarginBottom;
@@ -182,8 +185,8 @@ function loadData() {
             }
 
             render_legend_label("#legend1");
-
-            render_summary(node_info, max_depth);
+            find_leaf_rules(summary_nodes, node_info, listData);
+            render_summary(summary_nodes, max_depth);
     });
 }
 
@@ -261,28 +264,6 @@ function render_feature_names_and_grid() {
         .attr("x2", width-xScale.bandwidth())
         .style("stroke", gridColor);
 
-    // svg.selectAll(".rule-num")
-    //     .data(yScale.domain().slice(0, yScale.domain().length-1))
-    //     .enter().append("g")
-    //     .attr("class", "rule-num")
-    //     .attr("transform", function(d, i) { return `translate(-10, ${yScale(i)+font_size})`; })
-    //     .append("text")
-    //     .attr("x", 0)
-    //     .text((d, i) => "R"+(i+1))
-    //     .style("text-anchor", "end")
-    //     .style("stroke", "black")
-    //     .style("font-size", "16px")
-    //     .style("stroke-width", "0.5px")
-    //     .append('title')
-    //     .text((d, i)=>{
-    //         let str = "If "
-    //         listData[i]['rules'].forEach((cond) => {
-    //             str += attrs[cond['feature']] + " " + cond['sign'] + " " + cond['threshold'] + " AND ";
-    //         })
-    //         str = str.substring(0, str.length-4) + " THEN " + target_names[listData[i]['label']];
-    //         return str;
-    //     });
-
     rule_svg.selectAll(".grid-col")
         .data(xScale.domain())
         .enter().append("g")
@@ -295,66 +276,6 @@ function render_feature_names_and_grid() {
 }
 
 function render_slider() {
-    let max_support = d3.sum(node_info[0]['value']);
-    filter_threshold['support'] = [0, max_support];
-
-    let slider_support = d3
-        .sliderHorizontal()
-        .min(0)
-        .max(max_support)
-        .tickValues([0, Math.floor(max_support/5), 
-            Math.floor(max_support/5)*2, Math.floor(max_support/5)*3,
-            Math.floor(max_support/5)*4, max_support])
-        .tickFormat(d3.format('0d'))
-        .step(1)
-        .width(overviewWidth)
-        .default([0, max_support])
-        .fill('#2196f3')
-        .on('onchange', val => {
-            // change the text
-            d3.select('#support-text').text(`Support: ${val.map(d => d3.format('0d')(d)).join('-')} (tot: ${max_support})`);
-            // filter the nodes
-            filter_threshold['support'] = [+val[0], +val[1]];
-            new_nodes = filter_nodes(node_info,);
-            update_summary(new_nodes);
-
-        });
- 
-    d3.select('#slider-support')
-        .append('svg')
-        .attr('width', overviewWidth * 1.2)
-        .attr('height', 50)
-        .append('g')
-        .attr('transform', 'translate(15,10)')
-        .call(slider_support);
-
-
-    let slider_fidelity = d3
-        .sliderHorizontal()
-        .min(0)
-        .max(100)
-        .step(1)
-        .width(overviewWidth)
-        .default([0, 100])
-        .fill('#2196f3')
-        .on('onchange', val => {
-            // change the text
-            d3.select('#fidelity-text').text(`Fidelity: ${val.map(d => d3.format('.2%')(d/100)).join('-')}`);
-            // filter the nodes
-            filter_threshold['fidelity'] = [+val[0]/100, +val[1]/100];
-            new_nodes = filter_nodes(node_info,);
-            update_summary(new_nodes);
-
-        });
- 
-    d3.select('#slider-fidelity')
-        .append('svg')
-        .attr('width', overviewWidth*1.2)
-        .attr('height', 50)
-        .append('g')
-        .attr('transform', 'translate(15,10)')
-        .call(slider_fidelity);
-
     let slider_accuracy = d3
         .sliderHorizontal()
         .min(0)
@@ -450,64 +371,13 @@ function prune_nodes() {
     let rules = find_leaf_rules(new_nodes, node_info, listData);
 }
 
-function render_feature_ranges() {
-    let feat_selection = d3.select('#feature-ranges');
-    ctx.font= "12 sans-serif";
-
-    attrs.forEach((d, i) => {
-        let feat_r = feat_selection.append('div')
-            .attr('class', 'range')
-            .style('margin', '5px')
-        let textLength = ctx.measureText(d).width;
-        let text = d;
-        let txt = d;
-        while (textLength > 90) {
-            text = text.slice(0, -1);
-            textLength = ctx.measureText(text+'...').width;
-            txt = text+'...';
-        }
-        feat_r.append('div')
-            .append('span')
-            .text(txt);
-
-        let band = feat_r.append('svg')
-            .attr('class', 'rangeband')
-            .attr('width', 5 * (2 * glyphCellWidth + 2))
-            .attr('height', glyphCellHeight + 2 * 2)
-            .style("margin-left", "10px");
-        let range_clicked = []
-        d3.range(0,5).forEach((idx) => {
-            range_clicked.push(0);
-            band.append('rect')
-                .attr('id', `range-${i}-${idx}`)
-                .style('x', idx * (glyphCellWidth * 2 + 2))
-                .style('y', 2)
-                .attr('width', glyphCellWidth * 2)
-                .attr('height', glyphCellHeight)
-                .style('fill', colorDiv5[idx])
-                .style('stroke', borderColor[0])
-                .style('stroke-width', 2)
-                .on('click', function() {
-                    let attr_idx = this.id.split('-')[1];
-                    let range_idx = this.id.split('-')[2];
-                    selected_range[attr_idx][range_idx] = 1 - selected_range[attr_idx][range_idx];
-                    this.style.stroke = borderColor[selected_range[attr_idx][range_idx]];
-
-                    // update the rule view 
-                    
-                });
-        })
-        selected_range.push(range_clicked);
-    });
-
-}
+function render_size_circle(listData) {
+    stat_svg.selectAll(".label_circle").remove();
+    height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
+    stat_svg.attr("height", height + margin.top + margin.bottom);
 
 
-
-function render_size_circle(svg, listData) {
-    svg.selectAll(".label_circle").remove();
-
-    let circles = svg.selectAll(".label_circle")
+    let circles = stat_svg.selectAll(".label_circle")
         .data(listData)
         .enter()
         .append("circle")
@@ -522,156 +392,45 @@ function render_size_circle(svg, listData) {
         .attr("stroke", "none")
 }
 
-function render_confusion_bars(svg) {
-    svg.select('.support').remove();
+function render_confusion_bars(listData) {
+    stat_svg.select('.support').remove();
 
-    let res = svg.append('g')
+    stat_svg.attr('height', `${height}px`)
+
+    let res = stat_svg.append('g')
         .attr('class', 'support')
-    // suppose we have the confusion matrix for each rule
-    // tp, fp, tn, fn, support, confidence
-    confusion_mat = [];
-    for (let i = 0; i < support.length; i++) {
-        res.append('g')
-            .selectAll('rect')
-            .data(class_support[i]).enter()
-            .append('rect')
-            .attr('x', (d, idx)=> {
-                let offset = 0;
-                for (let j = 0; j < idx; j++) {
-                    offset += class_support[i][j];
-                }
-                return supportScale(offset) + 10;
-            })
-            .attr('y', yScale(i))
-            .attr('width', d => supportScale(d))
-            .attr('height', rectHeight+rectMarginTop+rectMarginBottom)
-            .attr('stroke', 'black')
-            .attr('fill', (d,idx) => colorCate[idx])
-            .append('title')
-            .text(d => (d/support[i]*100).toFixed(1)+"%");
 
-    }
-}
-
-function generate_value_cells(listData) {
-    render_feature_names_and_grid();
-    
-    // get the median values
-
-
-    // render rectangles
-    let row = rule_svg.selectAll(".row")
+    // covered instances of label 0
+    res.selectAll(".label0")
         .data(listData)
-        .enter().append("g")
-        .attr("class", "row")
-        .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; });
-
-    row.selectAll(".rule-fill")
-        .data(d => d['rules'])
         .enter()
         .append("rect")
-        .attr("x", (d) => { 
-           return  xScale(d['feature']);
+        .attr("class", "label0")
+        .attr("x", supportScale(0))
+        .attr("y", (d, i) => {
+            return yScale(i) + yScale.bandwidth()/2
         })
-        .attr('class', 'rule-fill')
-        .attr("width", glyphCellWidth)
-        .attr("y",  0)
+        .attr("width", d => supportScale(node_info[d['node_id']]['value'][0]))
         .attr("height", glyphCellHeight)
-        .attr("fill", d => {
-            // TODO: use real median, preprocessing
-            let min = real_min[d['feature']];
-            let max = real_max[d['feature']];
-            if (d['sign'] == '<=') {
-                max = d['threshold'];
-            } else if (d['sign'] == '>') {
-                min = d['threshold']
-            } else {
-                min = d['threshold0'];
-                max = d['threshold1'];
-            }
-            let med = (min + max) / 2;
-            return colorScale[d['feature']](med);
-        })
+        .attr("fill", d => colorCate[0])
+        .attr("stroke", "black")
 
-    render_confusion_bars(stat_svg);
-
-}
-
-function generate_band_bars(listData) {
-    render_feature_names_and_grid(rule_svg);
-
-    let row = rule_svg.selectAll(".row")
+    // covered instances of label 1
+    res.selectAll(".label1")
         .data(listData)
-        .enter().append("g")
-        .attr("class", "row")
-        .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; });
-
-    // render the horizontal_line
-    row.selectAll(".middle")
-        .data(function(d) { return d["rules"]; })
-        .enter().append("line")
-        .attr("class", "middle")
-        .attr("x1", function(d) { return xScale(d["feature"]) ; })
-        .attr("x2", function(d) { return xScale(d["feature"])+ glyphCellWidth * 5; })
-        .attr("y1", glyphCellHeight/2)
-        .attr("y2", glyphCellHeight/2)
-        .style("stroke", "lightgrey")
-        .style("stroke-width", 1);
-
-    // render the rule ranges
-    row.selectAll(".rule-fill")
-        .data(function(d) { 
-            let arr = [];
-            d['rules'].forEach((rule, i) => {
-                let idx = rule['feature'];
-                if (rule['sign'] == '<=') {
-                    arr.push({'feature': idx, 'coverRange': 0})
-                    for (let j = 0; j < valueStops[idx].length; j++) {
-                        if (rule['threshold'] > valueStops[idx][j]) {
-                            arr.push({'feature': idx, 'coverRange': j});
-                        } else break;
-                    }
-                } else if (rule['sign'] == '>'){
-                    arr.push({'feature': idx, 'coverRange': valueStops[idx].length})
-                    for (let j = valueStops[idx].length-1; j >= 0; j--) {
-                        
-                        if (rule['threshold'] < valueStops[idx][j]) {
-                            arr.push({'feature': idx, 'coverRange': j});
-                        } else break;
-                    }
-                } else {
-                    let range_start = 0;
-                    while (rule['threshold0'] > valueStops[idx][range_start]
-                        && range_start < 4) {
-                        range_start++;
-                    }
-
-                    let range_end = valueStops[idx].length;
-                     while (rule['threshold1'] < valueStops[idx][range_end]
-                        && range_start > 0) {
-                        range_start--;
-                    }
-
-                    for (let j = range_start; j < range_end; j++) {
-                        arr.push({'feature': idx, 'coverRange': j});
-                    }
-                }
-            });
-            return arr;
-        })
         .enter()
         .append("rect")
-        .attr("x", (d) => { 
-           return  xScale(d['feature']) + d['coverRange'] * glyphCellWidth;
+        .attr("class", "label1")
+        .attr("x", d => supportScale(node_info[d['node_id']]['value'][0]))
+        .attr("y", (d, i) => {
+            return yScale(i) + yScale.bandwidth()/2
         })
-        .attr("width", glyphCellWidth)
-        .attr("y",  0)
+        .attr("width", d => supportScale(node_info[d['node_id']]['value'][1]))
         .attr("height", glyphCellHeight)
-        .attr("fill", (d) => colorDiv5[d['coverRange']])
-
-    render_confusion_bars(stat_svg);
-    // render_data_table();
+        .attr("fill", d => colorCate[1])
+        .attr("stroke", "black")
 }
+
 
 function generate_gradient_bars(listData) {
     render_feature_names_and_grid();
@@ -740,69 +499,69 @@ function generate_gradient_bars(listData) {
         return colorScale[d.feature]( +d.end );
       });
 
-    // render by rows
-    let row = rule_svg.selectAll(".row")
-        .data(listData)
-        .enter().append("g")
-        .attr("class", "row")
-        .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; });
+    // // render by rows
+    // let row = rule_svg.selectAll(".row")
+    //     .data(listData)
+    //     .enter().append("g")
+    //     .attr("class", "row")
+    //     .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; });
 
-    // render the horizontal_line
-    row.selectAll(".middle")
-        .data(function(d) { return d["rules"]; })
-        .enter().append("line")
-        .attr("class", "middle")
-        .attr("x1", function(d) { 
-            return xScale(col_order[d["feature"]]);
-            // return xScale(d["feature"]); 
-        })
-        .attr("x2", function(d) { 
-            return xScale(col_order[d["feature"]])+ glyphCellWidth * 5;
-            // return xScale(d["feature"])+ glyphCellWidth * 5; 
-        })
-        .attr("y1", glyphCellHeight/2)
-        .attr("y2", glyphCellHeight/2)
-        .style("stroke", "lightgrey")
-        .style("stroke-width", 1);
+    // // render the horizontal_line
+    // row.selectAll(".middle")
+    //     .data(function(d) { return d["rules"]; })
+    //     .enter().append("line")
+    //     .attr("class", "middle")
+    //     .attr("x1", function(d) { 
+    //         return xScale(col_order[d["feature"]]);
+    //         // return xScale(d["feature"]); 
+    //     })
+    //     .attr("x2", function(d) { 
+    //         return xScale(col_order[d["feature"]])+ glyphCellWidth * 5;
+    //         // return xScale(d["feature"])+ glyphCellWidth * 5; 
+    //     })
+    //     .attr("y1", glyphCellHeight/2)
+    //     .attr("y2", glyphCellHeight/2)
+    //     .style("stroke", "lightgrey")
+    //     .style("stroke-width", 1);
 
-    // render the rule ranges
-    row.selectAll(".rule-fill")
-        .data(d => d["rules"])
-        .enter().append("rect")
-        .attr("x", function(d) { 
-            let xOffset = xScale(col_order[d["feature"]])
-            if (d["sign"] === "<=") {
-                return xOffset;
-            } else if (d["sign"] === ">") {
-                return xOffset + widthScale[d["feature"]](d["threshold"])
-            } else {
-                return xOffset + widthScale[d["feature"]](d["threshold0"])
-            }
-        })
-        .attr("width", function(d) {
-            if (d["sign"] === "<=") {
-                return widthScale[d["feature"]](d["threshold"]);
-            } else if (d["sign"] === ">"){
-                return rectWidth - widthScale[d["feature"]](d["threshold"]);
-            } else if (d["sign"] === "range") {
-                return (widthScale[d["feature"]](d["threshold1"]) - widthScale[d["feature"]](d["threshold0"]))
-            }
-        })
-        .attr("y",  0)
-        .attr("height", glyphCellHeight)
-        .attr("fill", d => `url(#linear-gradient-${d.id})`)
+    // // render the rule ranges
+    // row.selectAll(".rule-fill")
+    //     .data(d => d["rules"])
+    //     .enter().append("rect")
+    //     .attr("x", function(d) { 
+    //         let xOffset = xScale(col_order[d["feature"]])
+    //         if (d["sign"] === "<=") {
+    //             return xOffset;
+    //         } else if (d["sign"] === ">") {
+    //             return xOffset + widthScale[d["feature"]](d["threshold"])
+    //         } else {
+    //             return xOffset + widthScale[d["feature"]](d["threshold0"])
+    //         }
+    //     })
+    //     .attr("width", function(d) {
+    //         if (d["sign"] === "<=") {
+    //             return widthScale[d["feature"]](d["threshold"]);
+    //         } else if (d["sign"] === ">"){
+    //             return rectWidth - widthScale[d["feature"]](d["threshold"]);
+    //         } else if (d["sign"] === "range") {
+    //             return (widthScale[d["feature"]](d["threshold1"]) - widthScale[d["feature"]](d["threshold0"]))
+    //         }
+    //     })
+    //     .attr("y",  0)
+    //     .attr("height", glyphCellHeight)
+    //     .attr("fill", d => `url(#linear-gradient-${d.id})`)
 
-    // add click event to row
-    d3.select("#rule_svg")
-        .on("click", function() {
-            ypos = d3.mouse(d3.select("#rule_svg").node())[1];
-            rule_idx = Math.floor((ypos - yScale(0)) / (yScale(1)-yScale(0)));
-            d3.select("#node-"+listData[rule_idx]['node_id'])
-                .attr('stroke', "black")
-        })
+    // // add click event to row
+    // d3.select("#rule_svg")
+    //     .on("click", function() {
+    //         ypos = d3.mouse(d3.select("#rule_svg").node())[1];
+    //         rule_idx = Math.floor((ypos - yScale(0)) / (yScale(1)-yScale(0)));
+    //         d3.select("#node-"+listData[rule_idx]['node_id'])
+    //             .attr('stroke', "black")
+    //     })
 
-    render_size_circle(stat_svg, listData);
-    // render_confusion_bars(stat_svg);
+    // render_size_circle(listData);
+    // render_confusion_bars(listData);
 
 }
 
@@ -918,8 +677,8 @@ function update_rule_rendering(listData, col_order, row_order) {
             id = id.replace(/\./g, '_');
             return `url(#linear-gradient-${id})`
         })
-    render_size_circle(stat_svg, listData);
-    // render_confusion_bars(stat_svg);
+    // render_size_circle(listData);
+    render_confusion_bars(listData);
 
 }
 
@@ -945,6 +704,7 @@ function render_data_table() {
 
 function main() {
     loadData();
+    param_set = true;
 }
 
 main();
