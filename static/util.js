@@ -1,4 +1,4 @@
-filter_threshold = {
+let filter_threshold = {
 	'support': 20,
 	'fidelity': 0.8,
 	'accuracy': [0, 1],
@@ -6,13 +6,13 @@ filter_threshold = {
   'depth': [0, 20],
 }
 
-leaf_nodes = [];
-
+let node2rule = {};
 
 function filter_nodes(node_info) {
 	let new_nodes = [];
 
-	node_info.forEach(d => {
+	Object.keys(node_info).forEach(idx => {
+    let d = node_info[idx];
 		if (d3.sum(d['value']) >= filter_threshold['support']
       && d['fidelity'] >= filter_threshold['fidelity']
 			&& d['accuracy'] >= filter_threshold['accuracy'][0] && d['accuracy'] <= filter_threshold['accuracy'][1]
@@ -35,8 +35,12 @@ function find_leaf_rules(new_nodes, node_info, listData) {
 		let rules = leaf_rules['rule_lists'];
     present_rules = rules;
     col_order = column_order_by_feat_freq(rules);
-    leaf_nodes = []
-    rules.forEach(d => leaf_nodes.push(d['node_id']))
+
+    // update node2rule pos
+    node2rule = {};
+    rules.forEach((d, idx) => {
+      node2rule[d['node_id']] = idx;
+    })
     update_column_rendering();
 		update_rule_rendering(rules, col_order);
 

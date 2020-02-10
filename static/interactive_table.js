@@ -134,7 +134,7 @@ function loadData() {
             yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
 
             // scale for render the support bar
-            supportScale = d3.scaleLinear([0, 100], [1, supportRectWidth]);
+            supportScale = d3.scaleLinear([0, 1000], [1, supportRectWidth]);
 
             // scale for filling rule ranges
             // rectHeight = yScale.bandwidth() - rectMarginTop - rectMarginBottom;
@@ -400,20 +400,36 @@ function render_confusion_bars(listData) {
     let res = stat_svg.append('g')
         .attr('class', 'support')
 
+    let circles = stat_svg.selectAll(".label_circle")
+        .data(listData)
+        .enter()
+        .append("circle")
+        .attr("class", "label_circle")
+        .attr("cx", xScale.bandwidth()/2)
+        .attr("cy", (d, i) => {
+            return yScale(i) + yScale.bandwidth()/2
+        })
+        // .attr("r", d => radiusScale(d["coverage"]))
+        .attr("r", 7)
+        .attr("fill", d => colorCate[d["label"]])
+        .attr("stroke", "none")
+
     // covered instances of label 0
     res.selectAll(".label0")
         .data(listData)
         .enter()
         .append("rect")
         .attr("class", "label0")
-        .attr("x", supportScale(0))
+        .attr("x", 10 + xScale.bandwidth()/2)
         .attr("y", (d, i) => {
-            return yScale(i) + yScale.bandwidth()/2
+            return yScale(i) + yScale.bandwidth()/4
         })
         .attr("width", d => supportScale(node_info[d['node_id']]['value'][0]))
         .attr("height", glyphCellHeight)
         .attr("fill", d => colorCate[0])
         .attr("stroke", "black")
+        .append('title')
+            .text(d => node_info[d['node_id']]['value'][0])
 
     // covered instances of label 1
     res.selectAll(".label1")
@@ -421,14 +437,16 @@ function render_confusion_bars(listData) {
         .enter()
         .append("rect")
         .attr("class", "label1")
-        .attr("x", d => supportScale(node_info[d['node_id']]['value'][0]))
+        .attr("x", d => 10 + xScale.bandwidth()/2 + supportScale(node_info[d['node_id']]['value'][0]))
         .attr("y", (d, i) => {
-            return yScale(i) + yScale.bandwidth()/2
+            return yScale(i) + yScale.bandwidth()/4
         })
         .attr("width", d => supportScale(node_info[d['node_id']]['value'][1]))
         .attr("height", glyphCellHeight)
         .attr("fill", d => colorCate[1])
         .attr("stroke", "black")
+        .append('title')
+        .text(d => node_info[d['node_id']]['value'][0])
 }
 
 

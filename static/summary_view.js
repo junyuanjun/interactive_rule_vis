@@ -15,10 +15,14 @@ stop_colors = ['#e66101', '#f3eeea', '#7b3294', ]
 
 let view_margin = {left:5, right:5, top:max_r, bottom:20};
 
+let clicked_summary_node_id = -1;
+
 function intialize_scales(max_depth) {
 	tree_height = max_depth * depth_height;
+  let min_support = filter_threshold['support'] / d3.sum(node_info[0]['value']);
+
 	summary_x = d3.scaleLinear()
-		.domain([0, 1])
+		.domain([filter_threshold['fidelity'], 1])
 		.range([view_margin.left, view_width]);
 
 	summary_y = d3.scaleLinear()
@@ -26,12 +30,8 @@ function intialize_scales(max_depth) {
 		.range([view_margin.top, tree_height]);
 
 	summary_size = d3.scaleLinear()
-		.domain([1e-8, 1])
-		.range([1.5, max_r]);
-
-	// summary_opacity = d3.scaleLinear()
-	// 	.domain([0, 1])
-	// 	.range([.2, 1]);
+		.domain([min_support, 1])
+		.range([2, max_r]);
 
 	summary_color = d3.scaleLinear()
 		.domain([0, .5, 1])
@@ -71,10 +71,13 @@ function render_summary(node_info, max_depth) {
     	.attr('cy', d => summary_y(d['depth']))
     	.attr('r', d => summary_size(d['support']+(1e-8)))
     	.attr("stroke", d => {
-        return leaf_nodes[d['node_id']] !== undefined ? 'black' : 'none';
+        return node2rule[d['node_id']] !== undefined ? 'black' : 'none';
       })
     	.attr('fill', d => summary_color(d['accuracy']))
     	.attr('fill-opacity', .8)
+      .on('click', d => {
+        click_summary_node(d['node_id'])
+      })
       .append('title')
       .text(d => `Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};
         \nFidelity: ${d['fidelity']}\nAccuracy: ${d['accuracy']}`);
@@ -116,6 +119,26 @@ function render_summary(node_info, max_depth) {
     	.text('accuracy: [0, 100%]')
 }
 
+function click_summary_node(node_id) {
+    console.log('click node: '+ node_id)
+    rule_svg.select('#highlight-rule').remove();
+
+    if (node2rule[node_id]) {
+      rule_svg.append('g')
+        .attr('id', 'highlight-rule')
+        .append('rect')
+        .attr('x', xScale(0))
+        .attr('y', yScale(node2rule[node_id]))
+        .attr('width', `${margin.left + width + margin.right}px`)
+        .attr('height', `${glyphCellHeight+rectMarginTop + rectMarginBottom}px`)
+        .attr('fill', 'grey')
+        .attr('fill-opacity', 0.5)
+
+      document.getElementById('stat_div').scrollTop = yScale(node2rule[node_id]);
+      document.getElementById('rule_div').scrollTop = yScale(node2rule[node_id]);
+    }
+}
+
 function update_summary(node_info, ) {
   let view = d3.select('#summary_view')
 
@@ -134,7 +157,10 @@ function update_summary(node_info, ) {
       .attr('fill', d => summary_color(d['accuracy']))
       .attr('fill-opacity', .8)
       .attr("stroke", d => {
-        return leaf_nodes[d['node_id']] !== undefined ? 'black' : 'none';
+        return node2rule[d['node_id']] !== undefined ? 'black' : 'none';
+      })
+      .on('click', d => {
+        click_summary_node(d['node_id'])
       })
       .append('title')
       .text(d=>`Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};
