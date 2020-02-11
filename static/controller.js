@@ -84,4 +84,33 @@ function click_cancel() {
 		.style("display", "none");
 }
 
+function click_rule(rule_idx) {
+	console.log('click rule row-'+rule_idx);
+
+	let rule_des = d3.select('#rule_description');
+	rule_des.selectAll('p').remove();
+	
+	let str = "";
+	listData[rule_idx]['rules'].forEach((d, i) => {
+		if (i>0) {
+			str += "AND "
+		} else {
+			str += "IF "
+		}
+		str += attrs[d['feature']];
+		if (d['sign'] !== 'range') {
+			str += " " + d['sign'] + d['threshold'] + ", "
+		} else {
+			str += " in range[" + d['threshold0'] + ', ' + d['threshold1'] + '), '
+		}
+	})
+
+	rule_des.append('p')
+		.text(str);
+
+	rule_des.append('p')
+		.text(`THEN ${target_names[listData[rule_idx]['label']]}`)
+
+}
+
 

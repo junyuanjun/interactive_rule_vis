@@ -53,6 +53,9 @@ function render_summary(node_info, max_depth) {
 		.data(d3.range(max_depth+1))
         .enter().append("g")
         .attr("class", "depth-line")
+        .call(d3.zoom().on("zoom", function () {
+          svg.attr("transform", d3.event.transform)
+        }))
         .attr("transform", function(d, i) { return `translate(0, ${summary_y(i)})`; })
 		.append("line")
         .attr("x1", view_margin.left)
@@ -86,9 +89,7 @@ function render_summary(node_info, max_depth) {
     // color legend
     let linear_gradient = view.append('defs')
         .append('linearGradient')
-      .attr('id', function(d) {
-        return "summary-linear-gradient";
-      })
+      .attr('id', "summary-linear-gradient")
       .attr("x1", "0%")
       .attr("y1", "0%")
       .attr("x2", "100%")
@@ -164,7 +165,8 @@ function update_summary(node_info, ) {
       })
       .append('title')
       .text(d=>`Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};
-        \nFidelity: ${d['fidelity']};\nAccuracy: ${d['accuracy']}`);
+        Fidelity: ${d['fidelity']};\nAccuracy: ${d['accuracy']}
+        NodeID: ${d['node_id']}; Rule index: ${node2rule[d['node_id']]}`);
 ;
 }
 

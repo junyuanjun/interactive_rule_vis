@@ -254,25 +254,25 @@ function render_feature_names_and_grid() {
         .text(d => d);
 
     // grid
-    rule_svg.selectAll(".grid-row")
-        .data(yScale.domain())
-        .enter().append("g")
-        .attr("class", "grid-row")
-        .attr("transform", function(d, i) { return `translate(0, ${yScale(i)})`; })
-        .append("line")
-        .attr("x1", 0)
-        .attr("x2", width-xScale.bandwidth())
-        .style("stroke", gridColor);
+    // rule_svg.selectAll(".grid-row")
+    //     .data(yScale.domain())
+    //     .enter().append("g")
+    //     .attr("class", "grid-row")
+    //     .attr("transform", function(d, i) { return `translate(0, ${yScale(i)})`; })
+    //     .append("line")
+    //     .attr("x1", 0)
+    //     .attr("x2", width-xScale.bandwidth())
+    //     .style("stroke", gridColor);
 
-    rule_svg.selectAll(".grid-col")
-        .data(xScale.domain())
-        .enter().append("g")
-        .attr("class", "grid-col")
-        .attr("transform", function(d, i) { return `translate(${xScale(i)}, ${margin.top})`; })
-        .append("line")
-        .attr("y1", 0)
-        .attr("y2", height-yScale.bandwidth()-margin.top)
-        .style("stroke", gridColor);
+    // rule_svg.selectAll(".grid-col")
+    //     .data(xScale.domain())
+    //     .enter().append("g")
+    //     .attr("class", "grid-col")
+    //     .attr("transform", function(d, i) { return `translate(${xScale(i)}, ${margin.top})`; })
+    //     .append("line")
+    //     .attr("y1", 0)
+    //     .attr("y2", height-yScale.bandwidth()-margin.top)
+    //     .style("stroke", gridColor);
 }
 
 function render_slider() {
@@ -284,6 +284,7 @@ function render_slider() {
         .width(overviewWidth)
         .default([0, 100])
         .fill('#2196f3')
+        // .fill('url(#summary-linear-gradient)')
         .on('onchange', val => {
             // change the text
             d3.select('#accuracy-text').text(`Accuracy: ${val.map(d => d3.format('.2%')(d/100)).join('-')}`);
@@ -400,7 +401,7 @@ function render_confusion_bars(listData) {
     let res = stat_svg.append('g')
         .attr('class', 'support')
 
-    let circles = stat_svg.selectAll(".label_circle")
+    let circles = res.selectAll(".label_circle")
         .data(listData)
         .enter()
         .append("circle")
@@ -516,71 +517,6 @@ function generate_gradient_bars(listData) {
       .attr('stop-color', function(d){
         return colorScale[d.feature]( +d.end );
       });
-
-    // // render by rows
-    // let row = rule_svg.selectAll(".row")
-    //     .data(listData)
-    //     .enter().append("g")
-    //     .attr("class", "row")
-    //     .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; });
-
-    // // render the horizontal_line
-    // row.selectAll(".middle")
-    //     .data(function(d) { return d["rules"]; })
-    //     .enter().append("line")
-    //     .attr("class", "middle")
-    //     .attr("x1", function(d) { 
-    //         return xScale(col_order[d["feature"]]);
-    //         // return xScale(d["feature"]); 
-    //     })
-    //     .attr("x2", function(d) { 
-    //         return xScale(col_order[d["feature"]])+ glyphCellWidth * 5;
-    //         // return xScale(d["feature"])+ glyphCellWidth * 5; 
-    //     })
-    //     .attr("y1", glyphCellHeight/2)
-    //     .attr("y2", glyphCellHeight/2)
-    //     .style("stroke", "lightgrey")
-    //     .style("stroke-width", 1);
-
-    // // render the rule ranges
-    // row.selectAll(".rule-fill")
-    //     .data(d => d["rules"])
-    //     .enter().append("rect")
-    //     .attr("x", function(d) { 
-    //         let xOffset = xScale(col_order[d["feature"]])
-    //         if (d["sign"] === "<=") {
-    //             return xOffset;
-    //         } else if (d["sign"] === ">") {
-    //             return xOffset + widthScale[d["feature"]](d["threshold"])
-    //         } else {
-    //             return xOffset + widthScale[d["feature"]](d["threshold0"])
-    //         }
-    //     })
-    //     .attr("width", function(d) {
-    //         if (d["sign"] === "<=") {
-    //             return widthScale[d["feature"]](d["threshold"]);
-    //         } else if (d["sign"] === ">"){
-    //             return rectWidth - widthScale[d["feature"]](d["threshold"]);
-    //         } else if (d["sign"] === "range") {
-    //             return (widthScale[d["feature"]](d["threshold1"]) - widthScale[d["feature"]](d["threshold0"]))
-    //         }
-    //     })
-    //     .attr("y",  0)
-    //     .attr("height", glyphCellHeight)
-    //     .attr("fill", d => `url(#linear-gradient-${d.id})`)
-
-    // // add click event to row
-    // d3.select("#rule_svg")
-    //     .on("click", function() {
-    //         ypos = d3.mouse(d3.select("#rule_svg").node())[1];
-    //         rule_idx = Math.floor((ypos - yScale(0)) / (yScale(1)-yScale(0)));
-    //         d3.select("#node-"+listData[rule_idx]['node_id'])
-    //             .attr('stroke', "black")
-    //     })
-
-    // render_size_circle(listData);
-    // render_confusion_bars(listData);
-
 }
 
 function update_column_rendering() {
@@ -626,7 +562,18 @@ function update_rule_rendering(listData, col_order, row_order) {
         .data(listData)
         .enter().append("g")
         .attr("class", "row")
-        .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; });
+        .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; })
+        .on('click', (d, i) => {
+            click_rule(i);
+        })
+
+    // render the white background for better click react
+    row.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('height', `${glyphCellHeight + rectMarginTop + rectMarginBottom}px`)
+        .attr('width', `${width}px`)
+        .attr('fill', 'white');
 
     // render the horizontal_line
     row.selectAll(".middle")
@@ -695,9 +642,29 @@ function update_rule_rendering(listData, col_order, row_order) {
             id = id.replace(/\./g, '_');
             return `url(#linear-gradient-${id})`
         })
+
+    // grid
+    rule_svg.selectAll(".grid-row")
+        .data(yScale.domain())
+        .enter().append("g")
+        .attr("class", "grid-row")
+        .attr("transform", function(d, i) { return `translate(0, ${yScale(i)})`; })
+        .append("line")
+        .attr("x1", 0)
+        .attr("x2", width-xScale.bandwidth())
+        .style("stroke", gridColor);
+
+    rule_svg.selectAll(".grid-col")
+        .data(xScale.domain())
+        .enter().append("g")
+        .attr("class", "grid-col")
+        .attr("transform", function(d, i) { return `translate(${xScale(i)}, ${margin.top})`; })
+        .append("line")
+        .attr("y1", 0)
+        .attr("y2", height-yScale.bandwidth()-margin.top)
+        .style("stroke", gridColor);
     // render_size_circle(listData);
     render_confusion_bars(listData);
-
 }
 
 function render_data_table() {
