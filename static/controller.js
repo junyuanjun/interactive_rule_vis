@@ -1,6 +1,7 @@
 let ori_order = [];
 let col_order = [];
 
+let phrased_rule_id = -1;
 
 d3.select("#col_sort")
 	.on("change", function() {
@@ -110,7 +111,6 @@ function click_rule(rule_idx) {
 
 	rule_des.append('p')
 		.text(`THEN ${target_names[listData[rule_idx]['label']]}`)
-
 }
 
 

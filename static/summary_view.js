@@ -122,21 +122,31 @@ function render_summary(node_info, max_depth) {
 
 function click_summary_node(node_id) {
     console.log('click node: '+ node_id)
-    rule_svg.select('#highlight-rule').remove();
 
     if (node2rule[node_id]) {
-      rule_svg.append('g')
-        .attr('id', 'highlight-rule')
-        .append('rect')
-        .attr('x', xScale(0))
-        .attr('y', yScale(node2rule[node_id]))
-        .attr('width', `${margin.left + width + margin.right}px`)
-        .attr('height', `${glyphCellHeight+rectMarginTop + rectMarginBottom}px`)
-        .attr('fill', 'grey')
-        .attr('fill-opacity', 0.5)
+      // rule_svg.append('g')
+      //   .attr('id', 'highlight-rule')
+      //   .append('rect')
+      //   .attr('x', xScale(0))
+      //   .attr('y', yScale(node2rule[node_id]))
+      //   .attr('width', `${margin.left + width + margin.right}px`)
+      //   .attr('height', `${glyphCellHeight+rectMarginTop + rectMarginBottom}px`)
+      //   .attr('fill', 'grey')
+      //   .attr('fill-opacity', 0.5)
+      
+      rule_svg.select(`#back-rect-${clicked_summary_node_id}`)
+            .classed('rule_highlight', false);
 
-      document.getElementById('stat_div').scrollTop = yScale(node2rule[node_id]);
-      document.getElementById('rule_div').scrollTop = yScale(node2rule[node_id]);
+      if (clicked_summary_node_id == node_id) {
+        clicked_summary_node_id = -1;
+      } else {
+        rule_svg.select(`#back-rect-${node2rule[node_id]}`)
+          .classed('rule_highlight', true);
+        clicked_summary_node_id = node2rule[node_id];
+
+        document.getElementById('stat_div').scrollTop = yScale(node2rule[node_id]);
+        document.getElementById('rule_div').scrollTop = yScale(node2rule[node_id]);
+      }
     }
 }
 

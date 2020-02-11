@@ -569,10 +569,11 @@ function update_rule_rendering(listData, col_order, row_order) {
 
     // render the white background for better click react
     row.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
+        .attr('id', (d, i) => `back-rect-${i}`)
+        .attr('x', -rectMarginH)
+        .attr('y', -rectMarginTop)
         .attr('height', `${glyphCellHeight + rectMarginTop + rectMarginBottom}px`)
-        .attr('width', `${width}px`)
+        .attr('width', `${width-margin.left}px`)
         .attr('fill', 'white');
 
     // render the horizontal_line
