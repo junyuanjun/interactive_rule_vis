@@ -285,7 +285,7 @@ function render_slider() {
         .default([0, 100])
         .fill('#2196f3')
         // .fill('url(#summary-linear-gradient)')
-        .on('onchange', val => {
+        .on('drag', val => {
             // change the text
             d3.select('#accuracy-text').text(`Accuracy: ${val.map(d => d3.format('.2%')(d/100)).join('-')}`);
             // filter the nodes
@@ -293,7 +293,14 @@ function render_slider() {
             new_nodes = filter_nodes(node_info,);
             update_summary(new_nodes);
 
-        });
+        })
+        .on('end', val => {
+            // change the text
+            d3.select('#accuracy-text').text(`Accuracy: ${val.map(d => d3.format('.2%')(d/100)).join('-')}`);
+            // filter the nodes
+            filter_threshold['accuracy'] = [+val[0]/100, +val[1]/100];
+            update_rules();
+        })
  
     d3.select('#slider-accuracy')
         .append('svg')
@@ -303,25 +310,33 @@ function render_slider() {
         .attr('transform', 'translate(15,10)')
         .call(slider_accuracy);
 
-    filter_threshold['num_feat'] = [0, attrs.length];
+    filter_threshold['num_feat'] = attrs.length;
     let slider_feat = d3
         .sliderHorizontal()
         .min(0)
         .max(attrs.length)
         .step(1)
         .width(overviewWidth)
-        .default([0, 100])
+        .default(attrs.length)
         .fill('#2196f3')
-        .on('onchange', val => {
+        .on('drag', val => {
             // change the text
-            d3.select('#feat-text').text(`#Feature: ${val.map(d => d3.format('0d')(d)).join('-')}`);
+            d3.select('#feat-text').text(`Max Number of Features: ${val}`);
             // filter the nodes
-            filter_threshold['num_feat'] = [+val[0], +val[1]];
+            filter_threshold['num_feat'] = +val;
             // depth is used when num_feat is not defined
-            filter_threshold['depth'] = [+val[0], +val[1]];
+            filter_threshold['depth'] = +val;
             new_nodes = filter_nodes(node_info,);
             update_summary(new_nodes);
-
+        })
+        .on('end', val => {
+            // change the text
+            d3.select('#feat-text').text(`Max Number of Features: ${val}`);
+            // filter the nodes
+            filter_threshold['num_feat'] = +val;
+            // depth is used when num_feat is not defined
+            filter_threshold['depth'] = +val;
+            update_rules();
         });
  
     d3.select('#slider-feat')
@@ -337,8 +352,8 @@ function update_rules() {
     console.log("update");
 
     new_nodes = filter_nodes(node_info);
-    update_summary(new_nodes);
     find_leaf_rules(new_nodes, node_info, listData);   
+    update_summary(new_nodes);
 }
 
 function prune_nodes() {
@@ -690,7 +705,6 @@ function render_data_table() {
 
 function main() {
     loadData();
-    param_set = true;
 }
 
 main();

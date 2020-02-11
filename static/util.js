@@ -1,9 +1,9 @@
 let filter_threshold = {
 	'support': 20,
 	'fidelity': 0.8,
-	'accuracy': [0, 1],
-  'num_feat': [0, 20],
-  'depth': [0, 20],
+	'accuracy': [0, 1.],
+  'num_feat': 20,
+  'depth': 20,
 }
 
 let node2rule = {};
@@ -16,7 +16,7 @@ function filter_nodes(node_info) {
 		if (d3.sum(d['value']) >= filter_threshold['support']
       && d['fidelity'] >= filter_threshold['fidelity']
 			&& d['accuracy'] >= filter_threshold['accuracy'][0] && d['accuracy'] <= filter_threshold['accuracy'][1]
-      && d['num_feat'] >= filter_threshold['num_feat'][0] && d['num_feat'] <= filter_threshold['num_feat'][1]
+      && d['num_feat'] <= filter_threshold['num_feat']
     ) {
 			new_nodes.push(d);
 		}
@@ -44,9 +44,7 @@ function find_leaf_rules(new_nodes, node_info, listData) {
     update_column_rendering();
 		update_rule_rendering(rules, col_order);
 
-    if (!param_set) {
-      update_summary(new_nodes)
-    }
+    update_summary(new_nodes);
 	})
 }
 

@@ -16,7 +16,11 @@ d3.select("#col_sort")
 
 d3.select("#generate_rule")
 	.on("click", function() {
-		let support_val, fidelity_val;
+		generate_rules();
+	});
+
+function generate_rules() {
+	let support_val, fidelity_val;
 		d3.select('#support_val')
 	        .attr('value', function() {
 	            support_val = this.value;
@@ -37,12 +41,11 @@ d3.select("#generate_rule")
 			.style("display", "none");
 		if (!param_set) {
 			loadData();
-			param_set = true;
 		} else {
 			new_nodes = filter_nodes(node_info,);
         	update_summary(new_nodes);
 		}
-	});
+}
 
 function column_order_by_feat_freq(listData) {
 	// initialize feature used freq.
