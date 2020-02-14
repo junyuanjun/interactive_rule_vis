@@ -101,7 +101,7 @@ function update_linked_rule_rendering(listData, col_order,) {
         .attr("class", "row")
         .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; })
         .on('click', (d, i) => {
-            click_rule(i);
+            click_rule(i, d);
         })
 
     // render the white background for better click react

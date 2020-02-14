@@ -13,7 +13,15 @@ let stop_colors = ['#fc8d59', '#ffffbf', '#91bfdb'];
 stop_colors = ['#d7191c', '#ffffbf', '#2c7bb6'];
 stop_colors = ['#e66101', '#f3eeea', '#7b3294', ]
 
-let view_margin = {left:5+max_r, right:5+max_r, top:max_r, bottom:max_r};
+let view_margin = {left:15+max_r, right:5+max_r, top:max_r, bottom:max_r};
+let x_tick_height = 18;
+
+let summary_x_tick = d3.select('#summary_x_tick')
+    .style('width', `${view_width+view_margin.left+view_margin.right}px`)
+    .style('height', `${x_tick_height}px`);
+
+let x_axis = d3.axisBottom()
+    .scale(summary_x);
 
 let clicked_summary_node_id = -1;
 
@@ -42,10 +50,30 @@ function intialize_scales(max_depth) {
 
 }
 
+function render_x_ticks() {
+  x_axis.scale(summary_x);
+
+  summary_x_tick
+    .transition()
+    .duration(500)
+    .call(x_axis);
+}
+
 // node_info contains the information of nodes: support, accuracy, fidelity
 function render_summary(node_info, max_depth) {
   d3.select('#summary_view > *').remove();
 	intialize_scales(max_depth);
+
+  // render x ticks
+  summary_x_tick.append('text')
+    .attr('x', 0)
+    .attr('y', 8)
+    .style('fill', 'black')
+    .style('font-size', '10px')
+    .style('text-anchor', 'start')
+    .text("fidelity");
+
+  render_x_ticks();
 
 	// start rendering
 	let view = d3.select('#summary_view')
@@ -125,6 +153,8 @@ function update_summary(node_info, ) {
   d3.select('#summary_view > *:not(.depth-line)').remove();
 
   let view = d3.select('#summary_view')
+  summary_x.domain([filter_threshold['fidelity'], 1])
+  render_x_ticks();
 
   view.selectAll('.rule-node').remove();
 

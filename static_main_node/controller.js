@@ -43,7 +43,7 @@ function generate_rules() {
 			loadData();
 		} else {
 			new_nodes = filter_nodes(node_info,);
-        	update_summary(new_nodes);
+			update_summary(new_nodes);
 		}
 }
 
@@ -160,14 +160,19 @@ function click_summary_node(node_id) {
 	})
 }
 
-function click_rule(rule_idx) {
+function click_rule(rule_idx, rule) {
 	console.log('click rule row-'+rule_idx);
 
 	let rule_des = d3.select('#rule_description');
 	rule_des.selectAll('p').remove();
-	
+
+
+	let rules = listData[rule_idx];
+	if (rule) {
+		rules = rule;
+	}
 	let str = "";
-	listData[rule_idx]['rules'].forEach((d, i) => {
+	rules['rules'].forEach((d, i) => {
 		if (i>0) {
 			str += "AND "
 		} else {
@@ -181,11 +186,10 @@ function click_rule(rule_idx) {
 		}
 	})
 
-	rule_des.append('p')
-		.text(str);
+	str += "Then " + target_names[rules['label']]
 
 	rule_des.append('p')
-		.text(`THEN ${target_names[listData[rule_idx]['label']]}`)
+		.text(str);
 }
 
 function showRule(evt, id) {

@@ -10,6 +10,17 @@ let folder = "fico";
 
 height = 650 - margin.top - margin.bottom;
 
+let radiusRange = [4, 20];
+let handleWidth = 0.5, 
+    handleHeight, 
+    handleLedge = 3;
+let rectMarginTop = 5, rectMarginBottom = 5, 
+    rectMarginH = 10;
+
+let glyphCellWidth = 5, glyphCellHeight = 10;
+let rectHeight, rectWidth;
+let supportRectWidth = 100;
+
 let rule_svg = d3.select("#rule_svg")
     .attr("width", width + margin.right)
     .attr("height", height + margin.bottom)
@@ -21,28 +32,16 @@ let column_svg = d3.select("#column_svg")
     .style("height", `${column_height}px`);
 
 let stat_svg = d3.select('#stat')
-    .attr("width", 80)
-    .attr("height", height + margin.top + margin.bottom)
-    // .append("g")
-    // .attr("transform", `translate(0, ${margin.top})`);
+    .style("width", `${supportRectWidth}px`)
+    .style("height", `${height + margin.top + margin.bottom}px`);
 
 let rule_svg2 = d3.select("#rule_svg2")
     .append("g")
     .attr("transform", `translate(${margin.left})`);
-let stat_svg2 = d3.select("#stat_svg2");
+let stat_svg2 = d3.select("#stat2")
+    .style("width", `${supportRectWidth}px`);
 let col_svg2 = d3.select("#column_svg2")
     .style("height", `${column_height}px`);
-
-let radiusRange = [4, 20];
-let handleWidth = 0.5, 
-    handleHeight, 
-    handleLedge = 3;
-let rectMarginTop = 5, rectMarginBottom = 5, 
-    rectMarginH = 10;
-
-let glyphCellWidth = 5, glyphCellHeight = 10;
-let rectHeight, rectWidth;
-let supportRectWidth = 80;
 
 let widthScale, radiusScale, xScale, yScale, colorScale, supportScale;
 let colorBarHeight = 5;
@@ -140,7 +139,7 @@ function loadData() {
             yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
 
             // scale for render the support bar
-            supportScale = d3.scaleLinear([0, 1000], [1, supportRectWidth]);
+            supportScale = d3.scaleLinear([0, d3.sum(node_info[0]['value'])], [2, supportRectWidth]);
 
             // scale for filling rule ranges
             // rectHeight = yScale.bandwidth() - rectMarginTop - rectMarginBottom;
@@ -452,12 +451,13 @@ function render_size_circle(listData) {
 }
 
 function render_confusion_bars(stat_svg, listData, customized_y) {
+    let original_yscale = yScale;
     if (customized_y) {
-        let yScale = customized_y;
+        yScale = customized_y;
     }
     stat_svg.select('.support').remove();
 
-    stat_svg.attr('height', `${height}px`)
+    stat_svg.style('height', `${height}px`)
 
     let res = stat_svg.append('g')
         .attr('class', 'support')
@@ -489,7 +489,6 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
         .attr("width", d => supportScale(node_info[d['node_id']]['value'][0]))
         .attr("height", glyphCellHeight)
         .attr("fill", d => colorCate[0])
-        .attr("stroke", "black")
         .append('title')
             .text(d => node_info[d['node_id']]['value'][0])
 
@@ -506,9 +505,13 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
         .attr("width", d => supportScale(node_info[d['node_id']]['value'][1]))
         .attr("height", glyphCellHeight)
         .attr("fill", d => colorCate[1])
-        .attr("stroke", "black")
         .append('title')
         .text(d => node_info[d['node_id']]['value'][0])
+
+    // change back the global yScale
+    if (customized_y) {
+        yScale = original_yscale;
+    }
 }
 
 

@@ -130,11 +130,11 @@
               type="image" src="static_main_node/expand_vertical.png" 
             >        
           </div>
-          <div style="overflow: scroll; max-height: 200px; border: 1px solid lightgrey; padding: 5px; margin-bottom: 5px;">
-            <div id="summary_div">
-              <svg id="summary_view">
-              </svg>
+          <div class="flex-col">
+            <div id="summary_div" style="overflow: scroll; max-height: 240px; border: 1px solid lightgrey; margin-bottom: 5px;">
+              <svg id="summary_view"></svg>
             </div>
+            <svg id="summary_x_tick"></svg>
           </div>
         </div>
         <!-- Rules -->
@@ -189,13 +189,13 @@
             </div>
           </div>
 
-          <div style="max-height: 200px; max-width: 950px; overflow: scroll;">
-            <div id="rule_div" style="height: 200px; max-width: 800px; overflow: scroll;">
+          <div class="flex-row" style="max-height: 150px; max-width: 950px; overflow: scroll;">
+            <div id="rule_div" style="height: 150px; max-width: 800px; overflow: scroll;">
               <div>
                 <svg id="rule_svg"></svg>            
               </div>
             </div>
-            <div id="stat_div" style="max-height: 200px; max-width: 100px; overflow-y: scroll;">
+            <div id="stat_div" style="max-height: 150px; max-width: 100px; overflow-y: scroll;">
               <div>
                 <svg id="stat"></svg>              
               </div>
@@ -211,13 +211,13 @@
             </div>
           </div>
 
-          <div style="max-height: 200px; max-width: 950px; overflow: scroll;">
-            <div id="rule_div2" style="height: 200px; max-width: 800px; overflow: scroll;">
+          <div class="flex-row" style="max-height: 150px; max-width: 950px; overflow: scroll;">
+            <div id="rule_div2" style="height: 150px; max-width: 800px; overflow: scroll;">
               <div>
                 <svg id="rule_svg2"></svg>            
               </div>
             </div>
-            <div id="stat_div2" style="max-height: 200px; max-width: 100px; overflow-y: scroll;">
+            <div id="stat_div2" style="max-height: 150px; max-width: 100px; overflow-y: scroll;">
               <div>
                 <svg id="stat2"></svg>              
               </div>

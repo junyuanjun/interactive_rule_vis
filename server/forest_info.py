@@ -115,6 +115,7 @@ class Forest():
 		while (p_id > 0):
 			linked_rules.append(self.convert2rule(p_id))
 			p_id = self.node_info[p_id]['parent']
+		linked_rules.reverse()
 		return linked_rules
 
 
