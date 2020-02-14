@@ -198,5 +198,5 @@ function update_linked_rule_rendering(listData, col_order,) {
         .attr("y2", height-yScale.bandwidth()-margin.top)
         .style("stroke", gridColor);
     // render_size_circle(listData);
-    render_confusion_bars(stat_svg2, listData, yScale);
+    render_confusion_bars(stat_svg2, listData);
 }

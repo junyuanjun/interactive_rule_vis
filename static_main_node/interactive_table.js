@@ -21,6 +21,8 @@ let glyphCellWidth = 5, glyphCellHeight = 10;
 let rectHeight, rectWidth;
 let supportRectWidth = 100;
 
+let tot_train;
+
 let rule_svg = d3.select("#rule_svg")
     .attr("width", width + margin.right)
     .attr("height", height + margin.bottom)
@@ -112,6 +114,7 @@ function loadData() {
             tot_data = file1['data'].length;
             node_info = file4['node_info_arr'];
             max_depth = file4['max_depth'];
+            tot_train = node_info[0]['value'][0] + node_info[0]['value'][1];
 
             present_rules = listData;
             summary_nodes = filter_nodes(node_info);
@@ -139,7 +142,7 @@ function loadData() {
             yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
 
             // scale for render the support bar
-            supportScale = d3.scaleLinear([0, d3.sum(node_info[0]['value'])], [2, supportRectWidth]);
+            supportScale = d3.scaleLinear([0, d3.sum(node_info[0]['value'])], [.5, supportRectWidth]);
 
             // scale for filling rule ranges
             // rectHeight = yScale.bandwidth() - rectMarginTop - rectMarginBottom;
@@ -451,21 +454,18 @@ function render_size_circle(listData) {
 }
 
 function render_confusion_bars(stat_svg, listData, customized_y) {
-    let original_yscale = yScale;
-    if (customized_y) {
-        yScale = customized_y;
-    }
-    stat_svg.select('.support').remove();
+    let yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
+    stat_svg.selectAll('.support').remove();
 
     stat_svg.style('height', `${height}px`)
 
-    let res = stat_svg.append('g')
-        .attr('class', 'support')
-
-    let circles = res.selectAll(".label_circle")
+    let res = stat_svg.selectAll('g')
         .data(listData)
         .enter()
-        .append("circle")
+        .append('g')
+        .attr('class', 'support')
+
+    let circles = res.append("circle")
         .attr("class", "label_circle")
         .attr("cx", xScale.bandwidth()/2)
         .attr("cy", (d, i) => {
@@ -474,13 +474,21 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
         // .attr("r", d => radiusScale(d["coverage"]))
         .attr("r", 7)
         .attr("fill", d => colorCate[d["label"]])
-        .attr("stroke", "none")
+        .attr("stroke", "none");
+    
+    res.append('text')
+        .attr('x', xScale.bandwidth()/2+1)
+        .attr('y', (d, i) => {
+            return yScale(i) + yScale.bandwidth()/2 + 2
+        })
+        .style('font-size', '8px')
+        .style('fill', 'white')
+        .style('text-anchor', 'middle')
+        .text((d,i) => 
+            d3.format('0d')(d3.sum(node_info[d['node_id']]['value'])/tot_train*100)+'%')
 
     // covered instances of label 0
-    res.selectAll(".label0")
-        .data(listData)
-        .enter()
-        .append("rect")
+    res.append("rect")
         .attr("class", "label0")
         .attr("x", 10 + xScale.bandwidth()/2)
         .attr("y", (d, i) => {
@@ -492,11 +500,17 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
         .append('title')
             .text(d => node_info[d['node_id']]['value'][0])
 
+    res.append('text')
+        .attr('class', 'label0-text')
+        .attr("x", 10 + xScale.bandwidth()/2)
+        .attr("y", (d, i) => {
+            return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
+        })
+        .style('fill', 'white')
+        .text(d => node_info[d['node_id']]['value'][0] > 600 ? node_info[d['node_id']]['value'][0] : "")
+
     // covered instances of label 1
-    res.selectAll(".label1")
-        .data(listData)
-        .enter()
-        .append("rect")
+    res.append("rect")
         .attr("class", "label1")
         .attr("x", d => 10 + xScale.bandwidth()/2 + supportScale(node_info[d['node_id']]['value'][0]))
         .attr("y", (d, i) => {
@@ -506,12 +520,16 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
         .attr("height", glyphCellHeight)
         .attr("fill", d => colorCate[1])
         .append('title')
-        .text(d => node_info[d['node_id']]['value'][0])
+        .text(d => node_info[d['node_id']]['value'][1])
 
-    // change back the global yScale
-    if (customized_y) {
-        yScale = original_yscale;
-    }
+    res.append('text')
+        .attr('class', 'label1-text')
+        .attr("x", d => 10 + xScale.bandwidth()/2 + supportScale(node_info[d['node_id']]['value'][0]))
+        .attr("y", (d, i) => {
+            return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
+        })
+        .style('fill', 'white')
+        .text(d => node_info[d['node_id']]['value'][1] > 600 ? node_info[d['node_id']]['value'][1] : "")
 }
 
 

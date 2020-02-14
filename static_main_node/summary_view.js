@@ -13,7 +13,7 @@ let stop_colors = ['#fc8d59', '#ffffbf', '#91bfdb'];
 stop_colors = ['#d7191c', '#ffffbf', '#2c7bb6'];
 stop_colors = ['#e66101', '#f3eeea', '#7b3294', ]
 
-let view_margin = {left:15+max_r, right:5+max_r, top:max_r, bottom:max_r};
+let view_margin = {left:15+max_r, right:5+max_r/2, top:max_r, bottom:max_r};
 let x_tick_height = 18;
 
 let summary_x_tick = d3.select('#summary_x_tick')
@@ -157,7 +157,7 @@ function render_summary(node_info, max_depth) {
 }
 
 function update_summary(node_info, ) {
-  d3.select('#summary_view > *:not(.depth-line)').remove();
+  d3.selectAll('#summary_view > *:not(.depth-line)').remove();
 
   let view = d3.select('#summary_view')
   summary_x.domain([filter_threshold['fidelity'], 1])
