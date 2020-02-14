@@ -81,16 +81,23 @@ function render_summary(node_info, max_depth) {
 		.style('height', `${tree_height+view_margin.top+view_margin.bottom}px`)
 
 	// level/depth info
-	view.selectAll('.depth-line')
+	let depth_info = view.selectAll('.depth-line')
 		.data(d3.range(max_depth+1))
         .enter().append("g")
         .attr("class", "depth-line")
         .attr("transform", function(d, i) { return `translate(0, ${summary_y(i)})`; })
-		.append("line")
+
+	depth_info.append("line")
         .attr("x1", view_margin.left)
         .attr("x2", view_width-view_margin.left-view_margin.right)
         .attr('stroke-width', .5)
         .style("stroke", gridColor);
+  depth_info.append('text')
+      .attr('x', view_margin.left - 5)
+      .style('fill', gridColor)
+      .style('text-anchor', 'end')
+      .text((d, i) => i)
+
 
     // support -> size, fidelity -> x_pos, accuracy -> color
     view.selectAll('.rule-node')

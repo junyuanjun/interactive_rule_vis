@@ -1,6 +1,6 @@
 let filter_threshold = {
 	'support': 20,
-	'fidelity': 0,
+	'fidelity': 0.8,
 	'accuracy': [0, 1.],
   'num_feat': 20,
   'depth': 20,
