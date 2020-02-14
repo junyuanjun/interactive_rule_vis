@@ -20,14 +20,18 @@ let rule_svg = d3.select("#rule_svg")
 let column_svg = d3.select("#column_svg")
     .style("height", `${column_height}px`);
 
-d3.select("#column_div")
-    .style("height", `${column_height}px`);
-
 let stat_svg = d3.select('#stat')
     .attr("width", 80)
     .attr("height", height + margin.top + margin.bottom)
     // .append("g")
     // .attr("transform", `translate(0, ${margin.top})`);
+
+let rule_svg2 = d3.select("#rule_svg2")
+    .append("g")
+    .attr("transform", `translate(${margin.left})`);
+let stat_svg2 = d3.select("#stat_svg2");
+let col_svg2 = d3.select("#column_svg2")
+    .style("height", `${column_height}px`);
 
 let radiusRange = [4, 20];
 let handleWidth = 0.5, 
@@ -128,6 +132,8 @@ function loadData() {
             height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
 
             scroll_functions(width, height);
+            scroll_functions2(width, height);
+
 
             // scale for placing cells
             xScale = d3.scaleBand(d3.range(attrs.length+1),[0, width]);
@@ -225,11 +231,48 @@ function scroll_functions(width, height) {
     });
 }
 
-function render_feature_names_and_grid() {
+function scroll_functions2(width, height) {
+    d3.select("#rule_div2 div")
+        .style("height", `${height + margin.bottom}px`)
+        .style("width", `${margin.left + width + margin.right}px`);
+
+    d3.select("#rule_svg2")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.bottom);
+
+    d3.select("#column_div2 div")
+        .style("width", `${margin.left + width + margin.right}px`);
+
+    d3.select("#column_svg2")
+        .style("width", `${margin.left + width + margin.right}px`);
+
+    d3.select("#stat_div2 div")
+        .style("height", `${height + margin.bottom}px`);
+
+    d3.select("#stat2")
+        .attr("height", height + margin.bottom);
+
+    d3.select('#rule_div2').on('scroll', function () {
+        document.getElementById('column_div2').scrollLeft = this.scrollLeft;
+        document.getElementById('stat_div2').scrollTop = this.scrollTop;
+    });
+
+    d3.select('#column_div').on('scroll', function () {
+        document.getElementById('rule_div').scrollLeft = this.scrollLeft;
+    });
+
+    d3.select('#stat_div').on('scroll', function () {
+        document.getElementById('rule_div').scrollTop = this.scrollTop;
+    });
+}
+
+function render_feature_names_and_grid(column_svg, col_order) {
+    column_svg.selectAll(".column").remove();
+
     let column = column_svg.selectAll(".column").data(attrs)
         .enter().append("g")
-        .attr("class", "column")
-        .attr("id", (d, i) => `col-title-${i}`)
+        .classed("column", true)
+        .classed((d, i) => `col-title-${i}`, true)
         .attr("transform", function(d, i) { 
             return `translate(${xScale(col_order[i])}, 
             ${column_height+yScale(0)-font_size*2})rotate(330)`; });
@@ -408,7 +451,10 @@ function render_size_circle(listData) {
         .attr("stroke", "none")
 }
 
-function render_confusion_bars(listData) {
+function render_confusion_bars(stat_svg, listData, customized_y) {
+    if (customized_y) {
+        let yScale = customized_y;
+    }
     stat_svg.select('.support').remove();
 
     stat_svg.attr('height', `${height}px`)
@@ -467,7 +513,7 @@ function render_confusion_bars(listData) {
 
 
 function generate_gradient_bars(listData) {
-    render_feature_names_and_grid();
+    render_feature_names_and_grid(column_svg, col_order);
 
     // prepare ranges for rendering
     let filtered_data = {};
@@ -534,9 +580,9 @@ function generate_gradient_bars(listData) {
       });
 }
 
-function update_column_rendering() {
+function update_column_rendering(svg, col_order) {
     for (let i = 0; i<attrs.length; i++) {
-        d3.select(`#col-title-${i}`)
+        svg.select(`.col-title-${i}`)
             .attr("transform", ()=> { 
                 return `translate(${xScale(col_order[i])}, 
                 ${column_height+yScale(0)-font_size*2})rotate(330)`; 
@@ -570,7 +616,7 @@ function update_rule_rendering(listData, col_order, row_order) {
     yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
     d3.select("#rule-num")
         .text(listData.length);
-    render_feature_names_and_grid(rule_svg);
+    render_feature_names_and_grid(column_svg, col_order);
 
     // render by rows
     let row = rule_svg.selectAll(".row")
@@ -680,31 +726,17 @@ function update_rule_rendering(listData, col_order, row_order) {
         .attr("y2", height-yScale.bandwidth()-margin.top)
         .style("stroke", gridColor);
     // render_size_circle(listData);
-    render_confusion_bars(listData);
+    render_confusion_bars(stat_svg, listData);
 }
 
 function render_data_table() {
     let table = d3.select('#datatable')
         .append('table');
-
-    // let rows = table.selectAll('tr')    
-    //     .data(raw_data)
-    //     .enter()
-    //     .append('tr');
-
-    // rows.selectAll('td')
-    //     .data(d => {
-    //         return d;
-    //     })
-    //     .enter()
-    //     .append('td')
-    //     .text(d => {
-    //         return d;
-    //     });
 }
 
 function main() {
     loadData();
+    param_set = true;
 }
 
 main();

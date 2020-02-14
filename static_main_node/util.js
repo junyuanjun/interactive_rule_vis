@@ -7,10 +7,14 @@ let filter_threshold = {
 }
 
 let node2rule = {};
+let linkednode2rule = {};
+
+let new_node_shown = {};
 
 function filter_nodes(node_info) {
 	let new_nodes = [];
 
+  new_node_shown = {};
 	Object.keys(node_info).forEach(idx => {
     let d = node_info[idx];
 		if (d3.sum(d['value']) >= filter_threshold['support']
@@ -19,6 +23,7 @@ function filter_nodes(node_info) {
       && d['num_feat'] <= filter_threshold['num_feat']
     ) {
 			new_nodes.push(d);
+      new_node_shown[d['node_id']] = true;
 		}
 	});
 
@@ -41,11 +46,35 @@ function find_leaf_rules(new_nodes, node_info, listData) {
     rules.forEach((d, idx) => {
       node2rule[d['node_id']] = idx;
     })
-    update_column_rendering();
+    // update_column_rendering(column_svg, col_order);
 		update_rule_rendering(rules, col_order);
 
     update_summary(new_nodes);
 	})
+}
+
+function find_connection(node_id) {
+  let connection = [node_id];
+
+  // find ancesters
+  let p_id = node_info[node_id]['parent'];
+  while (p_id > 0) {
+    if (new_node_shown[p_id]) {
+      connection.push(p_id);
+    }
+    p_id = node_info[p_id]['parent'];
+  }
+
+  // find the children
+  let c_id = node_info[node_id]['left'];
+  if (new_node_shown[c_id] && c_id > 0) {
+    connection.push(c_id);
+  }
+  c_id = node_info[node_id]['right'];
+  if (new_node_shown[c_id] && c_id > 0)
+    connection.push(c_id);
+  
+  return connection;
 }
 
 

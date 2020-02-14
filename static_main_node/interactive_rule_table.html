@@ -46,7 +46,7 @@
       </div>
     </div>
 
-    <div class="rule-view flex-row">
+    <div class="flex-row">
       <!-- Control view -->
       <div id="controlview" class="flex-col" 
         style="width: 300px; border: 1px solid lightgrey; margin-right: 5px">
@@ -115,8 +115,7 @@
       </div>
 
       <!-- Main view of the rules -->
-      <div style="flex-direction: column; 
-        border: 1px solid lightgrey; 
+      <div class="flex-col" style="border: 1px solid lightgrey; 
         margin-left: 5px;
         width: 950px;
         height: 650px">
@@ -145,7 +144,7 @@
           </div>
           <svg id="legend1"></svg>
         </div>
-        <div class='flex-row' style="justify-content: flex-start; margin-bottom: 5px">
+        <div class='flex-row' style="justify-content: flex-start; height: 25px">
           <div class="title" style="margin-right: 20px">
             <span>Number of Rules: </span>
             <span id="rule-num" style="font-weight: normal;"></span>
@@ -170,16 +169,26 @@
               <option>Dissimilarity</option>
             </select>
           </div>
-          <div>
-            <!-- <button>reset</button>              -->
-          </div>
         </div>
-        <div class="flex-col">
+
+        <!-- Tab links -->
+        <div class="tab">
+          <button class="tablinks active" onclick="showRule(event, 'overview')">
+            Overview
+          </button>
+          <button class="tablinks" onclick="showRule(event, 'linked')">
+            Linked Nodes
+          </button>
+        </div>
+
+        <!-- Overview -->
+        <div class="flex-col tabcontent" id="overview" style="display: flex">
           <div id="column_div" style="max-width: 800px; overflow-x: scroll;">
             <div>
               <svg id="column_svg"></svg>            
             </div>
           </div>
+
           <div style="max-height: 200px; max-width: 950px; overflow: scroll;">
             <div id="rule_div" style="height: 200px; max-width: 800px; overflow: scroll;">
               <div>
@@ -193,6 +202,29 @@
             </div>
           </div>
         </div>
+
+        <!-- Linked nodes-->
+        <div class="flex-col tabcontent" id="linked">
+          <div id="column_div2" style="max-width: 800px; overflow-x: scroll;">
+            <div>
+              <svg id="column_svg2"></svg>            
+            </div>
+          </div>
+
+          <div style="max-height: 200px; max-width: 950px; overflow: scroll;">
+            <div id="rule_div2" style="height: 200px; max-width: 800px; overflow: scroll;">
+              <div>
+                <svg id="rule_svg2"></svg>            
+              </div>
+            </div>
+            <div id="stat_div2" style="max-height: 200px; max-width: 100px; overflow-y: scroll;">
+              <div>
+                <svg id="stat2"></svg>              
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div id="rule_description" class="flex-col">          
         </div>
       </div>  
@@ -210,6 +242,7 @@
   <script src="/static_main_node/util.js"></script>
   <script src="/static_main_node/summary_view.js"></script>
   <script src="/static_main_node/controller.js"></script>
+  <script src="/static_main_node/linked_rule_view.js"></script>
   <script src="/static_main_node/interactive_table.js"></script>
   </body>
 </html>

@@ -88,6 +88,78 @@ function click_cancel() {
 		.style("display", "none");
 }
 
+function click_summary_node(node_id) {
+    console.log('click node: '+ node_id)
+
+    // highlight in the overview
+    if (node2rule[node_id]) {      
+      rule_svg.select(`#back-rect-${clicked_summary_node_id}`)
+            .classed('rule_highlight', false);
+
+      if (clicked_summary_node_id == node_id) {
+        clicked_summary_node_id = -1;
+      } else {
+        rule_svg.select(`#back-rect-${node2rule[node_id]}`)
+          .classed('rule_highlight', true);
+        clicked_summary_node_id = node2rule[node_id];
+
+        document.getElementById('stat_div').scrollTop = yScale(node2rule[node_id]);
+        document.getElementById('rule_div').scrollTop = yScale(node2rule[node_id]);
+      }
+    }
+
+
+    // get the linked node information
+    let linked_node_ids = find_connection(node_id);
+
+    // link the node in the summary view
+    let summary_view = d3.select('#summary_view');
+    summary_view.selectAll(".link").remove();
+
+    linked_node_ids.sort((a,b) => a-b);
+    linked_node_ids.forEach((id, i) => {
+    	if (i == 0) {
+    		return;
+    	}
+    	let parent = linked_node_ids[i-1];
+    	if (i === linked_node_ids.length - 1 && node_info[id]['parent']!== parent) {
+    		parent = linked_node_ids[i-2];
+    	}
+    	
+    	summary_view.append('line')
+			.attr('class', 'link')
+			.attr("x1", summary_x(node_info[parent]['fidelity']))
+		    .attr("x2", summary_x(node_info[id]['fidelity']))
+		    .attr("y1", summary_y(node_info[parent]['depth']))
+		    .attr("y2", summary_y(node_info[id]['depth']))
+		    .style("stroke", nodeHighlightColor)
+		    .style("stroke-width", "1px")
+		    .style("stroke-dasharray", );
+    })
+
+    // show details in the detail view
+    let query_url = domain + "find_linked_rules/" + node_id;
+    linked_rules = fetch(query_url).then((data) => {
+      if(data.status !== 200 || !data.ok) {
+        throw new Error(`server returned ${data.status}${data.ok ? " ok" : ""}`);
+      }
+      const ct = data.headers.get("content-type");
+      return data.json();
+    }).then((node_rules) => {
+		let rules = node_rules['rule_lists'];
+	    present_rules = rules;
+	    col_order = column_order_by_feat_freq(rules);
+
+	    // update linked node2rule pos
+	    linkednode2rule = {};
+	    rules.forEach((d, idx) => {
+	      linkednode2rule[d['node_id']] = idx;
+	    })
+	    // update_column_rendering(col_svg2);
+		update_linked_rule_rendering(rules, col_order);
+	})
+}
+
 function click_rule(rule_idx) {
 	console.log('click rule row-'+rule_idx);
 
@@ -114,6 +186,27 @@ function click_rule(rule_idx) {
 
 	rule_des.append('p')
 		.text(`THEN ${target_names[listData[rule_idx]['label']]}`)
+}
+
+function showRule(evt, id) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(id).style.display = "flex";
+  evt.currentTarget.className += " active";
 }
 
 

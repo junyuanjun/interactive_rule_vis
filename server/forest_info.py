@@ -108,3 +108,13 @@ class Forest():
 
 		return leaf_rules
 
+	def find_linked_rules(self, node_id):
+		self.rule_traversal(node_id)
+		p_id = node_id
+		linked_rules = []
+		while (p_id > 0):
+			linked_rules.append(self.convert2rule(p_id))
+			p_id = self.node_info[p_id]['parent']
+		return linked_rules
+
+

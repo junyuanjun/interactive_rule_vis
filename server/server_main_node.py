@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask import request
 from flask import send_from_directory
 
-app = Flask(__name__, static_folder="../static", template_folder="../static")
+app = Flask(__name__, static_folder="../static_main_node", template_folder="../static_main_node")
 CORS(app)
 
 forest = Forest()
@@ -14,12 +14,12 @@ forest = Forest()
 @app.route("/index.html")
 def index():
 	print("return index.html")
-	return send_from_directory('../static/', 'interactive_rule_table.html')
+	return send_from_directory('../static_main_node/', 'interactive_rule_table.html')
 
-@app.route('/static/<path:path>')
+@app.route('/static_main_node/<path:path>')
 def send_static(path):
 	print("return file at: "+path)
-	return send_from_directory('../static', path)
+	return send_from_directory('../static_main_node', path)
 
 @app.route('/data/<path:path>')
 def send_data(path):
@@ -55,7 +55,11 @@ def find_leaf_rules():
 @app.route("/find_linked_rules/<node_id>")
 def find_linked_rules(node_id):
 	print("===== FIND LINKED RULES =====")
-	ranked_rules = forest.find_linked_rules(node_id)
+	try:
+		int_node_id = int(node_id)
+	except:
+		return "Please enter a number"
+	ranked_rules = forest.find_linked_rules(int_node_id)
 	return {'rule_lists': ranked_rules}
 
 
