@@ -5,3 +5,4 @@ const GRADIENT_RULE_VIS = "gradient_range";
 const MEDIAN_RULE_VIS = "median_range";
 const MEDIAN_VAL_VIS = "median_val_vis";
 
+let new_nodes;

@@ -12,7 +12,7 @@ let linkednode2rule = {};
 let new_node_shown = {};
 
 function filter_nodes(node_info) {
-	let new_nodes = [];
+	new_nodes = [];
 
   new_node_shown = {};
 	Object.keys(node_info).forEach(idx => {

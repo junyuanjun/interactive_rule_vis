@@ -97,9 +97,9 @@
 
                   <div class='flex-row'>
                     <div class="title"><span>Node Encoding </span></div>
-                    <select>
-                      <option>Accuracy</option>
-                      <option>Purity</option>
+                    <select id="node_encoding">
+                      <option value="accuracy">Accuracy</option>
+                      <option value="purity">Purity</option>
                     </select>
                   </div>
 
@@ -111,7 +111,7 @@
                     </select>
                   </div>
                 
-                  <hr width="190px" style="margin: 15px 0 5px 0;">
+                  <hr width="190px" style="margin: 5px 0 5px 0;">
                   <!-- Sorting columns -->
                   <!-- <div class='flex-row' style="margin-right: 20px">
                     <div class="title"><span>Sorting Features by: </span></div>
@@ -231,10 +231,9 @@
           </table>
           
         </div>
-
-        <div id="rule_description" class="flex-col">          
-        </div>
       </div>  
+    </div>
+    <div id="rule_description" class="flex-col">          
     </div>
     <canvas id="myCanvas" width="0" height="0"></canvas>
   	

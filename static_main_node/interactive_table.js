@@ -329,7 +329,6 @@ function render_slider() {
         .width(overviewWidth)
         .default([0, 100])
         .fill('#2196f3')
-        // .fill('url(#summary-linear-gradient)')
         .on('drag', val => {
             // change the text
             d3.select('#accuracy-text').text(`Accuracy: ${val.map(d => d3.format('.2%')(d/100)).join('-')}`);
@@ -706,24 +705,25 @@ function update_rule_rendering(listData, col_order, row_order) {
         .attr("y",  0)
         .attr("height", glyphCellHeight)
         .attr("fill", rule => {
-            let left, right;
-            if (rule['sign'] == 'range') {
-                left = rule['threshold0'];
-                right = rule['threshold1'];
-            } else if (rule['sign'] == '<=') {
-                left = real_min[rule['feature']];
-                right = rule['threshold'];
-            } else if (rule['sign'] == '>') {
-                left = rule['threshold'];
-                right = real_max[rule['feature']];
-            } else {
-                console.log('invalid rule');
-            }
-            left = left.toFixed(1);
-            right = right.toFixed(1);
-            let id = `range-${rule['feature']}-${left}-${right}`
-            id = id.replace(/\./g, '_');
-            return `url(#linear-gradient-${id})`
+            // let left, right;
+            // if (rule['sign'] == 'range') {
+            //     left = rule['threshold0'];
+            //     right = rule['threshold1'];
+            // } else if (rule['sign'] == '<=') {
+            //     left = real_min[rule['feature']];
+            //     right = rule['threshold'];
+            // } else if (rule['sign'] == '>') {
+            //     left = rule['threshold'];
+            //     right = real_max[rule['feature']];
+            // } else {
+            //     console.log('invalid rule');
+            // }
+            // left = left.toFixed(1);
+            // right = right.toFixed(1);
+            // let id = `range-${rule['feature']}-${left}-${right}`
+            // id = id.replace(/\./g, '_');
+            // return `url(#linear-gradient-${id})`
+            return 'dimgray'
         })
 
     // grid

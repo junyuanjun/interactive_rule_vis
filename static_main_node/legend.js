@@ -1,4 +1,4 @@
-var legendHeight = 20, legendWidth = 600;
+var legendHeight = 50, legendWidth = 200;
 
 var colors = ["steelblue", "#fb9a99"];
 var conf_colors = ['#2887a1', '#cf597e'];
@@ -101,5 +101,53 @@ function render_legend_label(id) {
  //    	.attr('x', xoffset + rectWidth + 5)
  //    	.attr('y', yoffset+r)
  //    	.text('range: low→median→high')
+
+
+ 	// color legend
+    let linear_gradient = legend.append('defs')
+        .append('linearGradient')
+      .attr('id', "summary-linear-gradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "100%")
+      .attr("y2", "0%");
+
+    linear_gradient.append('stop')
+      .attr('offset', '0%')
+      .attr('stop-color', stop_colors[0]);
+
+    linear_gradient.append('stop')
+      .attr('offset', '50%')
+      .attr('stop-color', stop_colors[1]);
+
+    linear_gradient.append('stop')
+      .attr('offset', '100%')
+      .attr('stop-color', stop_colors[2]);
+
+    // g.append('rect')
+    // 	.attr('x', view_margin.left)
+    // 	.attr('y', tree_height + view_margin.top )
+    // 	.attr('width', 60)
+    // 	.attr('height', 10)
+    // 	.attr('fill', `url(#summary-linear-gradient)`)
+
+    // g.append('text')
+    // 	.attr('x', view_margin.left + 80)
+    // 	.attr('y', tree_height + view_margin.top + 10)
+    // 	.text('accuracy: [0, 100%]')
+
+    yoffset += indent
+    g.append('rect')
+    	.attr('x', indent-r)
+    	.attr('y', yoffset-r)
+    	.attr('width', rectWidth)
+    	.attr('height', 10)
+    	.attr('fill', `url(#summary-linear-gradient)`)
+
+    g.append('text')
+    	.attr('x', indent + rectWidth)
+    	.attr('y', yoffset+r)
+    	.text('accuracy: [0, 100%]')
+
 }
 

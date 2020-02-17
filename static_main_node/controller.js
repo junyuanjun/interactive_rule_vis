@@ -2,6 +2,7 @@ let ori_order = [];
 let col_order = [];
 
 let phrased_rule_id = -1;
+let NODE_ENCODING = "accuracy";
 
 d3.select("#col_sort")
 	.on("change", function() {
@@ -12,7 +13,13 @@ d3.select("#col_sort")
 		} else if (val = "feat_freq") {
 
 		}
-	})
+	});
+
+d3.select("#node_encoding")
+	.on("change", function() {
+		let val = d3.select(this).property('value');
+		change_node_encoding(val);
+	});
 
 d3.select("#generate_rule")
 	.on("click", function() {
@@ -213,4 +220,8 @@ function showRule(evt, id) {
   evt.currentTarget.className += " active";
 }
 
+function change_node_encoding(val) {
+	NODE_ENCODING = val;
 
+	update_summary(new_nodes);	
+}

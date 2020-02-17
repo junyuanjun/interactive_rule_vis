@@ -100,10 +100,11 @@ function render_summary(node_info, max_depth) {
 
 
     // support -> size, fidelity -> x_pos, accuracy -> color
-    view.selectAll('.rule-node')
+    nodes = view.selectAll('.rule-node')
     	.data(node_info)
-    	.enter()
-    	.append('circle')
+    	.enter();
+
+    nodes.append('circle')
       .attr("id", d => `node-${d['node_id']}`)
     	.attr('class', 'rule-node')
     	.attr('cx', d => summary_x(d['fidelity']))
@@ -122,38 +123,7 @@ function render_summary(node_info, max_depth) {
         \nFidelity: ${d['fidelity']}\nAccuracy: ${d['accuracy']}`);
 
 
-    // color legend
-    let linear_gradient = view.append('defs')
-        .append('linearGradient')
-      .attr('id', "summary-linear-gradient")
-      .attr("x1", "0%")
-      .attr("y1", "0%")
-      .attr("x2", "100%")
-      .attr("y2", "0%");
-
-    linear_gradient.append('stop')
-      .attr('offset', '0%')
-      .attr('stop-color', stop_colors[0]);
-
-    linear_gradient.append('stop')
-      .attr('offset', '50%')
-      .attr('stop-color', stop_colors[1]);
-
-    linear_gradient.append('stop')
-      .attr('offset', '100%')
-      .attr('stop-color', stop_colors[2]);
-
-    view.append('rect')
-    	.attr('x', view_margin.left)
-    	.attr('y', tree_height + view_margin.top )
-    	.attr('width', 60)
-    	.attr('height', 10)
-    	.attr('fill', `url(#summary-linear-gradient)`)
-
-    view.append('text')
-    	.attr('x', view_margin.left + 80)
-    	.attr('y', tree_height + view_margin.top + 10)
-    	.text('accuracy: [0, 100%]')
+    
 }
 
 function update_summary(node_info, ) {
@@ -165,28 +135,55 @@ function update_summary(node_info, ) {
 
   view.selectAll('.rule-node').remove();
 
-  view.selectAll('.rule-node')
+  nodes = view.selectAll('.rule-node')
       .data(node_info)
       .enter()
-      .append('circle')
+      .append('g')
       .attr("id", d => `node-${d['node_id']}`)
       .attr('class', 'rule-node')
-      .attr('cx', d => summary_x(d['fidelity']) + Math.random()-.5)
-      .attr('cy', d => summary_y(d['depth']))
-      .attr('r', d => summary_size(d['support']))
-      .attr('stroke', 'none')
-      .attr('fill', d => summary_color(d['accuracy']))
-      .attr('fill-opacity', .8)
-      .attr("stroke", d => {
-        return node2rule[d['node_id']] !== undefined ? 'black' : 'none';
-      })
-      .on('click', d => {
-        click_summary_node(d['node_id'])
-      })
-      .append('title')
-      .text(d=>`Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};
-        Fidelity: ${d['fidelity']};\nAccuracy: ${d['accuracy']}
-        NodeID: ${d['node_id']}; Rule index: ${node2rule[d['node_id']]}`);
-;
+  
+  switch (NODE_ENCODING) {
+      case "accuracy":
+        nodes.append('circle')
+          .attr('cx', d => summary_x(d['fidelity']) + Math.random()-.5)
+          .attr('cy', d => summary_y(d['depth']))
+          .attr('r', d => summary_size(d['support']))
+          .attr('stroke', 'none')
+          .attr('fill', d => summary_color(d['accuracy']))
+          .attr('fill-opacity', .8)
+          .attr("stroke", d => {
+            return node2rule[d['node_id']] !== undefined ? 'black' : 'none';
+          })
+          .on('click', d => {
+            click_summary_node(d['node_id'])
+          })
+          .append('title')
+          .text(d=>`Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};
+            Fidelity: ${d['fidelity']};\nAccuracy: ${d['accuracy']}
+            NodeID: ${d['node_id']}; Rule index: ${node2rule[d['node_id']]}`);
+        break;
+      case "purity":
+        let pie = d3.pie()
+          .value(d => d);
+
+        nodes
+          .attr('transform', d => `translate(${summary_x(d['fidelity']) + Math.random()-.5}, ${summary_y(d['depth'])})`)
+          .on('click', d => {
+            click_summary_node(d['node_id'])
+          })
+          .selectAll('path')
+          .data(node => {
+             let ready = pie(node['value'])
+             ready.forEach(part => part['support'] = node['support']);
+             return ready;
+          }).enter()
+          .append("path")
+          .attr('d', d => d3.arc()
+            .innerRadius(0)
+            .outerRadius(summary_size(d['support']))(d)
+          )
+          .attr('fill', (d, i) => colorCate[i])
+          .attr("stroke", "none")
+    }
 }
 

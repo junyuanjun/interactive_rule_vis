@@ -157,24 +157,25 @@ function update_linked_rule_rendering(listData, col_order,) {
         .attr("y",  0)
         .attr("height", glyphCellHeight)
         .attr("fill", rule => {
-            let left, right;
-            if (rule['sign'] == 'range') {
-                left = rule['threshold0'];
-                right = rule['threshold1'];
-            } else if (rule['sign'] == '<=') {
-                left = real_min[rule['feature']];
-                right = rule['threshold'];
-            } else if (rule['sign'] == '>') {
-                left = rule['threshold'];
-                right = real_max[rule['feature']];
-            } else {
-                console.log('invalid rule');
-            }
-            left = left.toFixed(1);
-            right = right.toFixed(1);
-            let id = `range-${rule['feature']}-${left}-${right}`
-            id = id.replace(/\./g, '_');
-            return `url(#liniked-linear-gradient-${id})`
+            // let left, right;
+            // if (rule['sign'] == 'range') {
+            //     left = rule['threshold0'];
+            //     right = rule['threshold1'];
+            // } else if (rule['sign'] == '<=') {
+            //     left = real_min[rule['feature']];
+            //     right = rule['threshold'];
+            // } else if (rule['sign'] == '>') {
+            //     left = rule['threshold'];
+            //     right = real_max[rule['feature']];
+            // } else {
+            //     console.log('invalid rule');
+            // }
+            // left = left.toFixed(1);
+            // right = right.toFixed(1);
+            // let id = `range-${rule['feature']}-${left}-${right}`
+            // id = id.replace(/\./g, '_');
+            // return `url(#liniked-linear-gradient-${id})`
+            return 'dimgray'
         })
 
     // grid
