@@ -1,5 +1,5 @@
 let depth_height = 18;
-let view_width = 950;
+let view_width = 980;
 let max_r = 15;
 
 let summary_x,
@@ -13,7 +13,7 @@ let stop_colors = ['#fc8d59', '#ffffbf', '#91bfdb'];
 stop_colors = ['#d7191c', '#ffffbf', '#2c7bb6'];
 stop_colors = ['#e66101', '#f3eeea', '#7b3294', ]
 
-let view_margin = {left:15+max_r, right:5+max_r/2, top:max_r, bottom:max_r};
+let view_margin = {left:25+max_r, right:max_r, top:max_r, bottom:max_r};
 let x_tick_height = 18;
 
 let summary_x_tick = d3.select('#summary_x_tick')
@@ -34,7 +34,7 @@ function intialize_scales(max_depth) {
 
 	summary_x = d3.scaleLinear()
 		.domain([filter_threshold['fidelity'], 1])
-		.range([view_margin.left, view_width - view_margin.right - view_margin.left]);
+		.range([view_margin.left, view_margin.left+view_width]);
 
 	summary_y = d3.scaleLinear()
 		.domain([0, max_depth])
@@ -89,7 +89,7 @@ function render_summary(node_info, max_depth) {
 
 	depth_info.append("line")
         .attr("x1", view_margin.left)
-        .attr("x2", view_width-view_margin.left-view_margin.right)
+        .attr("x2", view_width+view_margin.left)
         .attr('stroke-width', .5)
         .style("stroke", gridColor);
   depth_info.append('text')

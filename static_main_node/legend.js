@@ -63,43 +63,43 @@ function render_legend_label(id) {
 	});
 
 	// legend for range bar
-	let linear_gradient = legend.append('defs')
-	  .append('linearGradient')
-      .attr('class','linear_gradient')
-      .attr('id', function(d) {
-        return "linear-gradient-legend";
-      })
-      .attr("x1", "0%")
-      .attr("y1", "0%")
-      .attr("x2", "100%")
-      .attr("y2", "0%");
+	// let linear_gradient = legend.append('defs')
+	//   .append('linearGradient')
+ //      .attr('class','linear_gradient')
+ //      .attr('id', function(d) {
+ //        return "linear-gradient-legend";
+ //      })
+ //      .attr("x1", "0%")
+ //      .attr("y1", "0%")
+ //      .attr("x2", "100%")
+ //      .attr("y2", "0%");
 
-    linear_gradient.append('stop')
-      .attr('class','linear_gradient_start')
-      .attr('offset', '0%')
-      .attr('stop-color', gradientColor[0]);
+ //    linear_gradient.append('stop')
+ //      .attr('class','linear_gradient_start')
+ //      .attr('offset', '0%')
+ //      .attr('stop-color', gradientColor[0]);
 
-    linear_gradient.append('stop')
-      .attr('class','linear_gradient_mid')
-      .attr('offset', '50%')
-      .attr('stop-color', gradientColor[1]);
+ //    linear_gradient.append('stop')
+ //      .attr('class','linear_gradient_mid')
+ //      .attr('offset', '50%')
+ //      .attr('stop-color', gradientColor[1]);
 
-    linear_gradient.append('stop')
-      .attr('class','linear_gradient_end')
-      .attr('offset', '100%')
-      .attr('stop-color', gradientColor[2]);
+ //    linear_gradient.append('stop')
+ //      .attr('class','linear_gradient_end')
+ //      .attr('offset', '100%')
+ //      .attr('stop-color', gradientColor[2]);
 
-    xoffset += indent;
-    g.append('rect')
-    	.attr('x', xoffset)
-    	.attr('y', yoffset-r)
-    	.attr('width', rectWidth)
-    	.attr('height', 10)
-    	.attr('fill', `url(#linear-gradient-legend)`)
+ //    xoffset += indent;
+ //    g.append('rect')
+ //    	.attr('x', xoffset)
+ //    	.attr('y', yoffset-r)
+ //    	.attr('width', rectWidth)
+ //    	.attr('height', 10)
+ //    	.attr('fill', `url(#linear-gradient-legend)`)
 
-    g.append('text')
-    	.attr('x', xoffset + rectWidth + 5)
-    	.attr('y', yoffset+r)
-    	.text('range: low→median→high')
+ //    g.append('text')
+ //    	.attr('x', xoffset + rectWidth + 5)
+ //    	.attr('y', yoffset+r)
+ //    	.text('range: low→median→high')
 }
 

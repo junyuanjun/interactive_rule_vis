@@ -4,7 +4,7 @@ let margin = {top: 0, right: 50, bottom: 5, left: 10},
     height,
     // height = 300 - margin.top - margin.bottom
     indent = 40;
-let overviewWidth = 250;
+let overviewWidth = 150;
 
 let folder = "fico";
 
