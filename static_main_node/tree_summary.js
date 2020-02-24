@@ -14,7 +14,7 @@ function diagonal(s, d) {
 }
 
 function generate_tree(treeData) {
-	d3.select('#summary_view > *').remove();
+	d3.selectAll('#summary_view > *:not(.depth-line)').remove();
 
 	root1 = d3.hierarchy(treeData, function(d) { return d.children; });
 	root1.x0 = tree_height / 2;

@@ -236,12 +236,16 @@ function click_rule(rule_idx, rule) {
 
 		let matched_data = data['matched_data']
 
-		let rows = d3.select('#data-table').append('tbody')
+		d3.selectAll('#data-table *').remove();
+		
+		let rows = d3.select('#data-table').append('table')
+			.append('tbody')
+			.selectAll('tr')
 			.data(matched_data)
 			.enter()
 			.append('tr');
 
-		rows.selectAll('td')
+		let cells = rows.selectAll('td')
 			.data(row => row)
 			.enter()
 			.append('td')

@@ -170,3 +170,14 @@ rect {
 #radio_group input {
   width: 13px;
 }
+
+#data-table {
+  max-height: 50px; 
+  overflow: scroll;
+}
+
+#data-table table {
+  width: 950px; 
+  border: 1px solid lightgrey;
+  margin-left: 10px; 
+}
