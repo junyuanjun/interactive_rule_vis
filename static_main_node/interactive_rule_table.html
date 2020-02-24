@@ -88,38 +88,79 @@
               </div>
 
               <!-- Statics -->
-              <div class="flex-col" style="margin-left: 5px">
+              <div class="flex-col" id="setting-block" style="margin-left: 5px">
                 <div class='flex-col' >
-                  <!-- Pruning -->
-                  <div class="title flex-row" style="margin-right: 20px">
-                    <span>Number of Rules: </span>
-                    <span id="rule-num" style="font-weight: normal;"></span>
-                    <div>
-                      <input style="border-bottom: none; width: 15px; margin-left: 10px"  type="image" src="static_main_node/gear.png" 
-                      onclick="click_setting()">                      
+              
+                  <!-- Tab links -->
+                  <div class="tab">
+                    <input class="tablinks active" onclick="click_setting_tab(event, 'data-setting')"
+                       type="image" src="static_main_node/data-icon.png" >
+                    </input>
+                    <input class="tablinks" onclick="click_setting_tab(event, 'vis-setting')"
+                      type="image" src="static_main_node/vis-icon.png">
+                      
+                    </input>
+                  </div>
+
+                  <!-- Rule/Node Generation Setting -->
+                  <div class="flex-col tabcontent" id="data-setting" style="display: flex">
+                    <!-- Pruning -->
+                    <div class="title flex-row" style="margin-right: 20px">
+                      <span>Number of Rules: </span>
+                      <span id="rule-num" style="font-weight: normal;"></span>
+                      <div>
+                        <input style="border-bottom: none; width: 15px; margin-left: 10px"  type="image" src="static_main_node/gear.png" 
+                        onclick="click_setting()">                      
+                      </div>
+                    </div>
+
+                    <!-- Filtering Accuracy -->
+                    <span id="accuracy-text" style="margin-bottom: 1px">Accuracy:</span>
+                    <div id="slider-accuracy"></div>
+
+                    <!-- Sorting rows -->
+                    <div class='flex-row'>
+                      <div class="title"><span>Sorting Rules by: </span></div>
+                      <select>
+                        <option>Accuracy</option>
+                        <option>F1</option>
+                        <option>Recall</option>
+                        <option>Precision</option>
+                        <option>Support</option>
+                        <option>Fedelity</option>
+                        <!-- <option>Dissimilarity</option> -->
+                      </select>
                     </div>
                   </div>
-                  <!-- Filtering Accuracy -->
-                  <span id="accuracy-text" style="margin-bottom: 1px">Accuracy:</span>
-                  <div id="slider-accuracy"></div>
 
-                  <div class='flex-row'>
-                    <div class="title"><span>Node Encoding </span></div>
-                    <select id="node_encoding">
-                      <option value="accuracy">Accuracy</option>
-                      <option value="purity">Purity</option>
-                    </select>
+                  <!-- Visualization Settings -->
+                  <div class="tabcontent flex-col" id="vis-setting">
+                    <div class='flex-row'>
+                      <div class="title"><span>Node Encoding </span></div>
+                      <select id="node_encoding">
+                        <option value="accuracy">Accuracy</option>
+                        <option value="purity">Purity</option>
+                      </select>
+                    </div>
+
+                    <div class='flex-row'>
+                      <div class="title"><span>X position </span></div>
+                      <select id="x_position">
+                        <option value="stat">Fidelity</option>
+                        <option value="tree">Tree Layout</option>
+                        <option value="accuracy">Accuracy</option>
+                      </select>
+                    </div>
+
+                    <div class='flex-row'>
+                      <div class="title"><span>Node Color For</span></div>
+                      <select id="x_position">
+                        <option value="stat">Fidelity</option>
+                        <option value="accuracy">Accuracy</option>
+                      </select>
+                    </div>
                   </div>
 
-                  <div class='flex-row'>
-                    <div class="title"><span>X position </span></div>
-                    <select id="x_position">
-                      <option value="stat">Fidelity</option>
-                      <option value="tree">Tree Layout</option>
-                      <option value="accuracy">Accuracy</option>
-                    </select>
-                  </div>
-                
                   <hr width="190px" style="margin: 5px 0 5px 0;">
                   <!-- Sorting columns -->
                   <!-- <div class='flex-row' style="margin-right: 20px">
@@ -128,20 +169,6 @@
                       <option value="feat_freq">Feature Frequency</option>
                     </select>
                   </div> -->
-
-                  <!-- Sorting rows -->
-                  <div class='flex-row'>
-                    <div class="title"><span>Sorting Rules by: </span></div>
-                    <select>
-                      <option>Accuracy</option>
-                      <option>F1</option>
-                      <option>Recall</option>
-                      <option>Precision</option>
-                      <option>Support</option>
-                      <option>Fedelity</option>
-                      <!-- <option>Dissimilarity</option> -->
-                    </select>
-                  </div>
 
                   <!-- legend -->
                   <div class="flex-col">
@@ -156,90 +183,64 @@
         </div>
         <!-- Rules -->
 
-        <!-- Tab links -->
-        <div class="tab" style="margin-top: 10px">
-          <button class="tablinks active" onclick="showRule(event, 'overview')">
-            Overview
-          </button>
-          <button class="tablinks" onclick="showRule(event, 'linked')">
-            Selected Nodes
-          </button>
-        </div>
-
-        <!-- Overview -->
-        <div class="flex-col tabcontent" id="overview" style="display: flex">
-          <div id="column_div" style="max-width: 1200px; overflow-x: scroll;">
-            <div>
-              <svg id="column_svg"></svg>            
-            </div>
+        <div id="rule-detail">
+          <!-- Tab links -->
+          <div class="tab" style="margin-top: 10px">
+            <button class="tablinks active" onclick="showRule(event, 'overview')">
+              Overview
+            </button>
+            <button class="tablinks" onclick="showRule(event, 'linked')">
+              Selected Nodes
+            </button>
           </div>
 
-          <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
-            <div id="rule_div" style="height: 150px; max-width: 1200px; overflow: scroll;">
+          <!-- Overview -->
+          <div class="flex-col tabcontent" id="overview" style="display: flex">
+            <div id="column_div" style="max-width: 1200px; overflow-x: scroll;">
               <div>
-                <svg id="rule_svg"></svg>            
+                <svg id="column_svg"></svg>            
               </div>
             </div>
-            <div id="stat_div" style="max-height: 150px; max-width: 100px; overflow-y: scroll;">
-              <div>
-                <svg id="stat"></svg>              
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Linked nodes-->
-        <div class="flex-col tabcontent" id="linked">
-          <div id="column_div2" style="max-width: 1200px; overflow-x: scroll;">
-            <div>
-              <svg id="column_svg2"></svg>            
-            </div>
-          </div>
-
-          <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
-            <div id="rule_div2" style="height: 150px; max-width: 1200px; overflow: scroll;">
-              <div>
-                <svg id="rule_svg2"></svg>            
+            <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
+              <div id="rule_div" style="height: 150px; max-width: 1200px; overflow: scroll;">
+                <div>
+                  <svg id="rule_svg"></svg>            
+                </div>
               </div>
-            </div>
-            <div id="stat_div2" style="max-height: 150px; max-width: 100px; overflow-y: scroll;">
-              <div>
-                <svg id="stat2"></svg>              
+              <div id="stat_div" style="max-height: 150px; max-width: 100px; overflow-y: scroll;">
+                <div>
+                  <svg id="stat"></svg>              
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- Linked nodes-->
+          <div class="flex-col tabcontent" id="linked">
+            <div id="column_div2" style="max-width: 1200px; overflow-x: scroll;">
+              <div>
+                <svg id="column_svg2"></svg>            
+              </div>
+            </div>
+
+            <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
+              <div id="rule_div2" style="height: 150px; max-width: 1200px; overflow: scroll;">
+                <div>
+                  <svg id="rule_svg2"></svg>            
+                </div>
+              </div>
+              <div id="stat_div2" style="max-height: 150px; max-width: 100px; overflow-y: scroll;">
+                <div>
+                  <svg id="stat2"></svg>              
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         <div id="data-table" style="margin-top: 5px">
-          <table>
-            <tbody>
-                <tr>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                  <td>10</td>
-                </tr>
-            </tbody>
-          </table>
-          
         </div>
       </div>  
     </div>

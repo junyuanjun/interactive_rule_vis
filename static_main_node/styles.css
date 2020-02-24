@@ -5,6 +5,7 @@
 body{
   font-family: sans-serif;
   font-size: 12px;  
+  margin-top: 0;
 }
 
 td {
@@ -147,15 +148,38 @@ rect {
   background-color: #ddd;
 }
 
-/* Create an active/current tablink class */
 .tab button.active {
+  background-color: #ccc;
+}
+
+/* Create an active/current tablink class */
+.tab input.active {
+  background-color: #ccc;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab input {
+  background-color: inherit;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab input:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab input.active {
   background-color: #ccc;
 }
 
 /* Style the tab content */
 .tabcontent {
   display: none;
-  border: 1px solid #ccc;
   border-top: none;
 }
 
