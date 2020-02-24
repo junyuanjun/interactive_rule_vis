@@ -3,6 +3,7 @@ let col_order = [];
 
 let phrased_rule_id = -1;
 let NODE_ENCODING = "accuracy";
+let SUMMARY_LAYOUT = "stat";
 
 d3.select("#col_sort")
 	.on("change", function() {
@@ -19,6 +20,12 @@ d3.select("#node_encoding")
 	.on("change", function() {
 		let val = d3.select(this).property('value');
 		change_node_encoding(val);
+	});
+
+d3.select("#x_position")
+	.on("change", function() {
+		let val = d3.select(this).property('value');
+		change_x_position(val);
 	});
 
 d3.select("#generate_rule")
@@ -119,40 +126,64 @@ function click_summary_node(node_id) {
     // get the linked node information
     let linked_node_ids = find_connection(node_id);
 
-    // link the node in the summary view
+	// link the node in the summary view
     let summary_view = d3.select('#summary_view');
-    summary_view.selectAll(".link").remove();
 
-    linked_node_ids.sort((a,b) => a-b);
-    linked_node_ids.forEach((id, i) => {
-    	if (i == 0) {
-    		return;
-    	}
-    	let parent = linked_node_ids[i-1];
-    	if (i === linked_node_ids.length - 1 && node_info[id]['parent']!== parent) {
-    		parent = linked_node_ids[i-2];
-    	}
-    	
-    	summary_view.append('line')
-			.attr('class', 'link')
-			.attr("x1", summary_x(node_info[parent]['fidelity']))
-		    .attr("x2", summary_x(node_info[id]['fidelity']))
-		    .attr("y1", summary_y(node_info[parent]['depth']))
-		    .attr("y2", summary_y(node_info[id]['depth']))
-		    .style("stroke", nodeHighlightColor)
-		    .style("stroke-width", "1px")
-		    .style("stroke-dasharray", );
-    })
+    if (SUMMARY_LAYOUT == 'stat') {
+	    summary_view.selectAll(".link").remove();
+	    linked_node_ids.sort((a,b) => a-b);
+	    linked_node_ids.forEach((id, i) => {
+	    	if (i == 0) {
+	    		return;
+	    	}
+	    	let parent = linked_node_ids[i-1];
+	    	// if (i === linked_node_ids.length - 1 && node_info[id]['parent']!== parent) {
+	    	// 	parent = linked_node_ids[i-2];
+	    	// }
+	    	
+	    	summary_view.append('line')
+				.attr('class', 'link')
+				.attr("x1", summary_x(node_info[parent]['fidelity']))
+			    .attr("x2", summary_x(node_info[id]['fidelity']))
+			    .attr("y1", summary_y(node_info[parent]['depth']))
+			    .attr("y2", summary_y(node_info[id]['depth']))
+			    .style("stroke", nodeHighlightColor)
+			    .style("stroke-width", "1.5px");
+	    })
+    } else if (SUMMARY_LAYOUT == 'tree') {
+    	summary_view.selectAll('.link')
+    		.style('stroke-width', '.3px')
 
+    	// highlight the path in the tree layout
+		linked_node_ids.sort((a,b) => a-b);
+	    linked_node_ids.forEach((id, i) => {
+	    	if (i == 0) {
+	    		return;
+	    	}
+	    	let parent = node_info[id]['parent'];
+	    	let present_node = id;
+	    	while (parent !== linked_node_ids[i-1]) {
+				summary_view.select(`#tree_link_${id}_${parent}`)
+			   	 .style("stroke-width", "1.5px");
+			   	id = parent;
+			   	parent = node_info[id]['parent'];
+	    	}
+	    	
+	    	summary_view.select(`#tree_link_${id}_${parent}`)
+			    .style("stroke-width", "1.5px");
+	    })
+    }
+   
     // show details in the detail view
-    let query_url = domain + "find_linked_rules/" + node_id;
-    linked_rules = fetch(query_url).then((data) => {
-      if(data.status !== 200 || !data.ok) {
-        throw new Error(`server returned ${data.status}${data.ok ? " ok" : ""}`);
-      }
-      const ct = data.headers.get("content-type");
-      return data.json();
-    }).then((node_rules) => {
+    // let query_url = domain + "find_linked_rules/" + node_id;
+    // linked_rules = fetch(query_url).then((data) => {
+    postData("find_node_rules", linked_node_ids, (node_rules)=>{
+    //   if(data.status !== 200 || !data.ok) {
+    //     throw new Error(`server returned ${data.status}${data.ok ? " ok" : ""}`);
+    //   }
+    //   const ct = data.headers.get("content-type");
+    //   return data.json();
+    // }).then((node_rules) => {
 		let rules = node_rules['rule_lists'];
 	    present_rules = rules;
 	    col_order = column_order_by_feat_freq(rules);
@@ -170,9 +201,9 @@ function click_summary_node(node_id) {
 function click_rule(rule_idx, rule) {
 	console.log('click rule row-'+rule_idx);
 
+	// update rule description
 	let rule_des = d3.select('#rule_description');
 	rule_des.selectAll('p').remove();
-
 
 	let rules = listData[rule_idx];
 	if (rule) {
@@ -197,6 +228,25 @@ function click_rule(rule_idx, rule) {
 
 	rule_des.append('p')
 		.text(str);
+
+	// update data table
+	let url = "get_matched_data"
+	postData(url, JSON.stringify({"rules": rules['rules']}), (data) => {
+		d3.select("#data-table tbody").remove();
+
+		let matched_data = data['matched_data']
+
+		let rows = d3.select('#data-table').append('tbody')
+			.data(matched_data)
+			.enter()
+			.append('tr');
+
+		rows.selectAll('td')
+			.data(row => row)
+			.enter()
+			.append('td')
+			.text(cell => cell);
+	})
 }
 
 function showRule(evt, id) {
@@ -224,4 +274,19 @@ function change_node_encoding(val) {
 	NODE_ENCODING = val;
 
 	update_summary(new_nodes);	
+}
+
+function change_x_position(val) {
+	SUMMARY_LAYOUT = val;
+
+	update_summary(new_nodes);
+}
+
+function click_tree_level(idx) {
+	d3.select(`#depth-${clicked_tree_level}`)
+		.style("stroke-width", .5);
+
+	d3.select(`#depth-${idx}`)
+		.style("stroke-width", 1.5);
+	clicked_tree_level = idx;
 }

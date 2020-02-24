@@ -111,7 +111,10 @@ function update_linked_rule_rendering(listData, col_order,) {
         .attr('y', -rectMarginTop)
         .attr('height', `${glyphCellHeight + rectMarginTop + rectMarginBottom}px`)
         .attr('width', `${width-margin.left}px`)
-        .attr('fill', 'white');
+        // .attr('fill', 'white')
+        .attr('fill', (d, i) => 
+            new_node_shown[d['node_id']] ? 'white': 'rgba(0,0,0,.05)'
+        );
 
     // render the horizontal_line
     row.selectAll(".middle")

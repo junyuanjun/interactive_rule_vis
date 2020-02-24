@@ -1,8 +1,9 @@
 import numpy as np
+import pandas as pd
 import copy
 
 class Forest():
-	def initialize(self, node_info, real_min, real_max):
+	def initialize(self, node_info, real_min, real_max, df):
 		self.node_info = { int(x) : node_info[x] for x in node_info }
 		# self.node_info = node_info
 		ranges = np.zeros(shape=(len(real_max), 2))
@@ -17,7 +18,7 @@ class Forest():
 		# mark the root node
 		self.node_feature_marked[0] = True
 		self.node_feature_ranges[0] = copy.deepcopy(ranges)
-
+		self.df = df
 
 	def empty_has_leaves(self):
 		self.has_leaves = np.zeros(len(self.node_info))
@@ -117,5 +118,28 @@ class Forest():
 			p_id = self.node_info[p_id]['parent']
 		linked_rules.reverse()
 		return linked_rules
+
+	def find_node_rules(self, node_ids):
+		min_node_id = np.min(node_ids)
+		self.rule_traversal(min_node_id)
+		node_rules = []
+		for node_id in node_ids:
+			node_rules.append(self.convert2rule(node_id))
+		return node_rules
+
+	def get_matched_data(self, conditions):
+		cols = self.df.columns
+		matched_data = pd.DataFrame(self.df)
+		for cond in conditions:
+			col = cols[cond['feature']]
+			if (cond['sign'] == '<='):	
+				matched_data = matched_data[matched_data[col] <= cond['threshold']]
+			elif (cond['sign'] == '>'):
+				matched_data = matched_data[matched_data[col] > cond['threshold']]
+			elif (cond['sign'] == 'range'):
+				matched_data = matched_data[(matched_data[col] > cond['threshold0']) & (matched_data[col] <= cond['threshold1'])]
+			else:
+				print("!!!!!! Error rule !!!!!!")
+		return matched_data.values.tolist()
 
 

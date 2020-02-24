@@ -4,7 +4,6 @@
     <meta charset="utf-8">
 
     <title>Bar Table</title>
-<!--     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
 
   <link rel="stylesheet" href="/static_main_node/styles.css">
 
@@ -52,6 +51,14 @@
       </div>
     </div>
 
+    <svg width="0" height="0">
+      <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="4" height="4">
+        <path d="M-1,1 l2,-2
+                 M0,4 l4,-4
+                 M3,5 l2,-2" 
+              style="stroke:black; stroke-width:1" />
+      </pattern>
+    </svg>
     <div class="flex-row">
       
       <!-- Main view of the rules -->
@@ -73,7 +80,8 @@
           <div class="flex-row">
               <!-- Summary View -->
               <div class="flex-col">
-                <div id="summary_div" style="overflow: scroll; max-height: 240px; border: 1px solid lightgrey; margin-bottom: 5px;">
+                <div id="summary_div" class="flex-row" style="overflow: scroll; max-height: 240px; border: 1px solid lightgrey; margin-bottom: 5px;">
+                  <div id="radio_group" class="felx-col"></div>
                   <svg id="summary_view"></svg>
                 </div>
                 <svg id="summary_x_tick"></svg>
@@ -105,9 +113,10 @@
 
                   <div class='flex-row'>
                     <div class="title"><span>X position </span></div>
-                    <select>
-                      <option>Fidelity</option>
-                      <option>Tree layout</option>
+                    <select id="x_position">
+                      <option value="stat">Fidelity</option>
+                      <option value="tree">Tree Layout</option>
+                      <option value="accuracy">Accuracy</option>
                     </select>
                   </div>
                 
@@ -153,7 +162,7 @@
             Overview
           </button>
           <button class="tablinks" onclick="showRule(event, 'linked')">
-            Clicked Nodes
+            Selected Nodes
           </button>
         </div>
 
@@ -201,33 +210,35 @@
           </div>
         </div>
 
-        <div id="data-table" style="margin-top: 5px">
-          <table style="width: 950px; margin-left: 10px; border: 1px solid lightgrey">
-            <tr>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-              <td>10</td>
-            </tr>
-
+        <div style="margin-top: 5px">
+          <table id="data-table"
+          style="width: 950px; max-height: 50px; margin-left: 10px; border: 1px solid lightgrey">
+            <tbody>
+                <tr>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                  <td>10</td>
+                </tr>
+            </tbody>
           </table>
           
         </div>
@@ -246,6 +257,7 @@
   <script src="/static_main_node/const.js"></script>
   <script src="/static_main_node/legend.js"></script>
   <script src="/static_main_node/util.js"></script>
+  <script src="/static_main_node/tree_summary.js"></script>
   <script src="/static_main_node/summary_view.js"></script>
   <script src="/static_main_node/controller.js"></script>
   <script src="/static_main_node/linked_rule_view.js"></script>

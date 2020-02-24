@@ -63,6 +63,7 @@ let i = 0,
     duration = 750,
     root,
     listData,
+    treeData,
     real_min,
     real_max,
     real_5_1, real_5_2, real_5_3, real_5_4,
@@ -90,7 +91,8 @@ function loadData() {
         .defer(d3.json, path + "/list.json")
         .defer(d3.json, path + "/support.json")
         .defer(d3.json, path + "/node_info.json")
-        .await((err, file1, file2, file3, file4) => {
+        .defer(d3.json, path + "/tree.json")
+        .await((err, file1, file2, file3, file4, file5) => {
             if (err) {
                 console.log(err);
                 return;
@@ -115,6 +117,7 @@ function loadData() {
             node_info = file4['node_info_arr'];
             max_depth = file4['max_depth'];
             tot_train = node_info[0]['value'][0] + node_info[0]['value'][1];
+            treeData = file5['tree'][0];
 
             present_rules = listData;
             summary_nodes = filter_nodes(node_info);

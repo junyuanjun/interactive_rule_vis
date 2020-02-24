@@ -1,6 +1,7 @@
 from forest_info import Forest
 import json
 import os
+import pandas as pd
 from flask import Flask
 from flask_cors import CORS
 from flask import request
@@ -39,8 +40,9 @@ def initialize(dataname):
 		data = json.load(json_input)
 		real_min = data['real_min']
 		real_max = data['real_max']
+		df = pd.DataFrame(columns=data['columns'], data=data['data'])
 
-	forest.initialize(node_info, real_min, real_max)
+	forest.initialize(node_info, real_min, real_max, df)
 	print("====initialized====")
 	return "initialized"
 
@@ -52,6 +54,13 @@ def find_leaf_rules():
 	leaf_rules = forest.find_leaf_rules(new_node_ids)
 	return {'rule_lists': leaf_rules}
 
+@app.route("/find_node_rules", methods=['POST'])
+def find_node_rules():
+	print("====== FIND NODE RULES ======")
+	node_ids = json.loads(str(request.get_json(force=True)))
+	ranked_rules = forest.find_node_rules(node_ids)
+	return {'rule_lists': ranked_rules}
+
 @app.route("/find_linked_rules/<node_id>")
 def find_linked_rules(node_id):
 	print("===== FIND LINKED RULES =====")
@@ -62,6 +71,12 @@ def find_linked_rules(node_id):
 	ranked_rules = forest.find_linked_rules(int_node_id)
 	return {'rule_lists': ranked_rules}
 
+@app.route("/get_matched_data", methods=['POST'])
+def get_matched_data():
+	print("===== GET MATCHED DATA =====")
+	rule = json.loads(str(request.get_json(force=True)))
+	matched_data = forest.get_matched_data(rule["rules"])
+	return {"matched_data": matched_data}
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0")

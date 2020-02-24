@@ -162,3 +162,11 @@ rect {
 .support {
   font-size: 8px;
 }
+
+#radio_group {
+  width: 15px;
+}
+
+#radio_group input {
+  width: 13px;
+}

@@ -66,13 +66,13 @@ function find_connection(node_id) {
   }
 
   // find the children
-  let c_id = node_info[node_id]['left'];
-  if (new_node_shown[c_id] && c_id > 0) {
-    connection.push(c_id);
-  }
-  c_id = node_info[node_id]['right'];
-  if (new_node_shown[c_id] && c_id > 0)
-    connection.push(c_id);
+  // let c_id = node_info[node_id]['left'];
+  // if (new_node_shown[c_id] && c_id > 0) {
+  //   connection.push(c_id);
+  // }
+  // c_id = node_info[node_id]['right'];
+  // if (new_node_shown[c_id] && c_id > 0)
+  //   connection.push(c_id);
   
   return connection;
 }

@@ -14,6 +14,7 @@ let gradientColor = [d3.lab("#91bfdb"),d3.lab("#ffffbf"),d3.lab("#fc8d59")]
 
 var handleColor = "#969696", ruleColor = "#d9d9d9", gridColor = "#D3D3D3";
 var nodeHighlightColor = "#e41a1c";
+nodeHighlightColor = "#cccccc"
 var font_family = "Times New Roman";
 var font_size = 10;
 var font = font_size + "px " + font_family;
