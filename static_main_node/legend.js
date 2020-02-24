@@ -26,28 +26,19 @@ var threshold_values = [
 	[20, 62],
 	[2, 5],
 ];
+var yoffset = 5, legend_r = 5;
+var indent = 20;
 
 function render_legend_label(id) {
-	var legend = d3.select(id)
-		.style("width", legendWidth)
-		.style("height", legendHeight)
-		.append("g")
-    	// .attr("transform", "translate(" + 0+ "," + margin.top*2 + ")");
-
-	var indent = 20;
+  var legend = d3.select(id)
+      .style("width", legendWidth)
+      .style("height", legendHeight)
+      .append("g")
 	var g = legend.append("g")	
 		.attr("class", "legend");
 
-	var yoffset = 5;
 	// color legend
-	var r = 5;
-	// g.append("text")
-	// 	.attr("x", 0)
-	// 	.attr("y", indent)
-	// 	.style("font", "16px Arial")
-	// 	.text("Label");
-
-	// yoffset += indent;
+	var r = legend_r;
 
 	let xoffset = 0;
 	target_names.forEach((name, i) => {
@@ -137,18 +128,64 @@ function render_legend_label(id) {
     // 	.attr('y', tree_height + view_margin.top + 10)
     // 	.text('accuracy: [0, 100%]')
 
-    yoffset += indent
-    g.append('rect')
-    	.attr('x', indent-r)
-    	.attr('y', yoffset-r)
-    	.attr('width', rectWidth)
-    	.attr('height', 10)
-    	.attr('fill', `url(#summary-linear-gradient)`)
+    if (NODE_ENCODING !== 'purity') {
+      yoffset += indent
+      g.append('rect')
+        .attr('class', 'node_encoding_legend')
+        .attr('x', indent-r)
+        .attr('y', yoffset-r)
+        .attr('width', rectWidth)
+        .attr('height', 10)
+        .attr('fill', `url(#summary-linear-gradient)`)
 
-    g.append('text')
-    	.attr('x', indent + rectWidth)
-    	.attr('y', yoffset+r)
-    	.text('accuracy: [0, 100%]')
+      g.append('text')
+        .attr('class', 'node_encoding_legend')
+        .attr('x', indent + rectWidth)
+        .attr('y', yoffset+r)
+        .text(() => {
+          switch (NODE_ENCODING) {
+            case 'accuracy':
+              return `accuracy: [${filter_threshold['accuracy'][0]}, ${filter_threshold['accuracy'][1]}]`
+            case 'fidelity':
+              return `fidelity: [${filter_threshold['fidelity']}, 1]`
+          }
+        })
+      } else {
 
+      }
+    
+}
+
+
+function update_legend() {
+  let g = d3.select('.legend');
+
+  g.selectAll('.node_encoding_legend').remove();
+  let r = legend_r;
+
+  if (NODE_ENCODING !== 'purity') {
+      g.append('rect')
+        .attr('class', 'node_encoding_legend')
+        .attr('x', indent-r)
+        .attr('y', yoffset-r)
+        .attr('width', rectWidth)
+        .attr('height', 10)
+        .attr('fill', `url(#summary-linear-gradient)`)
+
+      g.append('text')
+        .attr('class', 'node_encoding_legend')
+        .attr('x', indent + rectWidth)
+        .attr('y', yoffset+r)
+        .text(() => {
+          switch (NODE_ENCODING) {
+            case 'accuracy':
+              return `accuracy: [${filter_threshold['accuracy'][0]}, ${filter_threshold['accuracy'][1]}]`
+            case 'fidelity':
+              return `fidelity: [${filter_threshold['fidelity']}, 1]`
+          }
+        })
+      } else {
+
+      }
 }
 

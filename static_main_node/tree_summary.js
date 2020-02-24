@@ -170,5 +170,4 @@ function click_text(node_id) {
  //  update_text(d);
  	console.log("click tree node");
     click_summary_node(node_id)
-
 }

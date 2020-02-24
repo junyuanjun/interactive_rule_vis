@@ -4,6 +4,7 @@ let col_order = [];
 let phrased_rule_id = -1;
 let NODE_ENCODING = "accuracy";
 let SUMMARY_LAYOUT = "stat";
+let X_POS = 'fidelity';
 
 d3.select("#col_sort")
 	.on("change", function() {
@@ -22,16 +23,22 @@ d3.select("#node_encoding")
 		change_node_encoding(val);
 	});
 
-d3.select("#x_position")
+d3.select("#layout")
 	.on("change", function() {
 		let val = d3.select(this).property('value');
-		change_x_position(val);
+		change_layout(val);
 	});
 
 d3.select("#generate_rule")
 	.on("click", function() {
 		generate_rules();
 	});
+
+d3.select('#x_position')
+	.on('change', function() {
+		let val = d3.select(this).property('value');
+		change_x_position(val);
+	})
 
 function generate_rules() {
 	let support_val, fidelity_val;
@@ -278,10 +285,33 @@ function change_node_encoding(val) {
 	NODE_ENCODING = val;
 
 	update_summary(new_nodes);	
+	update_legend();
+}
+
+function change_layout(val) {
+	SUMMARY_LAYOUT = val;
+
+	if (SUMMARY_LAYOUT == 'tree') {
+		d3.select('#x-setting').style('display', 'none');
+	} else {
+		d3.select('#x-setting').style('display', 'flex');
+	}
+
+	update_summary(new_nodes);
 }
 
 function change_x_position(val) {
-	SUMMARY_LAYOUT = val;
+	X_POS = val;
+
+	if (X_POS == 'accuracy') {
+		summary_x = d3.scaleLinear()
+			.domain([filter_threshold['accuracy'][0], filter_threshold['accuracy'][1]])
+			.range([view_margin.left, view_margin.left+view_width]);	
+	} else if (X_POS == 'fidelity') {
+		summary_x = d3.scaleLinear()
+			.domain([filter_threshold['fidelity'], 1])
+			.range([view_margin.left, view_margin.left+view_width]);
+	}
 
 	update_summary(new_nodes);
 }

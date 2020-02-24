@@ -66,6 +66,7 @@ rect {
 .title {
   margin-top: 5px;
   margin-bottom: 10px;
+  margin-left: 5px;
   font-weight: bold;
   font-size: 12px;
   border-left: 1px solid grey;
@@ -163,7 +164,7 @@ rect {
   border: none;
   outline: none;
   cursor: pointer;
-  padding: 5px 10px;
+  padding: 2px 5px;
   transition: 0.3s;
 }
 
@@ -177,10 +178,19 @@ rect {
   background-color: #ccc;
 }
 
+#setting-tabs {
+  height: 29px;
+  border: none;
+}
+
 /* Style the tab content */
 .tabcontent {
   display: none;
   border-top: none;
+}
+
+#setting-block {
+  border: 1px solid #ccc;
 }
 
 .support {

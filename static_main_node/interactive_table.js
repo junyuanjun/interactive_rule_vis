@@ -1,9 +1,7 @@
 let margin = {top: 0, right: 50, bottom: 5, left: 10},
     column_height = 80,
     width = 860 - margin.right - margin.left,
-    height,
-    // height = 300 - margin.top - margin.bottom
-    indent = 40;
+    height;
 let overviewWidth = 150;
 
 let folder = "fico";

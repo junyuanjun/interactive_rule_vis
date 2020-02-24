@@ -6,17 +6,20 @@ let summary_x,
 	summary_y,
 	tree_height,
 	summary_size,
+  fidelity_color,
 	summary_opacity;
 
 let summary_color;
 let stop_colors = ['#fc8d59', '#ffffbf', '#91bfdb'];
 stop_colors = ['#e66101', '#f3eeea', '#7b3294', ]
 stop_colors = ['#d7191c', '#ffffbf', '#2c7bb6'];
+stop_colors = ['#e66101', '#dfc27d', '#018571'];
 
 let view_margin = {left:5+max_r, right:max_r, top:max_r, bottom:max_r};
 let x_tick_height = 18;
 
 let summary_x_tick = d3.select('#summary_x_tick')
+    .attr('transform', 'translate(15)')
     .style('width', `${view_width+view_margin.left+view_margin.right}px`)
     .style('height', `${x_tick_height}px`);
 
@@ -48,6 +51,10 @@ function intialize_scales(max_depth) {
 	summary_color = d3.scaleLinear()
 		.domain([0, .5, 1])
 		.range(stop_colors)
+
+  fidelity_color = d3.scaleLinear()
+      .domain([filter_threshold['fidelity'], (filter_threshold['fidelity']+1)/2, 1])
+      .range(stop_colors)
 
   // initialize tree settings
   tree = d3.tree()
@@ -86,13 +93,13 @@ function render_summary(node_info, max_depth) {
     });
 
   // render x ticks
-  summary_x_tick.append('text')
-    .attr('x', 0)
-    .attr('y', 8)
-    .style('fill', 'black')
-    .style('font-size', '10px')
-    .style('text-anchor', 'start')
-    .text("fidelity");
+  // summary_x_tick.append('text')
+  //   .attr('x', 0)
+  //   .attr('y', 8)
+  //   .style('fill', 'black')
+  //   .style('font-size', '10px')
+  //   .style('text-anchor', 'start')
+  //   .text("fidelity");
 
   render_x_ticks();
 
@@ -119,33 +126,6 @@ function render_summary(node_info, max_depth) {
       .style('fill', gridColor)
       .style('text-anchor', 'end')
       .text((d, i) => i)
-
-  if (SUMMARY_LAYOUT == 'stat') {
-    // support -> size, fidelity -> x_pos, accuracy -> color
-    nodes = view.selectAll('.rule-node')
-    	.data(node_info)
-    	.enter();
-
-    nodes.append('circle')
-      .attr("id", d => `node-${d['node_id']}`)
-    	.attr('class', 'rule-node')
-    	.attr('cx', d => summary_x(d['fidelity']))
-    	.attr('cy', d => summary_y(d['depth']))
-    	.attr('r', d => summary_size(d['support']+(1e-8)))
-    	.attr("stroke", d => {
-        return node2rule[d['node_id']] !== undefined ? 'black' : 'none';
-      })
-    	.attr('fill', d => summary_color(d['accuracy']))
-    	.attr('fill-opacity', .8)
-      .on('click', d => {
-        click_summary_node(d['node_id'])
-      })
-      .append('title')
-      .text(d => `Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};
-        Fidelity: ${d['fidelity']}\nAccuracy: ${d['accuracy']}`);
-    } else if (SUMMARY_LAYOUT == 'tree') {
-      generate_tree(treeData);
-    }
 }
 
 function update_stat(node_info) {
@@ -161,7 +141,7 @@ function update_stat(node_info) {
       .append('g')
       .attr("id", d => `node-${d['node_id']}`)
       .attr('class', 'rule-node')
-      .attr('transform', d => `translate(${summary_x(d['fidelity'])}, ${summary_y(d['depth'])})`)
+      .attr('transform', d => `translate(${X_POS == 'fidelity' ? summary_x(d['fidelity']) : summary_x(d['accuracy'])}, ${summary_y(d['depth'])})`)
       .on('click', d => {
         click_summary_node(d['node_id'])
       });
@@ -182,6 +162,16 @@ function update_stat(node_info) {
             return node2rule[d['node_id']] !== undefined ? 'black' : 'none';
           })
         break;
+      case "fidelity":
+        nodes.append('circle')
+          .attr('r', d => summary_size(d['support']))
+          .attr('stroke', 'none')
+          .attr('fill', d => fidelity_color(d['fidelity']))
+          .attr('fill-opacity', .8)
+          .attr("stroke", d => {
+            return node2rule[d['node_id']] !== undefined ? 'black' : 'none';
+          });
+        break;
       case "purity":
         let pie = d3.pie()
           .value(d => d);
@@ -199,16 +189,14 @@ function update_stat(node_info) {
             .outerRadius(summary_size(d['support']))(d)
           )
           .attr('fill', (d, i) => colorCate[i])
-          .attr("stroke", "none");          
+          .attr("stroke", "none");    
+        break;      
     }
 }
 
 function update_summary(node_info, ) {
   if (SUMMARY_LAYOUT == 'stat') {
     d3.selectAll('#summary_view > *:not(.depth-line)').remove();
-
-    // let view = d3.select('#summary_view')
-    summary_x.domain([filter_threshold['fidelity'], 1])
   
     update_stat(node_info);
   } else if (SUMMARY_LAYOUT == 'tree') {

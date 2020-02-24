@@ -88,11 +88,11 @@
               </div>
 
               <!-- Statics -->
-              <div class="flex-col" id="setting-block" style="margin-left: 5px">
-                <div class='flex-col' >
+              <div class="flex-col" style="margin-left: 5px">
+                <div class='flex-col' id="setting-block">
               
                   <!-- Tab links -->
-                  <div class="tab">
+                  <div class="tab" id="setting-tabs">
                     <input class="tablinks active" onclick="click_setting_tab(event, 'data-setting')"
                        type="image" src="static_main_node/data-icon.png" >
                     </input>
@@ -127,10 +127,18 @@
                         <option>Recall</option>
                         <option>Precision</option>
                         <option>Support</option>
-                        <option>Fedelity</option>
+                        <option>Fidelity</option>
                         <!-- <option>Dissimilarity</option> -->
                       </select>
                     </div>
+
+                    <!-- Sorting columns -->
+                    <!-- <div class='flex-row' style="margin-right: 20px">
+                      <div class="title"><span>Sorting Features by: </span></div>
+                      <select id="col_sort">
+                        <option value="feat_freq">Feature Frequency</option>
+                      </select>
+                    </div> -->
                   </div>
 
                   <!-- Visualization Settings -->
@@ -140,43 +148,36 @@
                       <select id="node_encoding">
                         <option value="accuracy">Accuracy</option>
                         <option value="purity">Purity</option>
+                        <option value="fidelity">Fidelity</option>
                       </select>
                     </div>
 
                     <div class='flex-row'>
-                      <div class="title"><span>X position </span></div>
-                      <select id="x_position">
-                        <option value="stat">Fidelity</option>
+                      <div class="title"><span>Layout</span></div>
+                      <select id="layout">
+                        <option value="stat">Statistics</option>
                         <option value="tree">Tree Layout</option>
-                        <option value="accuracy">Accuracy</option>
                       </select>
                     </div>
 
-                    <div class='flex-row'>
-                      <div class="title"><span>Node Color For</span></div>
+                    <div class='flex-row' id="x-setting">
+                      <div class="title"><span>x-axis</span></div>
                       <select id="x_position">
-                        <option value="stat">Fidelity</option>
+                        <option value="fidelity">Fidelity</option>
                         <option value="accuracy">Accuracy</option>
                       </select>
                     </div>
                   </div>
 
-                  <hr width="190px" style="margin: 5px 0 5px 0;">
-                  <!-- Sorting columns -->
-                  <!-- <div class='flex-row' style="margin-right: 20px">
-                    <div class="title"><span>Sorting Features by: </span></div>
-                    <select id="col_sort">
-                      <option value="feat_freq">Feature Frequency</option>
-                    </select>
-                  </div> -->
+                  <!-- <hr width="190px" style="margin: 5px 0 5px 0;"> -->
+                </div>
 
-                  <!-- legend -->
-                  <div class="flex-col">
-                    <div class="title">
-                      <span>Legend</span>
-                    </div>
-                    <svg id="legend1"></svg>
+                <!-- legend -->
+                <div class="flex-col">
+                  <div class="title">
+                    <span>Legend</span>
                   </div>
+                  <svg id="legend1"></svg>
                 </div>
               </div>
           </div>
@@ -255,10 +256,10 @@
   <script src="https://unpkg.com/d3-simple-slider"></script>
 
   <script src="/static_main_node/const.js"></script>
-  <script src="/static_main_node/legend.js"></script>
   <script src="/static_main_node/util.js"></script>
   <script src="/static_main_node/tree_summary.js"></script>
   <script src="/static_main_node/summary_view.js"></script>
+  <script src="/static_main_node/legend.js"></script>
   <script src="/static_main_node/controller.js"></script>
   <script src="/static_main_node/linked_rule_view.js"></script>
   <script src="/static_main_node/interactive_table.js"></script>
