@@ -66,14 +66,14 @@ function update_tree(source) {
 	  })
 	  .on("click", d => click_text(d['data']['node_id']));
 
-	nodeEnter.append("circle")
-	  .attr("r", 1e-6)
-	  .style("fill",  d => {
-	  	return summary_color(d['data']['accuracy']);
-	  })
-	  .append('title')
-	  .text(d => `Support: ${d3.format('.2%')(d['data']['support'])}, ${d3.sum(d['data']['value'])};
-        Fidelity: ${d['data']['fidelity']}\nAccuracy: ${d['data']['accuracy']}`);
+	// nodeEnter.append("circle")
+	//   .attr("r", 1e-6)
+	//   .style("fill",  d => {
+	//   	return summary_color(d['data']['accuracy']);
+	//   })
+	//   .append('title')
+	//   .text(d => `Support: ${d3.format('.2%')(d['data']['support'])}, ${d3.sum(d['data']['value'])};
+ //        Fidelity: ${d['data']['fidelity']}\nAccuracy: ${d['data']['accuracy']}`);
 
 	// Transition nodes to their new position.
 	var nodeUpdate = nodeEnter.merge(node);
@@ -84,22 +84,47 @@ function update_tree(source) {
 	  	return "translate(" + d.x + "," + d.y + ")"; 
 	  });
 
-	nodeUpdate.select("circle")
-	  .attr("r", d => {
-	  		return summary_size(d['data']['support']);
-	  })
-	  .style("fill", function(d) {
-	  	if (!new_node_shown[d['data']['node_id']]) {
-	  		return "rgba(0,0,0,0)"
-	  	}
-	  	return summary_color(d['data']['accuracy']);
-	  })
-	  // .style("fill-opacity", .8)
-	  .style("stroke", "none")
-
-
-	nodeUpdate.select("text")
-	  .style("fill-opacity", (d) => d.children ? 1 : 1e-6);
+	if (NODE_ENCODING === 'purity') {
+		nodeUpdate          
+          .selectAll('path')
+          .data(node => {
+             let ready = pie(node['data']['value'])
+             ready.forEach(part => {
+             	part['support'] = node['data']['support'];
+             	part['node_id'] = node['data']['node_id'];
+             });
+             return ready;
+          }).enter()
+          .append("path")
+          .attr('d', d => d3.arc()
+            .innerRadius(0)
+            .outerRadius(summary_size(d['support']))(d)
+          )
+          .style('fill', (d, i) => colorCate[i])
+          .style('fill-opacity', (d) => {
+          	if (!new_node_shown[d['node_id']]) {
+		  		return .1;
+		  	} else return 1;
+          })
+          .style("stroke", "none");  
+	} else {
+		nodeUpdate.append("circle")
+		  .attr("r", d => {
+		  		return summary_size(d['data']['support']);
+		  })
+		  .style("fill", function(d) {
+		  	if (!new_node_shown[d['data']['node_id']]) {
+		  		return "rgba(0,0,0,0)"
+		  	}
+		  	if (NODE_ENCODING === 'accuracy')
+		  		return summary_color(d['data']['accuracy']);
+		  	else if (NODE_ENCODING === 'fidelity')
+		  		return fidelity_color(d['data']['fidelity']);
+		  })
+		  // .style("fill-opacity", .8)
+		  .style("stroke", "none")
+	}
+	
 
 	// Transition exiting nodes to the parent's new position.
 	var nodeExit = node.exit().transition()

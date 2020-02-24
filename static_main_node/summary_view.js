@@ -26,6 +26,9 @@ let summary_x_tick = d3.select('#summary_x_tick')
 let x_axis = d3.axisBottom()
     .scale(summary_x);
 
+let pie = d3.pie()
+  .value(d => d);
+
 let clicked_summary_node_id = -1;
 let clicked_tree_level = -1;
 
@@ -173,9 +176,6 @@ function update_stat(node_info) {
           });
         break;
       case "purity":
-        let pie = d3.pie()
-          .value(d => d);
-
         nodes          
           .selectAll('path')
           .data(node => {
