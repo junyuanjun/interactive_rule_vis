@@ -114,15 +114,15 @@ function click_summary_node(node_id) {
 
     // highlight in the overview
     if (node2rule[node_id]) {      
-      rule_svg.select(`#back-rect-${clicked_summary_node_id}`)
+      rule_svg.select(`#back-rect-${clicked_summary_node_rule_id}`)
             .classed('rule_highlight', false);
 
-      if (clicked_summary_node_id == node_id) {
-        clicked_summary_node_id = -1;
+      if (clicked_summary_node_rule_id == node2rule[node_id]) {
+        clicked_summary_node_rule_id = -1;
       } else {
         rule_svg.select(`#back-rect-${node2rule[node_id]}`)
           .classed('rule_highlight', true);
-        clicked_summary_node_id = node2rule[node_id];
+        clicked_summary_node_rule_id = node2rule[node_id];
 
         document.getElementById('stat_div').scrollTop = yScale(node2rule[node_id]);
         document.getElementById('rule_div').scrollTop = yScale(node2rule[node_id]);
@@ -144,14 +144,13 @@ function click_summary_node(node_id) {
 	    		return;
 	    	}
 	    	let parent = linked_node_ids[i-1];
-	    	// if (i === linked_node_ids.length - 1 && node_info[id]['parent']!== parent) {
-	    	// 	parent = linked_node_ids[i-2];
-	    	// }
 	    	
 	    	summary_view.append('line')
 				.attr('class', 'link')
-				.attr("x1", summary_x(node_info[parent]['fidelity']))
-			    .attr("x2", summary_x(node_info[id]['fidelity']))
+				.attr("x1", X_POS === 'fidelity' ? summary_x(node_info[parent]['fidelity'])
+						: summary_x(node_info[parent]['accuracy']))
+			    .attr("x2", X_POS === 'fidelity' ? summary_x(node_info[id]['fidelity'])
+			    		: summary_x(node_info[id]['accuracy']))
 			    .attr("y1", summary_y(node_info[parent]['depth']))
 			    .attr("y2", summary_y(node_info[id]['depth']))
 			    .style("stroke", nodeHighlightColor)
@@ -205,8 +204,17 @@ function click_summary_node(node_id) {
 	})
 }
 
-function click_rule(rule_idx, rule) {
+function click_rule(clicked_g, rule_idx, rule) {
 	console.log('click rule row-'+rule_idx);
+
+	// highlight the rule in the rule view
+	rule_svg.selectAll('.rule_highlight')
+		.classed('rule_highlight', false);
+	rule_svg2.selectAll('.rule_highlight')
+		.classed('rule_highlight', false);
+
+	clicked_g.select('.back-rect')
+		.classed('rule_highlight', true);
 
 	// update rule description
 	let rule_des = d3.select('#rule_description');

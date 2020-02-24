@@ -645,13 +645,14 @@ function update_rule_rendering(listData, col_order, row_order) {
         .enter().append("g")
         .attr("class", "row")
         .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; })
-        .on('click', (d, i) => {
-            click_rule(i);
+        .on('click', function (d, i) {
+            click_rule(d3.select(this), i, d);
         })
 
     // render the white background for better click react
     row.append('rect')
         .attr('id', (d, i) => `back-rect-${i}`)
+        .attr('class', 'back-rect')
         .attr('x', -rectMarginH)
         .attr('y', -rectMarginTop)
         .attr('height', `${glyphCellHeight + rectMarginTop + rectMarginBottom}px`)

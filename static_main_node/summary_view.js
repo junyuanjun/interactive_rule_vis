@@ -29,7 +29,7 @@ let x_axis = d3.axisBottom()
 let pie = d3.pie()
   .value(d => d);
 
-let clicked_summary_node_id = -1;
+let clicked_summary_node_rule_id = -1;
 let clicked_tree_level = -1;
 
 function intialize_scales(max_depth) {

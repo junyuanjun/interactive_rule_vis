@@ -123,7 +123,7 @@ rect {
 
 .rule_highlight {
   fill: black;
-  fill-opacity: .1;
+  fill-opacity: .05;
 }
 
 /* Style the tab */
