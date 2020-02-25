@@ -1,5 +1,5 @@
 let margin = {top: 0, right: 50, bottom: 5, left: 10},
-    column_height = 80,
+    column_height = 60,
     width = 860 - margin.right - margin.left,
     height;
 let overviewWidth = 150;
@@ -278,7 +278,7 @@ function render_feature_names_and_grid(column_svg, col_order) {
         .classed((d, i) => `col-title-${i}`, true)
         .attr("transform", function(d, i) { 
             return `translate(${xScale(col_order[i])}, 
-            ${column_height+yScale(0)-font_size*2})rotate(330)`; });
+            ${column_height+yScale(0)-font_size})rotate(330)`; });
 
     column.append("text")
         .attr("x", 6)

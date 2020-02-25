@@ -225,24 +225,27 @@ function click_rule(clicked_g, rule_idx, rule) {
 		rules = rule;
 	}
 	let str = "";
-	rules['rules'].forEach((d, i) => {
+
+	let rule_to_show = Array.from(rules['rules']);
+	rule_to_show.sort((a, b) => col_order[a['feature']] - col_order[b['feature']]);
+	rule_to_show.forEach((d, i) => {
 		if (i>0) {
-			str += "AND "
+			str += "<b>AND</b> "
 		} else {
-			str += "IF "
+			str += "<b>IF</b> "
 		}
-		str += attrs[d['feature']];
+		str += `<u>${attrs[d['feature']]}</u>`;
 		if (d['sign'] !== 'range') {
-			str += " " + d['sign'] + d['threshold'] + ", "
+			str += " " + d['sign'] + d['threshold'] + " "
 		} else {
-			str += " in range[" + d['threshold0'] + ', ' + d['threshold1'] + '), '
+			str += " btw. [" + d['threshold0'] + ', ' + d['threshold1'] + ') '
 		}
 	})
 
-	str += "Then " + target_names[rules['label']]
+	str += "<b>THEN</b> " + `<span style="color: ${colorCate[rules['label']]}">` + target_names[rules['label']] + "</span>.";
 
 	rule_des.append('p')
-		.text(str);
+		.html(str);
 
 	// update data table
 	let url = "get_matched_data"
