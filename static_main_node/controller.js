@@ -3,7 +3,7 @@ let col_order = [];
 
 let phrased_rule_id = -1;
 let NODE_ENCODING = "accuracy";
-let SUMMARY_LAYOUT = "stat";
+let SUMMARY_LAYOUT = "tree";
 let X_POS = 'fidelity';
 
 d3.select("#col_sort")
@@ -261,7 +261,13 @@ function click_rule(clicked_g, rule_idx, rule) {
 			.append('tr');
 
 		let cells = rows.selectAll('td')
-			.data(row => row)
+			.data(row => {
+				let ordered_row = new Array(row.length);
+				for (let i = 0; i<row.length; i++) {
+					ordered_row[col_order[i]] = row[i];
+				}
+				return ordered_row;
+			})
 			.enter()
 			.append('td')
 			.text(cell => cell);

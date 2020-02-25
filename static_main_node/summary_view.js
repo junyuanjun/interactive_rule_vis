@@ -70,15 +70,6 @@ function intialize_scales(max_depth) {
   //   .y(d => d.y);
 }
 
-function render_x_ticks() {
-  x_axis.scale(summary_x);
-
-  summary_x_tick
-    .transition()
-    .duration(500)
-    .call(x_axis);
-}
-
 // node_info contains the information of nodes: support, accuracy, fidelity
 function render_summary(node_info, max_depth) {
   d3.select('#summary_view > *').remove();
@@ -94,17 +85,6 @@ function render_summary(node_info, max_depth) {
     .on("click", (idx) => {
       click_tree_level(idx);
     });
-
-  // render x ticks
-  // summary_x_tick.append('text')
-  //   .attr('x', 0)
-  //   .attr('y', 8)
-  //   .style('fill', 'black')
-  //   .style('font-size', '10px')
-  //   .style('text-anchor', 'start')
-  //   .text("fidelity");
-
-  render_x_ticks();
 
 	// start rendering
 	let view = d3.select('#summary_view')
@@ -131,68 +111,6 @@ function render_summary(node_info, max_depth) {
       .text((d, i) => i)
 }
 
-function update_stat(node_info) {
-  let view = d3.select('#summary_view')
-
-  render_x_ticks();
-
-  view.selectAll('.rule-node').remove();
-
-  nodes = view.selectAll('.rule-node')
-      .data(node_info)
-      .enter()
-      .append('g')
-      .attr("id", d => `node-${d['node_id']}`)
-      .attr('class', 'rule-node')
-      .attr('transform', d => `translate(${X_POS == 'fidelity' ? summary_x(d['fidelity']) : summary_x(d['accuracy'])}, ${summary_y(d['depth'])})`)
-      .on('click', d => {
-        click_summary_node(d['node_id'])
-      });
-
-  nodes.append('title')
-      .text(d=>`Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};
-        Fidelity: ${d['fidelity']};\nAccuracy: ${d['accuracy']}
-        NodeID: ${d['node_id']}; Rule index: ${node2rule[d['node_id']]}`)
-  
-  switch (NODE_ENCODING) {
-      case "accuracy":
-        nodes.append('circle')
-          .attr('r', d => summary_size(d['support']))
-          .attr('stroke', 'none')
-          .attr('fill', d => summary_color(d['accuracy']))
-          .attr('fill-opacity', .8)
-          .attr("stroke", d => {
-            return node2rule[d['node_id']] !== undefined ? 'black' : 'none';
-          })
-        break;
-      case "fidelity":
-        nodes.append('circle')
-          .attr('r', d => summary_size(d['support']))
-          .attr('stroke', 'none')
-          .attr('fill', d => fidelity_color(d['fidelity']))
-          .attr('fill-opacity', .8)
-          .attr("stroke", d => {
-            return node2rule[d['node_id']] !== undefined ? 'black' : 'none';
-          });
-        break;
-      case "purity":
-        nodes          
-          .selectAll('path')
-          .data(node => {
-             let ready = pie(node['value'])
-             ready.forEach(part => part['support'] = node['support']);
-             return ready;
-          }).enter()
-          .append("path")
-          .attr('d', d => d3.arc()
-            .innerRadius(0)
-            .outerRadius(summary_size(d['support']))(d)
-          )
-          .attr('fill', (d, i) => colorCate[i])
-          .attr("stroke", "none");    
-        break;      
-    }
-}
 
 function update_summary(node_info, ) {
   if (SUMMARY_LAYOUT == 'stat') {

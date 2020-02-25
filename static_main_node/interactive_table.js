@@ -336,8 +336,9 @@ function render_slider() {
             // filter the nodes
             filter_threshold['accuracy'] = [+val[0]/100, +val[1]/100];
             new_nodes = filter_nodes(node_info,);
-            update_summary(new_nodes);
-
+            if (SUMMARY_LAYOUT !== 'tree') {
+                update_summary(new_nodes);
+            }
         })
         .on('end', val => {
             // change the text
@@ -345,6 +346,7 @@ function render_slider() {
             // filter the nodes
             filter_threshold['accuracy'] = [+val[0]/100, +val[1]/100];
             update_rules();
+            update_legend();
         })
  
     d3.select('#slider-accuracy')
@@ -372,7 +374,9 @@ function render_slider() {
             // depth is used when num_feat is not defined
             filter_threshold['depth'] = +val;
             new_nodes = filter_nodes(node_info,);
-            update_summary(new_nodes);
+            if (SUMMARY_LAYOUT !== 'tree') {
+                update_summary(new_nodes);
+            }
         })
         .on('end', val => {
             // change the text
@@ -382,6 +386,7 @@ function render_slider() {
             // depth is used when num_feat is not defined
             filter_threshold['depth'] = +val;
             update_rules();
+            update_legend();
         });
  
     d3.select('#slider-feat')

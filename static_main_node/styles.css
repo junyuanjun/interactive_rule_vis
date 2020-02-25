@@ -206,7 +206,7 @@ rect {
 }
 
 #data-table {
-  max-height: 50px; 
+  max-height: 100px; 
   overflow: scroll;
 }
 
@@ -214,4 +214,13 @@ rect {
   width: 950px; 
   border: 1px solid lightgrey;
   margin-left: 10px; 
+}
+
+table td {
+  border: 1px solid lightgrey;
+}
+
+#rule_description {
+  margin: 5px 15px;
+  width: 950px;
 }

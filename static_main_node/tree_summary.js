@@ -113,13 +113,16 @@ function update_tree(source) {
 		  		return summary_size(d['data']['support']);
 		  })
 		  .style("fill", function(d) {
-		  	if (!new_node_shown[d['data']['node_id']]) {
-		  		return "rgba(0,0,0,0)"
-		  	}
+		  	
 		  	if (NODE_ENCODING === 'accuracy')
 		  		return summary_color(d['data']['accuracy']);
 		  	else if (NODE_ENCODING === 'fidelity')
 		  		return fidelity_color(d['data']['fidelity']);
+		  })
+		  .style('fill-opacity', function(d) {
+		  	if (!new_node_shown[d['data']['node_id']]) {
+		  		return .05
+		  	} else return 1;
 		  })
 		  // .style("fill-opacity", .8)
 		  .style("stroke", "none")
