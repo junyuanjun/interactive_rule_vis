@@ -200,7 +200,7 @@ function click_summary_node(node_id) {
 	      linkednode2rule[d['node_id']] = idx;
 	    })
 	    // update_column_rendering(col_svg2);
-		update_linked_rule_rendering(rules, col_order);
+		update_linked_rule_rendering(rule_svg2, col_svg2, stat_svg2, 2, rules, col_order);
 	})
 }
 
@@ -340,6 +340,29 @@ function click_tree_level(idx) {
 	d3.select(`#depth-${idx}`)
 		.style("stroke-width", 1.5);
 	clicked_tree_level = idx;
+
+	// update the rule view for selected level
+	fetch(domain + "get_rules_by_level/" + idx)
+	.then((data) => {
+      if(data.status !== 200 || !data.ok) {
+        throw new Error(`server returned ${data.status}${data.ok ? " ok" : ""}`);
+      }
+      const ct = data.headers.get("content-type");
+      return data.json();
+    }).then((res) => {
+		let rules = res['rule_lists'];
+		let nodes = res['nodes'];
+	    present_rules = rules;
+	    col_order = column_order_by_feat_freq(rules);
+
+	    // update linked node2rule pos
+	    linkednode2rule = {};
+	    rules.forEach((d, idx) => {
+	      linkednode2rule[d['node_id']] = idx;
+	    })
+	    // update_column_rendering(col_svg2);
+		update_linked_rule_rendering(rule_svg3, col_svg3, stat_svg3, 3, rules, col_order);
+	})
 }
 
 function click_setting_tab(evt, id) {

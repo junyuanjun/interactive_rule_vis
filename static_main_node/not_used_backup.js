@@ -328,3 +328,69 @@ function render_x_ticks() {
     .duration(500)
     .call(x_axis);
 }
+
+
+
+    // prepare ranges for rendering
+    let filtered_data = {};
+    listData.forEach((d) => {
+        d['rules'].forEach((rule, row_idx) => {
+            let left, right;
+            if (rule['sign'] == 'range') {
+                left = rule['threshold0'];
+                right = rule['threshold1'];
+            } else if (rule['sign'] == '<=') {
+                left = real_min[rule['feature']];
+                right = rule['threshold'];
+            } else if (rule['sign'] == '>') {
+                left = rule['threshold'];
+                right = real_max[rule['feature']];
+            } else {
+                console.log('invalid rule');
+            }
+            left = left.toFixed(1);
+            right = right.toFixed(1);
+            let id = `range-${rule['feature']}-${left}-${right}`
+            id = id.replace(/\./g, '_');
+
+            let currentObj = filtered_data[id] || {
+                'id': id,
+                'row': row_idx,
+                'feature': rule['feature'],
+                'start': left,
+                'end': right,
+            }
+            filtered_data[id] = currentObj;
+
+            rule['id'] = id; 
+        })
+    });
+    filtered_data = Object.keys(filtered_data).map((d) => filtered_data[d]);
+
+    // define linear gradients
+    let linear_gradient = rule_svg.append('defs')
+        .selectAll('.linear_gradient')
+        .data(filtered_data).enter()
+        .append('linearGradient')
+      .attr('class','linear_gradient')
+      .attr('id', function(d) {
+        return "linear-gradient-" + d.id;
+      })
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "100%")
+      .attr("y2", "0%");
+
+    linear_gradient.append('stop')
+      .attr('class','linear_gradient_start')
+      .attr('offset', '0%')
+      .attr('stop-color', function(d){
+        return colorScale[d.feature]( +d.start );
+      });
+
+    linear_gradient.append('stop')
+      .attr('class','linear_gradient_end')
+      .attr('offset', '100%')
+      .attr('stop-color', function(d){
+        return colorScale[d.feature]( +d.end );
+      });

@@ -77,7 +77,6 @@ function find_connection(node_id) {
   return connection;
 }
 
-
 function postData(url, data, cb) {
   var myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');

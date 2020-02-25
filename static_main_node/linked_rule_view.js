@@ -1,6 +1,5 @@
 
-function update_linked_rule_rendering(listData, col_order,) {
-    let rule_svg = rule_svg2;
+function update_linked_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_order,) {
 
     // remove the column lines and the outdated rules
     rule_svg.selectAll(".grid-col").remove();
@@ -11,23 +10,23 @@ function update_linked_rule_rendering(listData, col_order,) {
 
     // re-render column lines
     height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
-    d3.select("#rule_svg2")
+    rule_svg
         .attr("width", width + margin.right + margin.left)
         .attr("height", height + margin.top + margin.bottom);
 
-    d3.select("#rule_div2 div")
+    d3.select(`#rule_div${idx} div`)
         .style("height", `${height + margin.bottom}px`)
 
-    d3.select("#rule_svg2")
+    d3.select(`#rule_svg${idx}`)
         .attr("height", height + margin.bottom);
 
-    d3.select("#stat_div2 div")
+    d3.select(`#stat_div${idx} div`)
         .style("height", `${height + margin.bottom}px`);
 
     // scale for placing cells
     let yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
 
-    render_feature_names_and_grid(col_svg2, col_order);
+    render_feature_names_and_grid(col_svg, col_order);
 
     // design gradient patterns
     // prepare ranges for rendering
@@ -203,5 +202,5 @@ function update_linked_rule_rendering(listData, col_order,) {
         .attr("y2", height-yScale.bandwidth()-margin.top)
         .style("stroke", gridColor);
     // render_size_circle(listData);
-    render_confusion_bars(stat_svg2, listData);
+    render_confusion_bars(stat_svg, listData);
 }

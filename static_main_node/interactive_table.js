@@ -43,6 +43,14 @@ let stat_svg2 = d3.select("#stat2")
 let col_svg2 = d3.select("#column_svg2")
     .style("height", `${column_height}px`);
 
+let rule_svg3 = d3.select("#rule_svg3")
+    .append("g")
+    .attr("transform", `translate(${margin.left})`);
+let stat_svg3 = d3.select("#stat3")
+    .style("width", `${supportRectWidth}px`);
+let col_svg3 = d3.select("#column_svg3")
+    .style("height", `${column_height}px`);
+
 let widthScale, radiusScale, xScale, yScale, colorScale, supportScale;
 let colorBarHeight = 5;
 let barHeight = (rectHeight - rectMarginTop - rectMarginBottom) / 2;
@@ -134,9 +142,9 @@ function loadData() {
 
             height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
 
-            scroll_functions(width, height);
-            scroll_functions2(width, height);
-
+            scroll_functions(width, height, "");
+            scroll_functions(width, height, 2);
+            scroll_functions(width, height, 3);
 
             // scale for placing cells
             xScale = d3.scaleBand(d3.range(attrs.length+1),[0, width]);
@@ -199,73 +207,38 @@ function loadData() {
     });
 }
 
-function scroll_functions(width, height) {
-    d3.select("#rule_div div")
+function scroll_functions(width, height, idx) {
+    d3.select(`#rule_di${idx} div`)
         .style("height", `${height + margin.bottom}px`)
         .style("width", `${margin.left + width + margin.right}px`);
 
-    d3.select("#rule_svg")
+    d3.select(`#rule_svg${idx}`)
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.bottom);
 
-    d3.select("#column_div div")
+    d3.select(`#column_div${idx} div`)
         .style("width", `${margin.left + width + margin.right}px`);
 
-    d3.select("#column_svg")
+    d3.select(`#column_svg${idx}`)
         .style("width", `${margin.left + width + margin.right}px`);
 
-    d3.select("#stat_div div")
+    d3.select(`#stat_div${idx} div`)
         .style("height", `${height + margin.bottom}px`);
 
-    d3.select("#stat")
+    d3.select(`#stat${idx}`)
         .attr("height", height + margin.bottom);
 
-    d3.select('#rule_div').on('scroll', function () {
-        document.getElementById('column_div').scrollLeft = this.scrollLeft;
-        document.getElementById('stat_div').scrollTop = this.scrollTop;
+    d3.select(`#rule_div${idx}`).on('scroll', function () {
+        document.getElementById(`column_div${idx}`).scrollLeft = this.scrollLeft;
+        document.getElementById(`stat_div${idx}`).scrollTop = this.scrollTop;
     });
 
-    d3.select('#column_div').on('scroll', function () {
-        document.getElementById('rule_div').scrollLeft = this.scrollLeft;
+    d3.select(`#column_div${idx}`).on('scroll', function () {
+        document.getElementById(`rule_div${idx}`).scrollLeft = this.scrollLeft;
     });
 
-    d3.select('#stat_div').on('scroll', function () {
-        document.getElementById('rule_div').scrollTop = this.scrollTop;
-    });
-}
-
-function scroll_functions2(width, height) {
-    d3.select("#rule_div2 div")
-        .style("height", `${height + margin.bottom}px`)
-        .style("width", `${margin.left + width + margin.right}px`);
-
-    d3.select("#rule_svg2")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.bottom);
-
-    d3.select("#column_div2 div")
-        .style("width", `${margin.left + width + margin.right}px`);
-
-    d3.select("#column_svg2")
-        .style("width", `${margin.left + width + margin.right}px`);
-
-    d3.select("#stat_div2 div")
-        .style("height", `${height + margin.bottom}px`);
-
-    d3.select("#stat2")
-        .attr("height", height + margin.bottom);
-
-    d3.select('#rule_div2').on('scroll', function () {
-        document.getElementById('column_div2').scrollLeft = this.scrollLeft;
-        document.getElementById('stat_div2').scrollTop = this.scrollTop;
-    });
-
-    d3.select('#column_div').on('scroll', function () {
-        document.getElementById('rule_div').scrollLeft = this.scrollLeft;
-    });
-
-    d3.select('#stat_div').on('scroll', function () {
-        document.getElementById('rule_div').scrollTop = this.scrollTop;
+    d3.select(`#stat_div${idx}`).on('scroll', function () {
+        document.getElementById(`rule_div${idx}`).scrollTop = this.scrollTop;
     });
 }
 
@@ -540,70 +513,6 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
 
 function generate_gradient_bars(listData) {
     render_feature_names_and_grid(column_svg, col_order);
-
-    // prepare ranges for rendering
-    let filtered_data = {};
-    listData.forEach((d) => {
-        d['rules'].forEach((rule, row_idx) => {
-            let left, right;
-            if (rule['sign'] == 'range') {
-                left = rule['threshold0'];
-                right = rule['threshold1'];
-            } else if (rule['sign'] == '<=') {
-                left = real_min[rule['feature']];
-                right = rule['threshold'];
-            } else if (rule['sign'] == '>') {
-                left = rule['threshold'];
-                right = real_max[rule['feature']];
-            } else {
-                console.log('invalid rule');
-            }
-            left = left.toFixed(1);
-            right = right.toFixed(1);
-            let id = `range-${rule['feature']}-${left}-${right}`
-            id = id.replace(/\./g, '_');
-
-            let currentObj = filtered_data[id] || {
-                'id': id,
-                'row': row_idx,
-                'feature': rule['feature'],
-                'start': left,
-                'end': right,
-            }
-            filtered_data[id] = currentObj;
-
-            rule['id'] = id; 
-        })
-    });
-    filtered_data = Object.keys(filtered_data).map((d) => filtered_data[d]);
-
-    // define linear gradients
-    let linear_gradient = rule_svg.append('defs')
-        .selectAll('.linear_gradient')
-        .data(filtered_data).enter()
-        .append('linearGradient')
-      .attr('class','linear_gradient')
-      .attr('id', function(d) {
-        return "linear-gradient-" + d.id;
-      })
-      .attr("x1", "0%")
-      .attr("y1", "0%")
-      .attr("x2", "100%")
-      .attr("y2", "0%");
-
-    linear_gradient.append('stop')
-      .attr('class','linear_gradient_start')
-      .attr('offset', '0%')
-      .attr('stop-color', function(d){
-        return colorScale[d.feature]( +d.start );
-      });
-
-    linear_gradient.append('stop')
-      .attr('class','linear_gradient_end')
-      .attr('offset', '100%')
-      .attr('stop-color', function(d){
-        return colorScale[d.feature]( +d.end );
-      });
 }
 
 function update_column_rendering(svg, col_order) {
