@@ -22,13 +22,10 @@ let supportRectWidth = 100;
 let tot_train;
 
 let rule_svg = d3.select("#rule_svg")
-    .attr("width", width + margin.right)
-    .attr("height", height + margin.bottom)
     .append("g")
     .attr("transform", `translate(${margin.left})`);
 
-
-let column_svg = d3.select("#column_svg")
+let col_svg = d3.select("#column_svg")
     .style("height", `${column_height}px`);
 
 let stat_svg = d3.select('#stat')
@@ -512,7 +509,7 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
 
 
 function generate_gradient_bars(listData) {
-    render_feature_names_and_grid(column_svg, col_order);
+    render_feature_names_and_grid(col_svg, col_order);
 }
 
 function update_column_rendering(svg, col_order) {
@@ -523,152 +520,6 @@ function update_column_rendering(svg, col_order) {
                 ${column_height+yScale(0)-font_size*2})rotate(330)`; 
             });    
     }
-}
-
-function update_rule_rendering(listData, col_order, row_order) {
-    // remove the column lines and the outdated rules
-    rule_svg.selectAll(".grid-col").remove();
-    rule_svg.selectAll(".grid-row").remove();
-    rule_svg.selectAll(".column").remove();
-    rule_svg.selectAll(".row").remove();
-
-    // re-render column lines
-    height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
-    d3.select("#rule_svg")
-        .attr("width", width + margin.right + margin.left)
-        .attr("height", height + margin.top + margin.bottom);
-
-    d3.select("#rule_div div")
-        .style("height", `${height + margin.bottom}px`)
-
-    d3.select("#rule_svg")
-        .attr("height", height + margin.bottom);
-
-    d3.select("#stat_div div")
-        .style("height", `${height + margin.bottom}px`);
-
-    // scale for placing cells
-    yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
-    d3.select("#rule-num")
-        .text(listData.length);
-    render_feature_names_and_grid(column_svg, col_order);
-
-    // render by rows
-    let row = rule_svg.selectAll(".row")
-        .data(listData)
-        .enter().append("g")
-        .attr("class", "row")
-        .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; })
-        .on('click', function (d, i) {
-            click_rule(d3.select(this), i, d);
-        })
-
-    // render the white background for better click react
-    row.append('rect')
-        .attr('id', (d, i) => `back-rect-${i}`)
-        .attr('class', 'back-rect')
-        .attr('x', -rectMarginH)
-        .attr('y', -rectMarginTop)
-        .attr('height', `${glyphCellHeight + rectMarginTop + rectMarginBottom}px`)
-        .attr('width', `${width-margin.left}px`)
-        .attr('fill', 'white');
-
-    // render the horizontal_line
-    row.selectAll(".middle")
-        .data(function(d, i) { 
-            if (row_order !== undefined) {
-                return listData[row_order[i]]['rules'];
-            } else {
-                return d["rules"]; 
-            }
-        })
-        .enter().append("line")
-        .attr("class", "middle")
-        .attr("x1", function(d) { 
-            return xScale(col_order[d["feature"]]) ; 
-        })
-        .attr("x2", function(d) { 
-            return xScale(col_order[d["feature"]])+ glyphCellWidth * 5; 
-        })
-        .attr("y1", glyphCellHeight/2)
-        .attr("y2", glyphCellHeight/2)
-        .style("stroke", "lightgrey")
-        .style("stroke-width", 1);
-
-    // render the rule ranges
-    row.selectAll(".rule-fill")
-        .data(d => d["rules"])
-        .enter().append("rect")
-        .attr("x", function(d) { 
-            let xoffset = xScale(col_order[d["feature"]])
-            if (d["sign"] === "<=") {
-                return xoffset;
-            } else if (d["sign"] === ">") {
-                return xoffset + widthScale[d["feature"]](d["threshold"])
-            } else {
-                return xoffset + widthScale[d["feature"]](d["threshold0"])
-            }
-        })
-        .attr("width", function(d) {
-            if (d["sign"] === "<=") {
-                return widthScale[d["feature"]](d["threshold"]);
-            } else if (d["sign"] === ">"){
-                return rectWidth - widthScale[d["feature"]](d["threshold"]);
-            } else if (d["sign"] === "range") {
-                return (widthScale[d["feature"]](d["threshold1"]-d["threshold0"]))
-            }
-        })
-        .attr("y",  0)
-        .attr("height", glyphCellHeight)
-        .attr("fill", rule => {
-            // let left, right;
-            // if (rule['sign'] == 'range') {
-            //     left = rule['threshold0'];
-            //     right = rule['threshold1'];
-            // } else if (rule['sign'] == '<=') {
-            //     left = real_min[rule['feature']];
-            //     right = rule['threshold'];
-            // } else if (rule['sign'] == '>') {
-            //     left = rule['threshold'];
-            //     right = real_max[rule['feature']];
-            // } else {
-            //     console.log('invalid rule');
-            // }
-            // left = left.toFixed(1);
-            // right = right.toFixed(1);
-            // let id = `range-${rule['feature']}-${left}-${right}`
-            // id = id.replace(/\./g, '_');
-            // return `url(#linear-gradient-${id})`
-            return 'dimgray'
-        })
-
-    // grid
-    rule_svg.selectAll(".grid-row")
-        .data(yScale.domain())
-        .enter().append("g")
-        .attr("class", "grid-row")
-        .attr("transform", function(d, i) { return `translate(0, ${yScale(i)})`; })
-        .append("line")
-        .attr("x1", 0)
-        .attr("x2", width-xScale.bandwidth())
-        .style("stroke", gridColor);
-
-    rule_svg.selectAll(".grid-col")
-        .data(xScale.domain())
-        .enter().append("g")
-        .attr("class", "grid-col")
-        .attr("transform", function(d, i) { return `translate(${xScale(i)}, ${margin.top})`; })
-        .append("line")
-        .attr("y1", 0)
-        .attr("y2", height-yScale.bandwidth()-margin.top)
-        .style("stroke", gridColor);
-    // render_size_circle(listData);
-    render_confusion_bars(stat_svg, listData);
-}
-
-function render_data_table() {
-    let table = d3.select('#datatable')
-        .append('table');
 }
 
 function main() {

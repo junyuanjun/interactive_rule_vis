@@ -15,13 +15,11 @@
       <div class="modal-content">
         <div>
           <p>
-            In this system, we are going to generate rules that describe the behaviors of a black box model. Please specify support* and fidelity* you want to reach for each rule.
+            In this system, we are going to generate rules that describe the behaviors of a black box model. Please specify support* and the max number of features you want to reach for each rule.
           </p>  
           <div style="font-size: 12px">
             <p>
               *support: the number of instances that match a rule.
-              <br>
-              *fidelity: how well a rule can approximate a black-box model w.r.t. the instances that match this rule.
             </p>
           </div>
         </div>
@@ -30,11 +28,6 @@
           <div>
             <span title="lower bound of support">Support: </span>
             <input id="support_val" value=0>
-          </div>
-          <div>
-            <span title="lower bound of Fidelity">Fidelity: </span>
-            <input id="fidelity_val" value=0>
-            <span>%</span>
           </div>
           <div>
             <!-- <p id="feat-text" style="margin-bottom: 1px">Max Number of Features:</p>
@@ -270,7 +263,7 @@
         </div>
 
         <div id="data-table"></div>
-      </div>  
+        </div>  
     </div>
     
     <canvas id="myCanvas" width="0" height="0"></canvas>

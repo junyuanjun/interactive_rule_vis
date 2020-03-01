@@ -78,5 +78,15 @@ def get_matched_data():
 	matched_data = forest.get_matched_data(rule["rules"])
 	return {"matched_data": matched_data}
 
+@app.route("/get_rules_by_level/<depth>")
+def get_rules_by_level(depth):
+	print("===== FIND RULES BY LEVEL =====")
+	try:
+		int_depth= int(depth)
+	except:
+		return "Please enter a number"
+	res = forest.get_rules_by_level(int_depth)
+	return res
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0")

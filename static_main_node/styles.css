@@ -210,7 +210,6 @@ rect {
 }
 
 #data-table table {
-  width: 950px; 
   border: 1px solid lightgrey;
   margin-left: 10px; 
 }

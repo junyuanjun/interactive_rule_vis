@@ -120,10 +120,10 @@ class Forest():
 		return linked_rules
 
 	def find_node_rules(self, node_ids):
-		min_node_id = np.min(node_ids)
-		self.rule_traversal(min_node_id)
+		# min_node_id = np.min(node_ids)
 		node_rules = []
 		for node_id in node_ids:
+			self.rule_traversal(node_id)
 			node_rules.append(self.convert2rule(node_id))
 		return node_rules
 
@@ -141,5 +141,24 @@ class Forest():
 			else:
 				print("!!!!!! Error rule !!!!!!")
 		return matched_data.values.tolist()
+
+	def get_rules_by_level(self, depth):
+		self.result_nodes = []
+		self.get_nodes_by_level(0, depth)
+		
+		node_rules = self.find_node_rules(self.result_nodes)
+		return {"nodes": self.result_nodes, "rule_lists": node_rules}
+
+
+	def get_nodes_by_level(self, node_id, target_level):
+		# print(node_id, self.node_info[node_id]['depth'])
+		if (self.node_info[node_id]['depth'] == target_level):
+			self.result_nodes.append(node_id)
+			return
+		if (self.node_info[node_id]['left'] > 0):
+			self.get_nodes_by_level(self.node_info[node_id]['left'], target_level)
+		if (self.node_info[node_id]['right'] > 0):
+			self.get_nodes_by_level(self.node_info[node_id]['right'], target_level)
+
 
 

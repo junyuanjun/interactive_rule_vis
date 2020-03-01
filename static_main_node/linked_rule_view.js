@@ -1,5 +1,5 @@
 
-function update_linked_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_order,) {
+function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_order,) {
 
     // remove the column lines and the outdated rules
     rule_svg.selectAll(".grid-col").remove();

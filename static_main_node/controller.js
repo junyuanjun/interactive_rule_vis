@@ -47,16 +47,9 @@ function generate_rules() {
 	            support_val = this.value;
 	            return this.value;
 	        });
-	    d3.select('#fidelity_val')
-	        .attr('value', function() {
-	            fidelity_val = this.value;
-	            return this.value;
-	        });
 
 	    support_val = parseFloat(support_val);
-    	fidelity_val = parseFloat(fidelity_val);	
 		filter_threshold['support'] = support_val;
-		filter_threshold['fidelity'] = fidelity_val/100;
 
 		d3.select(".modal")
 			.style("display", "none");
@@ -97,8 +90,6 @@ function column_order_by_feat_freq(listData) {
 function click_setting() {
 	// console.log("click")
 	document.getElementById('support_val').value = filter_threshold['support'];
-	document.getElementById('fidelity_val').value = filter_threshold['fidelity'] * 100;
-
 
 	d3.select(".modal")
 		.style("display", "block");
@@ -200,7 +191,7 @@ function click_summary_node(node_id) {
 	      linkednode2rule[d['node_id']] = idx;
 	    })
 	    // update_column_rendering(col_svg2);
-		update_linked_rule_rendering(rule_svg2, col_svg2, stat_svg2, 2, rules, col_order);
+		update_rule_rendering(rule_svg2, col_svg2, stat_svg2, 2, rules, col_order);
 	})
 }
 
@@ -256,7 +247,9 @@ function click_rule(clicked_g, rule_idx, rule) {
 
 		d3.selectAll('#data-table *').remove();
 		
+		let table_width = attrs.length * (glyphCellWidth * 5 + rectMarginH * 2);
 		let rows = d3.select('#data-table').append('table')
+			.style('width', `${margin.left + width + margin.right}px`)
 			.append('tbody')
 			.selectAll('tr')
 			.data(matched_data)
@@ -361,7 +354,7 @@ function click_tree_level(idx) {
 	      linkednode2rule[d['node_id']] = idx;
 	    })
 	    // update_column_rendering(col_svg2);
-		update_linked_rule_rendering(rule_svg3, col_svg3, stat_svg3, 3, rules, col_order);
+		update_rule_rendering(rule_svg3, col_svg3, stat_svg3, 3, rules, col_order);
 	})
 }
 
