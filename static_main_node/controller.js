@@ -56,8 +56,7 @@ function generate_rules() {
 		if (!param_set) {
 			loadData();
 		} else {
-			new_nodes = filter_nodes(node_info,);
-			update_summary(new_nodes);
+			update_rules();
 		}
 }
 
@@ -243,13 +242,17 @@ function click_rule(clicked_g, rule_idx, rule) {
 	postData(url, JSON.stringify({"rules": rules['rules']}), (data) => {
 		d3.select("#data-table tbody").remove();
 
-		let matched_data = data['matched_data']
+		let matched_data = data['matched_data'];
+		let matched_gt = data['matched_gt'];
+		let matched_pred = data['matched_pred'];
 
 		d3.selectAll('#data-table *').remove();
 		
-		let table_width = attrs.length * (glyphCellWidth * 5 + rectMarginH * 2);
+		let table_width = attrs.length* (glyphCellWidth * 5 + rectMarginH * 2 - 2);
 		let rows = d3.select('#data-table').append('table')
-			.style('width', `${margin.left + width + margin.right}px`)
+			.style('width', `${table_width}px`)
+			.style('padding-left', `${margin.left}px`)
+			.style('padding-right', `${margin.right}px`)
 			.append('tbody')
 			.selectAll('tr')
 			.data(matched_data)
@@ -267,6 +270,8 @@ function click_rule(clicked_g, rule_idx, rule) {
 			.enter()
 			.append('td')
 			.text(cell => cell);
+
+		// add prediction
 	})
 }
 

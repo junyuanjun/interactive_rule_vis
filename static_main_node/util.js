@@ -17,6 +17,9 @@ function filter_nodes(node_info) {
   new_node_shown = {};
 	Object.keys(node_info).forEach(idx => {
     let d = node_info[idx];
+    if (idx == '426') {
+      let a = 0;
+    }
 		if (d3.sum(d['value']) >= filter_threshold['support']
 			&& d['accuracy'] >= filter_threshold['accuracy'][0] && d['accuracy'] <= filter_threshold['accuracy'][1]
       && d['num_feat'] <= filter_threshold['num_feat']
@@ -45,7 +48,7 @@ function find_leaf_rules(new_nodes, node_info, listData) {
     rules.forEach((d, idx) => {
       node2rule[d['node_id']] = idx;
     })
-    // update_column_rendering(column_svg, col_order);
+
     update_rule_rendering(rule_svg, col_svg, stat_svg, "", rules, col_order);
     d3.select("#rule-num")
         .text(rules.length);

@@ -45,11 +45,21 @@
     </div>
 
     <svg width="0" height="0">
-      <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="4" height="4">
+      <pattern id="fp_pattern" patternUnits="userSpaceOnUse" width="4" height="4">
+        <rect width="4" height="4" fill="#6babc1"></rect>
         <path d="M-1,1 l2,-2
                  M0,4 l4,-4
                  M3,5 l2,-2" 
-              style="stroke:black; stroke-width:1" />
+              style="stroke:black; stroke-width:.5" />
+      </pattern>
+    </svg>
+    <svg width="0" height="0">
+      <pattern id="fn_pattern" patternUnits="userSpaceOnUse" width="4" height="4">
+        <rect width="4" height="4" fill="#e68882"></rect>
+        <path d="M-1,1 l2,-2
+                 M0,4 l4,-4
+                 M3,5 l2,-2" 
+              style="stroke:black; stroke-width:.5" />
       </pattern>
     </svg>
     <div class="flex-row">
@@ -193,19 +203,19 @@
 
           <!-- Overview -->
           <div class="flex-col tabcontent" id="overview" style="display: flex">
-            <div id="column_div" style="max-width: 1200px; overflow-x: scroll;">
+            <div id="column_div" style="max-width: 900px; overflow-x: scroll;">
               <div>
                 <svg id="column_svg"></svg>            
               </div>
             </div>
 
             <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
-              <div id="rule_div" style="height: 150px; max-width: 1200px; overflow: scroll;">
+              <div id="rule_div" style="height: 150px; max-width: 900px; overflow: scroll;">
                 <div>
                   <svg id="rule_svg"></svg>            
                 </div>
               </div>
-              <div id="stat_div" style="max-height: 150px; max-width: 100px; overflow-y: scroll;">
+              <div id="stat_div" style="max-height: 150px; max-width: 300px; overflow-y: scroll;">
                 <div>
                   <svg id="stat"></svg>              
                 </div>
@@ -215,19 +225,19 @@
 
           <!-- Linked nodes-->
           <div class="flex-col tabcontent" id="linked">
-            <div id="column_div2" style="max-width: 1200px; overflow-x: scroll;">
+            <div id="column_div2" style="max-width: 900px; overflow-x: scroll;">
               <div>
                 <svg id="column_svg2"></svg>            
               </div>
             </div>
 
             <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
-              <div id="rule_div2" style="height: 150px; max-width: 1200px; overflow: scroll;">
+              <div id="rule_div2" style="height: 150px; max-width: 900px; overflow: scroll;">
                 <div>
                   <svg id="rule_svg2"></svg>            
                 </div>
               </div>
-              <div id="stat_div2" style="max-height: 150px; max-width: 100px; overflow-y: scroll;">
+              <div id="stat_div2" style="max-height: 150px; max-width: 300px; overflow-y: scroll;">
                 <div>
                   <svg id="stat2"></svg>              
                 </div>
@@ -237,19 +247,19 @@
 
           <!-- Selected Level -->
           <div class="flex-col tabcontent" id="level">
-            <div id="column_div3" style="max-width: 1200px; overflow-x: scroll;">
+            <div id="column_div3" style="max-width: 900px; overflow-x: scroll;">
               <div>
                 <svg id="column_svg3"></svg>            
               </div>
             </div>
 
             <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
-              <div id="rule_div3" style="height: 150px; max-width: 1200px; overflow: scroll;">
+              <div id="rule_div3" style="height: 150px; max-width: 900px; overflow: scroll;">
                 <div>
                   <svg id="rule_svg3"></svg>            
                 </div>
               </div>
-              <div id="stat_div3" style="max-height: 150px; max-width: 100px; overflow-y: scroll;">
+              <div id="stat_div3" style="max-height: 150px; max-width: 300px; overflow-y: scroll;">
                 <div>
                   <svg id="stat3"></svg>              
                 </div>
@@ -262,8 +272,13 @@
         <div id="rule_description" class="flex-col">          
         </div>
 
-        <div id="data-table"></div>
-        </div>  
+        <div class='flex-row'>
+          <div id="data-table" style="max-width: 900px; overflow: scroll;">
+          </div>
+          <div>
+            <svg></svg>
+          </div> 
+        </div>
     </div>
     
     <canvas id="myCanvas" width="0" height="0"></canvas>

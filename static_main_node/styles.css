@@ -212,6 +212,7 @@ rect {
 #data-table table {
   border: 1px solid lightgrey;
   margin-left: 10px; 
+  border-collapse: collapse;
 }
 
 table td {

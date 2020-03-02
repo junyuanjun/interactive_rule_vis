@@ -1,4 +1,4 @@
-let margin = {top: 0, right: 50, bottom: 5, left: 10},
+let margin = {top: 0, right: 45, bottom: 5, left: 10},
     column_height = 60,
     width = 860 - margin.right - margin.left,
     height;
@@ -17,7 +17,8 @@ let rectMarginTop = 5, rectMarginBottom = 5,
 
 let glyphCellWidth = 5, glyphCellHeight = 10;
 let rectHeight, rectWidth;
-let supportRectWidth = 100;
+let supportRectWidth = 50, fidelityChartWidth = 50, rule_radius = 7;
+let statWidth = supportRectWidth * 2 + fidelityChartWidth + rule_radius * 2 + 50;
 
 let tot_train;
 
@@ -29,14 +30,14 @@ let col_svg = d3.select("#column_svg")
     .style("height", `${column_height}px`);
 
 let stat_svg = d3.select('#stat')
-    .style("width", `${supportRectWidth}px`)
+    .style("width", `${statWidth}px`)
     .style("height", `${height + margin.top + margin.bottom}px`);
 
 let rule_svg2 = d3.select("#rule_svg2")
     .append("g")
     .attr("transform", `translate(${margin.left})`);
 let stat_svg2 = d3.select("#stat2")
-    .style("width", `${supportRectWidth}px`);
+    .style("width", `${statWidth}px`);
 let col_svg2 = d3.select("#column_svg2")
     .style("height", `${column_height}px`);
 
@@ -44,11 +45,12 @@ let rule_svg3 = d3.select("#rule_svg3")
     .append("g")
     .attr("transform", `translate(${margin.left})`);
 let stat_svg3 = d3.select("#stat3")
-    .style("width", `${supportRectWidth}px`);
+    .style("width", `${statWidth}px`);
 let col_svg3 = d3.select("#column_svg3")
     .style("height", `${column_height}px`);
 
-let widthScale, radiusScale, xScale, yScale, colorScale, supportScale;
+let widthScale, radiusScale, xScale, yScale, colorScale, 
+    supportScale, fidelityScale, confScale;
 let colorBarHeight = 5;
 let barHeight = (rectHeight - rectMarginTop - rectMarginBottom) / 2;
 
@@ -148,8 +150,8 @@ function loadData() {
             yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
 
             // scale for render the support bar
-            supportScale = d3.scaleLinear([0, d3.sum(node_info[0]['value'])], [.5, supportRectWidth]);
-
+            fidelityScale = d3.scaleLinear([0, 1], [0, fidelityChartWidth]);
+            confScale = d3.scaleLinear([0, 1], [0, supportRectWidth]);
             // scale for filling rule ranges
             // rectHeight = yScale.bandwidth() - rectMarginTop - rectMarginBottom;
             rectHeight = glyphCellHeight;
@@ -180,9 +182,6 @@ function loadData() {
 
 
             render_slider();
-
-            d3.select("#rule-num")
-                .text(listData.length);
 
             let col_order = column_order_by_feat_freq(listData);
 
@@ -227,16 +226,25 @@ function scroll_functions(width, height, idx) {
 
     d3.select(`#rule_div${idx}`).on('scroll', function () {
         document.getElementById(`column_div${idx}`).scrollLeft = this.scrollLeft;
+        document.getElementById(`data-table${idx}`).scrollLeft = this.scrollLeft;
+
         document.getElementById(`stat_div${idx}`).scrollTop = this.scrollTop;
     });
 
     d3.select(`#column_div${idx}`).on('scroll', function () {
         document.getElementById(`rule_div${idx}`).scrollLeft = this.scrollLeft;
+        document.getElementById(`data-table${idx}`).scrollLeft = this.scrollLeft;
     });
 
     d3.select(`#stat_div${idx}`).on('scroll', function () {
         document.getElementById(`rule_div${idx}`).scrollTop = this.scrollTop;
     });
+
+    d3.select(`#data-table${idx}`).on('scroll', function () {
+        document.getElementById(`rule_div${idx}`).scrollLeft = this.scrollLeft;
+        document.getElementById(`column_div${idx}`).scrollLeft = this.scrollLeft;
+    });
+
 }
 
 function render_feature_names_and_grid(column_svg, col_order) {
@@ -447,64 +455,173 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
             return yScale(i) + yScale.bandwidth()/2
         })
         // .attr("r", d => radiusScale(d["coverage"]))
-        .attr("r", 7)
+        .attr("r", rule_radius)
         .attr("fill", d => colorCate[d["label"]])
         .attr("stroke", "none");
     
-    res.append('text')
-        .attr('x', xScale.bandwidth()/2+1)
-        .attr('y', (d, i) => {
-            return yScale(i) + yScale.bandwidth()/2 + 2
-        })
-        .style('font-size', '8px')
-        .style('fill', 'white')
-        .style('text-anchor', 'middle')
-        .text((d,i) => 
-            d3.format('0d')(d3.sum(node_info[d['node_id']]['value'])/tot_train*100)+'%')
+    // res.append('text')
+    //     .attr('x', xScale.bandwidth()/2+1)
+    //     .attr('y', (d, i) => {
+    //         return yScale(i) + yScale.bandwidth()/2 + 2
+    //     })
+    //     .style('font-size', '8px')
+    //     .style('fill', 'black')
+    //     .style('text-anchor', 'middle')
+    //     .text((d,i) => 
+    //         d3.format('0d')(d3.sum(node_info[d['node_id']]['value'])/tot_train*100)+'%')
 
-    // covered instances of label 0
+    // render the confusion matrix
+    // covered instances of label 0, tp
+    let xoffset = 10 + xScale.bandwidth()/2;
     res.append("rect")
-        .attr("class", "label0")
-        .attr("x", 10 + xScale.bandwidth()/2)
+        .attr("class", "label0_0")
+        .attr("x", xoffset)
         .attr("y", (d, i) => {
             return yScale(i) + yScale.bandwidth()/4
         })
-        .attr("width", d => supportScale(node_info[d['node_id']]['value'][0]))
+        .attr("width", d => confScale(node_info[d['node_id']]['conf_mat'][0][0]))
         .attr("height", glyphCellHeight)
         .attr("fill", d => colorCate[0])
         .append('title')
-            .text(d => node_info[d['node_id']]['value'][0])
+            .text(d => node_info[d['node_id']]['conf_mat'][0][0])
 
     res.append('text')
         .attr('class', 'label0-text')
-        .attr("x", 10 + xScale.bandwidth()/2)
+        .attr("x", xoffset+2)
         .attr("y", (d, i) => {
             return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
         })
         .style('fill', 'white')
-        .text(d => node_info[d['node_id']]['value'][0] > 600 ? node_info[d['node_id']]['value'][0] : "")
+        .text(d => node_info[d['node_id']]['conf_mat'][0][0] > .1 
+            ? Math.floor(node_info[d['node_id']]['conf_mat'][0][0] * d3.sum(node_info[d['node_id']]['value'])) : "")
 
-    // covered instances of label 1
+    // fp
     res.append("rect")
-        .attr("class", "label1")
-        .attr("x", d => 10 + xScale.bandwidth()/2 + supportScale(node_info[d['node_id']]['value'][0]))
+        .attr("class", "label0_1")
+        .attr("x", d=>xoffset+confScale(node_info[d['node_id']]['conf_mat'][0][0]))
         .attr("y", (d, i) => {
             return yScale(i) + yScale.bandwidth()/4
         })
-        .attr("width", d => supportScale(node_info[d['node_id']]['value'][1]))
+        .attr("width", d => confScale(node_info[d['node_id']]['conf_mat'][0][1]))
         .attr("height", glyphCellHeight)
-        .attr("fill", d => colorCate[1])
+        .attr("fill", d => 'url(#fp_pattern)')
         .append('title')
-        .text(d => node_info[d['node_id']]['value'][1])
+            .text(d => node_info[d['node_id']]['conf_mat'][0][1])
 
     res.append('text')
-        .attr('class', 'label1-text')
-        .attr("x", d => 10 + xScale.bandwidth()/2 + supportScale(node_info[d['node_id']]['value'][0]))
+        .attr('class', 'label0-text')
+        .attr("x", d=>2+xoffset+confScale(node_info[d['node_id']]['conf_mat'][0][0]))
         .attr("y", (d, i) => {
             return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
         })
         .style('fill', 'white')
-        .text(d => node_info[d['node_id']]['value'][1] > 600 ? node_info[d['node_id']]['value'][1] : "")
+        .text(d => node_info[d['node_id']]['conf_mat'][0][1] > .1 
+            ? Math.floor(node_info[d['node_id']]['conf_mat'][0][1] * d3.sum(node_info[d['node_id']]['value'])) : "")
+
+
+    // covered instances of label 1, true negative
+    res.append("rect")
+        .attr("class", "label1_1")
+        .attr("x", d => xoffset+ confScale(node_info[d['node_id']]['conf_mat'][0][0] 
+            + node_info[d['node_id']]['conf_mat'][0][1]))
+        .attr("y", (d, i) => {
+            return yScale(i) + yScale.bandwidth()/4
+        })
+        .attr("width", d => confScale(node_info[d['node_id']]['conf_mat'][1][1]))
+        .attr("height", glyphCellHeight)
+        .attr("fill", d => colorCate[1])
+        .append('title')
+        .text(d => node_info[d['node_id']]['conf_mat'][1][1])
+
+    res.append('text')
+        .attr('class', 'label1-text')
+        .attr("x", d => 1+xoffset+ confScale(node_info[d['node_id']]['conf_mat'][0][0] 
+            + node_info[d['node_id']]['conf_mat'][0][1]))
+        .attr("y", (d, i) => {
+            return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
+        })
+        .style('fill', 'white')
+        .text(d => node_info[d['node_id']]['conf_mat'][1][1] > .1 
+            ? Math.floor(node_info[d['node_id']]['conf_mat'][1][1] * d3.sum(node_info[d['node_id']]['value'])) : "")
+
+    // false negative
+    res.append("rect")
+        .attr("class", "label1_1")
+        .attr("x", d => xoffset+ confScale(node_info[d['node_id']]['conf_mat'][0][0] 
+            + node_info[d['node_id']]['conf_mat'][0][1] + node_info[d['node_id']]['conf_mat'][1][1]))
+        .attr("y", (d, i) => {
+            return yScale(i) + yScale.bandwidth()/4
+        })
+        .attr("width", d => confScale(node_info[d['node_id']]['conf_mat'][1][0]))
+        .attr("height", glyphCellHeight)
+        .attr("fill", `url(#fn_pattern)`)
+        .append('title')
+        .text(d => node_info[d['node_id']]['conf_mat'][1][0])
+
+    res.append('text')
+        .attr('class', 'label1-text')
+        .attr("x", d => 1+xoffset+ confScale(node_info[d['node_id']]['conf_mat'][0][0] 
+            + node_info[d['node_id']]['conf_mat'][0][1] + node_info[d['node_id']]['conf_mat'][1][1]))
+        .attr("y", (d, i) => {
+            return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
+        })
+        .style('fill', 'white')
+        .text(d => node_info[d['node_id']]['conf_mat'][1][0] > .1 
+            ? Math.floor(node_info[d['node_id']]['conf_mat'][1][0] * d3.sum(node_info[d['node_id']]['value'])) : "")
+
+    // overall support
+    xoffset += supportRectWidth + 10;
+    let max_support = d3.max(listData, d => d3.sum(node_info[d['node_id']]['value']))
+    supportScale = d3.scaleLinear([0, max_support], [0, supportRectWidth]);
+
+    res.append('rect')
+        .attr('class', 'support_bar')
+        .attr('x', xoffset)
+        .attr("y", (d, i) => {
+            return yScale(i) + yScale.bandwidth()/4;
+        })
+        .attr('width', supportRectWidth)
+        .attr('height', glyphCellHeight)
+        .attr('fill', 'white')
+        .attr('stroke', 'black')
+
+    res.append('rect')
+        .attr('class', 'support_bar')
+        .attr('x', xoffset)
+        .attr("y", (d, i) => {
+            return yScale(i) + yScale.bandwidth()/4;
+        })
+        .attr('width', d => supportScale(d3.sum(node_info[d['node_id']]['value'])))
+        .attr('height', glyphCellHeight)
+        .attr('fill', 'lightgrey')
+        .attr('stroke', 'black');
+
+    res.append('rect')
+        .attr('class', 'support_bar')
+        .attr('x', xoffset)
+        .attr("y", (d, i) => {
+            return yScale(i) + yScale.bandwidth()/4;
+        })
+        .attr('width', d => supportScale(d3.sum(node_info[d['node_id']]['conf_mat'][0])*d3.sum(node_info[d['node_id']]['value'])))
+        .attr('height', glyphCellHeight)
+        .attr('fill', 'darkgrey')
+        .attr('stroke', 'black');
+
+    res.append('text')
+        .attr('class', 'label1-text')
+        .attr("x", xoffset + 10)
+        .attr("y", (d, i) => {
+            return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
+        })
+        .style('fill', 'black')
+        .text(d => `${Math.floor(d3.sum(node_info[d['node_id']]['conf_mat'][0]) * d3.sum(node_info[d['node_id']]['value']))}`
+                + `/ ${d3.sum(node_info[d['node_id']]['value'])}`)
+
+
+    // fidelity lines
+    let line = d3.line()
+        .x(10 + rule_radius * 2)
+        .y((d, i) => yScale(i) + rectMarginTop + glyphCellHeight /2)
 }
 
 

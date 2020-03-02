@@ -127,6 +127,13 @@ function update_tree(source) {
 		  // .style("fill-opacity", .8)
 		  .style("stroke", "none")
 	}
+	nodeUpdate.append('title')
+	  .text(node => {
+	  		let d = node['data'];
+	  	 return `Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};`
+	  	 	+ `\nFidelity: ${d['fidelity']};\nAccuracy: ${d['accuracy']}`
+        	+ `\nNodeID: ${d['node_id']}; Rule index: ${node2rule[d['node_id']]}`;
+    })
 	
 
 	// Transition exiting nodes to the parent's new position.
