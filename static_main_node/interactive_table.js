@@ -49,6 +49,14 @@ let stat_svg3 = d3.select("#stat3")
 let col_svg3 = d3.select("#column_svg3")
     .style("height", `${column_height}px`);
 
+let rule_svg4 = d3.select("#rule_svg4")
+    .append("g")
+    .attr("transform", `translate(${margin.left})`);
+let stat_svg4 = d3.select("#stat4")
+    .style("width", `${statWidth}px`);
+let col_svg4 = d3.select("#column_svg4")
+    .style("height", `${column_height}px`);
+
 let widthScale, radiusScale, xScale, yScale, colorScale, 
     supportScale, fidelityScale, confScale;
 let colorBarHeight = 5;
@@ -144,6 +152,7 @@ function loadData() {
             scroll_functions(width, height, "");
             scroll_functions(width, height, 2);
             scroll_functions(width, height, 3);
+            scroll_functions(width, height, 4);
 
             // scale for placing cells
             xScale = d3.scaleBand(d3.range(attrs.length+1),[0, width]);
@@ -180,8 +189,7 @@ function loadData() {
                 valueStops.push(rangeArr);
             });
 
-
-            render_slider();
+            // render_slider();
 
             let col_order = column_order_by_feat_freq(listData);
 

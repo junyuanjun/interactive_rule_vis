@@ -1,6 +1,7 @@
 let tree,
-	// diagonal,
 	root1;
+
+let multiple_selection = {};
 
 // Creates a curved (diagonal) path from parent to the child nodes
 function diagonal(s, d) {
@@ -64,6 +65,7 @@ function update_tree(source) {
 	  .attr("transform", function(d) { 
 	  	return "translate(" + source.x0 + "," + source.y0 + ")"; 
 	  })
+	  .attr('id', d => `tree_node-${d['data']['node_id']}`)
 	  .on("click", d => click_text(d['data']['node_id']));
 
 	// nodeEnter.append("circle")

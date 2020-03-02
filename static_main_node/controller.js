@@ -6,6 +6,8 @@ let NODE_ENCODING = "accuracy";
 let SUMMARY_LAYOUT = "tree";
 let X_POS = 'fidelity';
 
+let linked_node_ids = {};
+
 d3.select("#col_sort")
 	.on("change", function() {
 		let val = d3.select(this).property('value');
@@ -102,7 +104,17 @@ function click_cancel() {
 function click_summary_node(node_id) {
     console.log('click node: '+ node_id)
 
-    // highlight in the overview
+    // highlight in the tree view
+    d3.select(`#tree_node-${node_id} .highlight-circle`).remove();
+
+	d3.select(`#tree_node-${node_id}`)
+		.append('circle')
+		.attr('class', 'highlight-circle')
+		.attr('r', summary_size(node_info[node_id]['support']))
+		.style('fill', 'none')
+		.style('stroke', 'black');
+
+    // highlight in the rule view TODO: DEBUG 
     if (node2rule[node_id]) {      
       rule_svg.select(`#back-rect-${clicked_summary_node_rule_id}`)
             .classed('rule_highlight', false);
@@ -171,15 +183,7 @@ function click_summary_node(node_id) {
     }
    
     // show details in the detail view
-    // let query_url = domain + "find_linked_rules/" + node_id;
-    // linked_rules = fetch(query_url).then((data) => {
     postData("find_node_rules", linked_node_ids, (node_rules)=>{
-    //   if(data.status !== 200 || !data.ok) {
-    //     throw new Error(`server returned ${data.status}${data.ok ? " ok" : ""}`);
-    //   }
-    //   const ct = data.headers.get("content-type");
-    //   return data.json();
-    // }).then((node_rules) => {
 		let rules = node_rules['rule_lists'];
 	    present_rules = rules;
 	    col_order = column_order_by_feat_freq(rules);
@@ -191,6 +195,16 @@ function click_summary_node(node_id) {
 	    })
 	    // update_column_rendering(col_svg2);
 		update_rule_rendering(rule_svg2, col_svg2, stat_svg2, 2, rules, col_order);
+
+    	// add one selected rule to multiple selection
+    	// TODO: remove multiple selection on the same path
+		multiple_selection[rules[rules.length-1]['node_id']] = rules[rules.length-1];
+		let multiple_rules = [];
+		Object.keys(multiple_selection).forEach((node_id) => {
+			multiple_rules.push(multiple_selection[node_id]);
+		})
+	    col_order = column_order_by_feat_freq(multiple_rules);
+		update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, multiple_rules, col_order);
 	})
 }
 

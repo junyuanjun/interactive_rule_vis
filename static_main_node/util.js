@@ -61,7 +61,7 @@ function find_connection(node_id) {
 
   // find ancesters
   let p_id = node_info[node_id]['parent'];
-  while (p_id > 0) {
+  while (p_id >= 0) {
     if (new_node_shown[p_id]) {
       connection.push(p_id);
     }

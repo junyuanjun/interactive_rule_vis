@@ -107,6 +107,16 @@
 
                   <!-- Rule/Node Generation Setting -->
                   <div class="flex-col tabcontent" id="data-setting" style="display: flex">
+                    <!-- choose dataset -->
+                    <div class="title flex-row" style="margin-right: 20px">
+                      <span>Dataset: </span>
+                      <select id="dataset">
+                        <option value='fico'>FICO</option>
+                        <option value='heart'>Heartbeat</option>
+                        <option value='chemistry'>Chemistry</option>
+                      </select>
+                    </div>
+
                     <!-- Pruning -->
                     <div class="title flex-row" style="margin-right: 20px">
                       <span>Number of Rules: </span>
@@ -118,8 +128,8 @@
                     </div>
 
                     <!-- Filtering Accuracy -->
-                    <span id="accuracy-text" style="margin-bottom: 1px">Accuracy:</span>
-                    <div id="slider-accuracy"></div>
+                    <!-- <span id="accuracy-text" style="margin-bottom: 1px">Accuracy:</span>
+                    <div id="slider-accuracy"></div> -->
 
                     <!-- Sorting rows -->
                     <div class='flex-row'>
@@ -194,10 +204,13 @@
               Overview
             </button>
             <button class="tablinks" onclick="showRule(event, 'linked')">
-              Selected Nodes
+              Selected Node
             </button>
             <button class="tablinks" onclick="showRule(event, 'level')">
               Selected Level
+            </button>
+            <button class="tablinks" onclick="showRule(event, 'multiple')">
+              Multiple Node Selection
             </button>
           </div>
 
@@ -210,7 +223,7 @@
             </div>
 
             <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
-              <div id="rule_div" style="height: 150px; max-width: 900px; overflow: scroll;">
+              <div id="rule_div" style="max-height: 150px; max-width: 900px; overflow: scroll;">
                 <div>
                   <svg id="rule_svg"></svg>            
                 </div>
@@ -232,7 +245,7 @@
             </div>
 
             <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
-              <div id="rule_div2" style="height: 150px; max-width: 900px; overflow: scroll;">
+              <div id="rule_div2" style="max-height: 150px; max-width: 900px; overflow: scroll;">
                 <div>
                   <svg id="rule_svg2"></svg>            
                 </div>
@@ -254,7 +267,7 @@
             </div>
 
             <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
-              <div id="rule_div3" style="height: 150px; max-width: 900px; overflow: scroll;">
+              <div id="rule_div3" style="max-height: 150px; max-width: 900px; overflow: scroll;">
                 <div>
                   <svg id="rule_svg3"></svg>            
                 </div>
@@ -262,6 +275,28 @@
               <div id="stat_div3" style="max-height: 150px; max-width: 300px; overflow-y: scroll;">
                 <div>
                   <svg id="stat3"></svg>              
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selected multiple nodes -->
+          <div class="flex-col tabcontent" id="multiple">
+            <div id="column_div4" style="max-width: 900px; overflow-x: scroll;">
+              <div>
+                <svg id="column_svg4"></svg>            
+              </div>
+            </div>
+
+            <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
+              <div id="rule_div4" style="max-height: 150px; max-width: 900px; overflow: scroll;">
+                <div>
+                  <svg id="rule_svg4"></svg>            
+                </div>
+              </div>
+              <div id="stat_div4" style="max-height: 150px; max-width: 300px; overflow-y: scroll;">
+                <div>
+                  <svg id="stat4"></svg>              
                 </div>
               </div>
             </div>
