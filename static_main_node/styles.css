@@ -8,10 +8,6 @@ body{
   margin-top: 0;
 }
 
-td {
-  width: 20px;
-}
-
 input {
   border: 0;
   outline: 0;
@@ -206,6 +202,7 @@ rect {
 
 #data-table {
   max-height: 120px; 
+  max-width: 900px; 
   overflow: scroll;
 }
 
@@ -215,8 +212,16 @@ rect {
   border-collapse: collapse;
 }
 
+#data-pred {
+  max-height: 120px; 
+  max-width: 100px;
+  overflow: scroll;
+}
+
 table td {
   border: 1px solid lightgrey;
+  height: 15px;
+  width: 45px;
 }
 
 #rule_description {

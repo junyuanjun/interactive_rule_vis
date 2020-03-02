@@ -243,7 +243,13 @@ function scroll_functions(width, height, idx) {
     d3.select(`#data-table${idx}`).on('scroll', function () {
         document.getElementById(`rule_div${idx}`).scrollLeft = this.scrollLeft;
         document.getElementById(`column_div${idx}`).scrollLeft = this.scrollLeft;
+
+        document.getElementById(`data-pred${idx}`).scrollTop = this.scrollTop;
     });
+
+    d3.select(`#data-pred${idx}`).on('scroll', function () {
+        document.getElementById(`data-table${idx}`).scrollTop = this.scrollTop;
+    }); 
 
 }
 
@@ -622,6 +628,17 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
     let line = d3.line()
         .x(10 + rule_radius * 2)
         .y((d, i) => yScale(i) + rectMarginTop + glyphCellHeight /2)
+
+    xoffset += supportRectWidth;
+    res.append('text')
+        .attr('class', 'label1-text')
+        .attr("x", xoffset + 10)
+        .attr("y", (d, i) => {
+            return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
+        })
+        .style('fill', 'black')
+        .text(d => `${d3.format('.2%')(node_info[d['node_id']]['fidelity'])}`)
+
 }
 
 

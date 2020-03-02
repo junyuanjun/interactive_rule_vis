@@ -3,7 +3,7 @@ import pandas as pd
 import copy
 
 class Forest():
-	def initialize(self, node_info, real_min, real_max, df):
+	def initialize(self, node_info, real_min, real_max, df, y_pred, y_gt):
 		self.node_info = { int(x) : node_info[x] for x in node_info }
 		# self.node_info = node_info
 		ranges = np.zeros(shape=(len(real_max), 2))
@@ -19,6 +19,8 @@ class Forest():
 		self.node_feature_marked[0] = True
 		self.node_feature_ranges[0] = copy.deepcopy(ranges)
 		self.df = df
+		self.y_pred = np.array(y_pred)
+		self.y_gt = np.array(y_gt)
 
 	def empty_has_leaves(self):
 		self.has_leaves = np.zeros(len(self.node_info))
@@ -140,7 +142,15 @@ class Forest():
 				matched_data = matched_data[(matched_data[col] > cond['threshold0']) & (matched_data[col] <= cond['threshold1'])]
 			else:
 				print("!!!!!! Error rule !!!!!!")
-		return matched_data.values.tolist()
+
+		matched_index = matched_data.index.values.astype(int)
+		matched_pred = self.y_pred[matched_index]
+		matched_gt = self.y_gt[matched_index]
+		return {
+			'matched_data': matched_data.values.tolist(),
+			'matched_pred': matched_pred.tolist(),
+			'matched_gt': matched_gt.tolist(),
+		}
 
 	def get_rules_by_level(self, depth):
 		self.result_nodes = []

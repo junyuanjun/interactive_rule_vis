@@ -272,6 +272,32 @@ function click_rule(clicked_g, rule_idx, rule) {
 			.text(cell => cell);
 
 		// add prediction
+		d3.selectAll('#data-pred svg *').remove();
+
+		d3.select('#data-pred svg')
+			.attr('width', "50px")
+			.attr('height', 18*matched_gt.length)
+			.append('g')
+			.attr('class', 'instance-conf')
+			.selectAll('circle')
+			.data(matched_pred)
+			.enter()
+			.append('circle')
+			.attr("cx", xScale.bandwidth()/2)
+	        .attr("cy", (d, idx) => {
+	            return 18 * idx + rule_radius + 2;
+	        })
+	        .attr("r", rule_radius)
+	        .attr("fill", (d, idx) => {
+	        	if (d == matched_gt[idx]) {
+	        		return colorCate[d];
+	        	} else {
+	        		if (d == 0)
+	        			return "url(#fp_pattern)"
+	        		else 
+	        			return "url(#fn_pattern)"
+	        	}
+	        })
 	})
 }
 

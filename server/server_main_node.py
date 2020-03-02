@@ -41,8 +41,10 @@ def initialize(dataname):
 		real_min = data['real_min']
 		real_max = data['real_max']
 		df = pd.DataFrame(columns=data['columns'], data=data['data'])
+		y_pred = data['y_pred']
+		y_gt = data['y_gt']
 
-	forest.initialize(node_info, real_min, real_max, df)
+	forest.initialize(node_info, real_min, real_max, df, y_pred, y_gt)
 	print("====initialized====")
 	return "initialized"
 
@@ -75,8 +77,8 @@ def find_linked_rules(node_id):
 def get_matched_data():
 	print("===== GET MATCHED DATA =====")
 	rule = json.loads(str(request.get_json(force=True)))
-	matched_data = forest.get_matched_data(rule["rules"])
-	return {"matched_data": matched_data}
+	matched_res = forest.get_matched_data(rule["rules"])
+	return matched_res
 
 @app.route("/get_rules_by_level/<depth>")
 def get_rules_by_level(depth):
