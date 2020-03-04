@@ -102,10 +102,9 @@ function loadData() {
     d3.queue()
         .defer(d3.json, path + "/test.json")
         .defer(d3.json, path + "/list.json")
-        .defer(d3.json, path + "/support.json")
         .defer(d3.json, path + "/node_info.json")
         .defer(d3.json, path + "/tree.json")
-        .await((err, file1, file2, file3, file4, file5) => {
+        .await((err, file1, file2, file4, file5) => {
             if (err) {
                 console.log(err);
                 return;
@@ -122,10 +121,6 @@ function loadData() {
             real_5_4 = file1['real_5_4']
             listData = file2["rule_lists"];
             target_names = file2["target_names"];
-            support = file3['support'];
-            true_support = file3['true_support'];
-            false_support = file3['false_support'];
-            class_support = file3['class_support'];
             tot_data = file1['data'].length;
             node_info = file4['node_info_arr'];
             max_depth = file4['max_depth'];
@@ -234,29 +229,44 @@ function scroll_functions(width, height, idx) {
 
     d3.select(`#rule_div${idx}`).on('scroll', function () {
         document.getElementById(`column_div${idx}`).scrollLeft = this.scrollLeft;
-        document.getElementById(`data-table${idx}`).scrollLeft = this.scrollLeft;
+        // document.getElementById(`data-table${idx}`).scrollLeft = this.scrollLeft;
+        document.getElementById(`data-table`).scrollLeft = this.scrollLeft;
 
         document.getElementById(`stat_div${idx}`).scrollTop = this.scrollTop;
     });
 
     d3.select(`#column_div${idx}`).on('scroll', function () {
         document.getElementById(`rule_div${idx}`).scrollLeft = this.scrollLeft;
-        document.getElementById(`data-table${idx}`).scrollLeft = this.scrollLeft;
+        document.getElementById(`data-table`).scrollLeft = this.scrollLeft;
+        // document.getElementById(`data-table${idx}`).scrollLeft = this.scrollLeft;
     });
 
     d3.select(`#stat_div${idx}`).on('scroll', function () {
         document.getElementById(`rule_div${idx}`).scrollTop = this.scrollTop;
     });
 
-    d3.select(`#data-table${idx}`).on('scroll', function () {
-        document.getElementById(`rule_div${idx}`).scrollLeft = this.scrollLeft;
-        document.getElementById(`column_div${idx}`).scrollLeft = this.scrollLeft;
+    // d3.select(`#data-table${idx}`).on('scroll', function () {
+    d3.select(`#data-table`).on('scroll', function () {
+        // document.getElementById(`rule_div${idx}`).scrollLeft = this.scrollLeft;
+        // document.getElementById(`column_div${idx}`).scrollLeft = this.scrollLeft;
+        document.getElementById(`rule_div`).scrollLeft = this.scrollLeft;
+        document.getElementById(`column_div`).scrollLeft = this.scrollLeft;
 
-        document.getElementById(`data-pred${idx}`).scrollTop = this.scrollTop;
+        document.getElementById(`rule_div${2}`).scrollLeft = this.scrollLeft;
+        document.getElementById(`column_div${2}`).scrollLeft = this.scrollLeft;
+
+        document.getElementById(`rule_div${3}`).scrollLeft = this.scrollLeft;
+        document.getElementById(`column_div${3}`).scrollLeft = this.scrollLeft;
+
+        document.getElementById(`rule_div${4}`).scrollLeft = this.scrollLeft;
+        document.getElementById(`column_div${4}`).scrollLeft = this.scrollLeft;
+        // document.getElementById(`data-pred${idx}`).scrollTop = this.scrollTop;
+        document.getElementById(`data-pred`).scrollTop = this.scrollTop;
     });
 
     d3.select(`#data-pred${idx}`).on('scroll', function () {
-        document.getElementById(`data-table${idx}`).scrollTop = this.scrollTop;
+        // document.getElementById(`data-table${idx}`).scrollTop = this.scrollTop;
+        document.getElementById(`data-table`).scrollTop = this.scrollTop;
     }); 
 
 }

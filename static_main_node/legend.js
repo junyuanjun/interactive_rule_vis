@@ -19,17 +19,11 @@ var font_family = "Times New Roman";
 var font_size = 10;
 var font = font_size + "px " + font_family;
 
-var threshold_values = [
-	[52, 104],
-	[35],
-	[86, 95],
-	[20, 62],
-	[2, 5],
-];
-var yoffset = 5, legend_r = 5;
-var indent = 20;
-
 function render_legend_label(id) {
+  d3.select(id).select('g').remove();
+  var yoffset = 5, legend_r = 5;
+  var indent = 20;
+
   var legend = d3.select(id)
       .style("width", legendWidth)
       .style("height", legendHeight)

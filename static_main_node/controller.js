@@ -40,6 +40,15 @@ d3.select('#x_position')
 	.on('change', function() {
 		let val = d3.select(this).property('value');
 		change_x_position(val);
+	});
+
+d3.select('#dataset')
+	.on('change', function() {
+		let val = d3.select(this).property('value');
+		folder = val;
+		param_set = false;
+		loadData();
+		param_set = true;
 	})
 
 function generate_rules() {
@@ -107,13 +116,15 @@ function click_summary_node(node_id) {
     // highlight in the tree view
     d3.select(`#tree_node-${node_id} .highlight-circle`).remove();
 
-	d3.select(`#tree_node-${node_id}`)
-		.append('circle')
-		.attr('class', 'highlight-circle')
-		.attr('r', summary_size(node_info[node_id]['support']))
-		.style('fill', 'none')
-		.style('stroke', 'black');
-
+    if (!(node_id in multiple_selection)) {
+    	d3.select(`#tree_node-${node_id}`)
+			.append('circle')
+			.attr('class', 'highlight-circle')
+			.attr('r', summary_size(node_info[node_id]['support']))
+			.style('fill', 'none')
+			.style('stroke', 'black');
+    }
+	
     // highlight in the rule view TODO: DEBUG 
     if (node2rule[node_id]) {      
       rule_svg.select(`#back-rect-${clicked_summary_node_rule_id}`)
@@ -198,7 +209,12 @@ function click_summary_node(node_id) {
 
     	// add one selected rule to multiple selection
     	// TODO: remove multiple selection on the same path
-		multiple_selection[rules[rules.length-1]['node_id']] = rules[rules.length-1];
+    	let node_id = rules[rules.length-1]['node_id'];
+    	if (node_id in multiple_selection) {
+    		delete multiple_selection[node_id];
+    	} else {
+    		multiple_selection[node_id] = rules[rules.length-1];
+    	}
 		let multiple_rules = [];
 		Object.keys(multiple_selection).forEach((node_id) => {
 			multiple_rules.push(multiple_selection[node_id]);
