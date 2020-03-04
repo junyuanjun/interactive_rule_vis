@@ -118,8 +118,8 @@ rect {
 }
 
 .rule_highlight {
-  fill: black;
-  fill-opacity: .05;
+  fill: #fdcdac;
+  fill-opacity: .5;
 }
 
 /* Style the tab */

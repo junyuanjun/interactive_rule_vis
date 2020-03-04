@@ -2,12 +2,12 @@ let filter_threshold = {
 	'support': 20,
 	'fidelity': 0,
 	'accuracy': [0, 1.],
-  'num_feat': 20,
+  'num_feat': 5,
   'depth': 20,
 }
 
-let node2rule = {};
-let linkednode2rule = {};
+let node2rule = [{}, {}, {}, {}];
+let rule2node = [{}, {}, {}, {}];
 
 let new_node_shown = {};
 
@@ -32,7 +32,7 @@ function filter_nodes(node_info) {
 	return new_nodes;
 }
 
-function find_leaf_rules(new_nodes, node_info, listData) {
+function find_leaf_rules(new_nodes, node_info, listData, tab_id) {
 	let url = 'find_leaf_rules';
 
 	// make a node id list
@@ -44,9 +44,9 @@ function find_leaf_rules(new_nodes, node_info, listData) {
     col_order = column_order_by_feat_freq(rules);
 
     // update node2rule pos
-    node2rule = {};
+    node2rule[tab_id] = {};
     rules.forEach((d, idx) => {
-      node2rule[d['node_id']] = idx;
+      node2rule[tab_id][d['node_id']] = idx;
     })
 
     update_rule_rendering(rule_svg, col_svg, stat_svg, "", rules, col_order);

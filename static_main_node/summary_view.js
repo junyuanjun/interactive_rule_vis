@@ -29,7 +29,7 @@ let x_axis = d3.axisBottom()
 let pie = d3.pie()
   .value(d => d);
 
-let clicked_summary_node_rule_id = -1;
+let clicked_summary_node_id = -1;
 let clicked_tree_level = -1;
 
 function intialize_scales(max_depth) {
@@ -52,7 +52,7 @@ function intialize_scales(max_depth) {
 		.range([2, max_r]);
 
 	summary_color = d3.scaleLinear()
-		.domain([0, .5, 1])
+		.domain([.5, .7, 1])
 		.range(stop_colors)
 
   fidelity_color = d3.scaleLinear()

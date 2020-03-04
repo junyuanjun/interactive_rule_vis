@@ -201,7 +201,7 @@ function loadData() {
             }
 
             render_legend_label("#legend1");
-            find_leaf_rules(summary_nodes, node_info, listData);
+            find_leaf_rules(summary_nodes, node_info, listData, 0);
             render_summary(summary_nodes, max_depth);
     });
 }
@@ -300,27 +300,6 @@ function render_feature_names_and_grid(column_svg, col_order) {
         })
         .append('title')
         .text(d => d);
-
-    // grid
-    // rule_svg.selectAll(".grid-row")
-    //     .data(yScale.domain())
-    //     .enter().append("g")
-    //     .attr("class", "grid-row")
-    //     .attr("transform", function(d, i) { return `translate(0, ${yScale(i)})`; })
-    //     .append("line")
-    //     .attr("x1", 0)
-    //     .attr("x2", width-xScale.bandwidth())
-    //     .style("stroke", gridColor);
-
-    // rule_svg.selectAll(".grid-col")
-    //     .data(xScale.domain())
-    //     .enter().append("g")
-    //     .attr("class", "grid-col")
-    //     .attr("transform", function(d, i) { return `translate(${xScale(i)}, ${margin.top})`; })
-    //     .append("line")
-    //     .attr("y1", 0)
-    //     .attr("y2", height-yScale.bandwidth()-margin.top)
-    //     .style("stroke", gridColor);
 }
 
 function render_slider() {
@@ -404,7 +383,7 @@ function update_rules() {
     console.log("update");
 
     new_nodes = filter_nodes(node_info);
-    find_leaf_rules(new_nodes, node_info, listData);   
+    find_leaf_rules(new_nodes, node_info, listData, 0);   
     update_summary(new_nodes);
 }
 
@@ -436,7 +415,7 @@ function prune_nodes() {
     // re-render rules
     new_nodes = filter_nodes(node_info,);
     update_summary(new_nodes);
-    let rules = find_leaf_rules(new_nodes, node_info, listData);
+    let rules = find_leaf_rules(new_nodes, node_info, listData, 0);
 }
 
 function render_size_circle(listData) {

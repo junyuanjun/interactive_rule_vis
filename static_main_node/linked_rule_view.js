@@ -24,7 +24,7 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
         .style("height", `${height + margin.bottom}px`);
 
     // scale for placing cells
-    let yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
+    let yScale = d3.scaleBand(d3.range(listData.length), [margin.top, height - margin.bottom]);
 
     render_feature_names_and_grid(col_svg, col_order);
 
@@ -44,8 +44,8 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
         .attr('class', 'back-rect')
         .attr('x', -rectMarginH)
         .attr('y', -rectMarginTop)
-        .attr('height', `${glyphCellHeight + rectMarginTop + rectMarginBottom}px`)
-        .attr('width', `${width-margin.left}px`)
+        .attr('height', `${yScale.bandwidth()}px`)
+        .attr('width', `${width-xScale.bandwidth()}px`)
         // .attr('fill', 'white')
         .attr('fill', (d, i) => 
             new_node_shown[d['node_id']] ? 'white': 'rgba(0,0,0,.05)'
@@ -118,10 +118,10 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
 
     // grid
     rule_svg.selectAll(".grid-row")
-        .data(yScale.domain())
+        .data(d3.range(listData.length+1))
         .enter().append("g")
         .attr("class", "grid-row")
-        .attr("transform", function(d, i) { return `translate(0, ${yScale(i)})`; })
+        .attr("transform", function(idx) { return `translate(0, ${margin.top + yScale.bandwidth() * idx})`; })
         .append("line")
         .attr("x1", 0)
         .attr("x2", width-xScale.bandwidth())
@@ -134,8 +134,9 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
         .attr("transform", function(d, i) { return `translate(${xScale(i)}, ${margin.top})`; })
         .append("line")
         .attr("y1", 0)
-        .attr("y2", height-yScale.bandwidth()-margin.top)
+        .attr("y2", height-margin.top-margin.bottom)
         .style("stroke", gridColor);
+
     // render_size_circle(listData);
     render_confusion_bars(stat_svg, listData);
 }

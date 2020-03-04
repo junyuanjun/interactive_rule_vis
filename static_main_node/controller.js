@@ -6,8 +6,6 @@ let NODE_ENCODING = "accuracy";
 let SUMMARY_LAYOUT = "tree";
 let X_POS = 'fidelity';
 
-let linked_node_ids = {};
-
 d3.select("#col_sort")
 	.on("change", function() {
 		let val = d3.select(this).property('value');
@@ -48,7 +46,6 @@ d3.select('#dataset')
 		folder = val;
 		param_set = false;
 		loadData();
-		param_set = true;
 	})
 
 function generate_rules() {
@@ -124,24 +121,6 @@ function click_summary_node(node_id) {
 			.style('fill', 'none')
 			.style('stroke', 'black');
     }
-	
-    // highlight in the rule view TODO: DEBUG 
-    if (node2rule[node_id]) {      
-      rule_svg.select(`#back-rect-${clicked_summary_node_rule_id}`)
-            .classed('rule_highlight', false);
-
-      if (clicked_summary_node_rule_id == node2rule[node_id]) {
-        clicked_summary_node_rule_id = -1;
-      } else {
-        rule_svg.select(`#back-rect-${node2rule[node_id]}`)
-          .classed('rule_highlight', true);
-        clicked_summary_node_rule_id = node2rule[node_id];
-
-        document.getElementById('stat_div').scrollTop = yScale(node2rule[node_id]);
-        document.getElementById('rule_div').scrollTop = yScale(node2rule[node_id]);
-      }
-    }
-
 
     // get the linked node information
     let linked_node_ids = find_connection(node_id);
@@ -200,10 +179,9 @@ function click_summary_node(node_id) {
 	    col_order = column_order_by_feat_freq(rules);
 
 	    // update linked node2rule pos
-	    linkednode2rule = {};
-	    rules.forEach((d, idx) => {
-	      linkednode2rule[d['node_id']] = idx;
-	    })
+		node2rule[1] = {};
+		rules.forEach((d, i) => node2rule[1][d['node_id']] = i);
+	 	
 	    // update_column_rendering(col_svg2);
 		update_rule_rendering(rule_svg2, col_svg2, stat_svg2, 2, rules, col_order);
 
@@ -216,12 +194,44 @@ function click_summary_node(node_id) {
     		multiple_selection[node_id] = rules[rules.length-1];
     	}
 		let multiple_rules = [];
-		Object.keys(multiple_selection).forEach((node_id) => {
+		node2rule[3] = {};
+
+		Object.keys(multiple_selection).forEach((node_id, idx) => {
 			multiple_rules.push(multiple_selection[node_id]);
+			node2rule[3][node_id] = idx;
 		})
 	    col_order = column_order_by_feat_freq(multiple_rules);
 		update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, multiple_rules, col_order);
+
+		// highlight in the rule view TODO: DEBUG 
+	    if (node_id in node2rule[0]) {      
+	    	highlight_in_tab(0, '', node_id);
+	    }
+	    for (let tab_id = 1; tab_id < 4; tab_id++) {
+		    if (node_id in node2rule[tab_id]) {
+		    	highlight_in_tab(tab_id, tab_id+1, node_id);
+		    }	
+	    }
+	    if (clicked_summary_node_id == node_id) {
+	    	clicked_summary_node_id = -1;
+	    } else {
+	    	clicked_summary_node_id = node_id;
+	    }
 	})
+}
+
+function highlight_in_tab(tab_id, tab_p, node_id) {
+	let rule_idx = node2rule[tab_id][node_id];
+	d3.select(`#rule_svg${tab_p}`).select(`#back-rect-${rule_idx}`)
+            .classed('rule_highlight', false);
+
+	if (clicked_summary_node_id != node_id) {
+		d3.select(`#rule_svg${tab_p}`).select(`#back-rect-${rule_idx}`)
+		  .classed('rule_highlight', true);
+
+		document.getElementById(`stat_div${tab_p}`).scrollTop = yScale(rule_idx);
+		document.getElementById(`rule_div${tab_p}`).scrollTop = yScale(rule_idx);
+	}
 }
 
 function click_rule(clicked_g, rule_idx, rule) {
@@ -410,9 +420,9 @@ function click_tree_level(idx) {
 	    col_order = column_order_by_feat_freq(rules);
 
 	    // update linked node2rule pos
-	    linkednode2rule = {};
+	    node2rule[2] = {};
 	    rules.forEach((d, idx) => {
-	      linkednode2rule[d['node_id']] = idx;
+	      node2rule[3][d['node_id']] = idx;
 	    })
 	    // update_column_rendering(col_svg2);
 		update_rule_rendering(rule_svg3, col_svg3, stat_svg3, 3, rules, col_order);
