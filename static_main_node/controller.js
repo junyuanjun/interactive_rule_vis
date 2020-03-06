@@ -115,10 +115,21 @@ function click_summary_node(node_id) {
     d3.select(`.rule_clicked_node`).remove();
 
     if (!(node_id in multiple_selection)) {
-    	d3.select(`#tree_node-${node_id}`)
-			.append('circle')
-			.attr('class', 'highlight-circle')
-			.attr('r', summary_size(node_info[node_id]['support']));
+    	let node = d3.select(`#tree_node-${node_id}`)
+
+    	if (NODE_ENCODING == 'purity') {
+    		let size = summary_size_(node_info[node_id]['support'])
+    		node.append('rect')
+				.attr('class', 'highlight-circle')
+    			.attr('x', -size/2)
+    			.attr('y', -size/2)
+    			.attr('width', size)
+    			.attr('height', size);
+    	} else {
+			node.append('circle')
+				.attr('class', 'highlight-circle')
+				.attr('r', summary_size(node_info[node_id]['support']));
+    	}
     }
 
     // get the linked node information
@@ -200,13 +211,36 @@ function click_summary_node(node_id) {
 		node2rule[3] = {};
 		rule2node[3] = {}
 
+		let summary_info = {
+			'support': 0,
+			'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0,
+			'r-squared': [0, 0]
+		}
 		Object.keys(multiple_selection).forEach((node_id, idx) => {
 			multiple_rules.push(multiple_selection[node_id]);
 			node2rule[3][node_id] = idx;
 			rule2node[3][idx] = node_id;
+			summary_info['support'] += d3.sum(node_info[node_id]['value'])
+			summary_info['tp'] += Math.floor(node_info[node_id]['conf_mat'][0][0] * d3.sum(node_info[node_id]['value']))
+			summary_info['fp'] += Math.floor(node_info[node_id]['conf_mat'][0][1] * d3.sum(node_info[node_id]['value']))
+			summary_info['tn'] += Math.floor(node_info[node_id]['conf_mat'][1][1] * d3.sum(node_info[node_id]['value']))
+			summary_info['fn'] += Math.floor(node_info[node_id]['conf_mat'][1][0] * d3.sum(node_info[node_id]['value']))
+			// summary_info['r-squared'][0] += summary_info['tp'] + summary_info['tn'];
+			// summary_info['r-squared'][1] += 
 		})
 	    col_order = column_order_by_feat_freq(multiple_rules);
 		update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, multiple_rules, col_order);
+
+		// get multiple selection summary
+		let summary_str = `<p>`
+		summary_str += `support: ${summary_info['support']} / ${d3.sum(node_info[0]['value'])} <br/>`
+		summary_str += `tp: ${summary_info['tp']} / ${Math.floor(node_info[0]['conf_mat'][0][0] * d3.sum(node_info[0]['value']))}<br/>`;
+		summary_str += `fp: ${summary_info['fp']} / ${Math.floor(node_info[0]['conf_mat'][0][1] * d3.sum(node_info[0]['value']))}<br/>`;
+		summary_str += `tn: ${summary_info['tn']} / ${Math.floor(node_info[0]['conf_mat'][1][1] * d3.sum(node_info[0]['value']))}<br/>`;
+		summary_str += `fn: ${summary_info['fn']} / ${Math.floor(node_info[0]['conf_mat'][1][0] * d3.sum(node_info[0]['value']))}<br/>`;
+		summary_str += `</p>`;
+		d3.select(`#selection_summary`)
+			.html(summary_str)
 
 		// highlight in the rule view TODO: DEBUG 
 	    if (node_id in node2rule[0]) {      
@@ -266,10 +300,25 @@ function click_rule(clicked_g, rule_idx, rule, tab_p) {
 	let node_id = rule2node[tab_id][rule_idx];
 	d3.select(`.rule_clicked_node`).remove();
 
-	d3.select(`#tree_node-${node_id}`)
-		.append('circle')
-		.attr('class', 'rule_clicked_node')
-		.attr('r', summary_size(node_info[node_id]['support']))
+	// d3.select(`#tree_node-${node_id}`)
+	// 	.append('circle')
+	// 	.attr('class', 'rule_clicked_node')
+	// 	.attr('r', summary_size(node_info[node_id]['support']))
+	let node = d3.select(`#tree_node-${node_id}`)
+
+	if (NODE_ENCODING == 'purity') {
+		let size = summary_size_(node_info[node_id]['support'])
+		node.append('rect')
+			.attr('class', 'rule_clicked_node')
+			.attr('x', -size/2)
+			.attr('y', -size/2)
+			.attr('width', size)
+			.attr('height', size);
+	} else {
+		node.append('circle')
+			.attr('class', 'rule_clicked_node')
+			.attr('r', summary_size(node_info[node_id]['support']));
+	}
 
 	// update rule description
 	let rule_des = d3.select('#rule_description');
@@ -467,7 +516,7 @@ function click_setting_tab(evt, id) {
 	}
 
 	// Get all elements with class="tablinks" and remove the class "active"
-	tablinks = document.getElementById("setting-block").getElementsByClassName("tablinks");
+	tablinks = document.getElementById("setting-tabs").getElementsByClassName("tablinks");
 	for (i = 0; i < tablinks.length; i++) {
 		tablinks[i].className = tablinks[i].className.replace(" active", "");
 	}

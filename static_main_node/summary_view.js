@@ -6,6 +6,7 @@ let summary_x,
 	summary_y,
 	tree_height,
 	summary_size,
+  summary_size_,
   fidelity_color,
 	summary_opacity;
 
@@ -15,7 +16,7 @@ stop_colors = ['#e66101', '#f3eeea', '#7b3294', ]
 stop_colors = ['#d7191c', '#ffffbf', '#2c7bb6'];
 stop_colors = ['#e66101', '#dfc27d', '#018571'];
 
-let view_margin = {left:5+max_r, right:max_r, top:max_r, bottom:max_r};
+let view_margin = {left:5+max_r, right:max_r, top:max_r*2, bottom:max_r};
 let x_tick_height = 18;
 
 let summary_x_tick = d3.select('#summary_x_tick')
@@ -50,6 +51,10 @@ function intialize_scales(max_depth) {
 	summary_size = d3.scaleLinear()
 		.domain([min_support, 1])
 		.range([2, max_r]);
+
+  summary_size_ = d3.scaleLinear()
+    .domain([min_support, 1])
+    .range([2, max_r*3]);
 
 	summary_color = d3.scaleLinear()
 		.domain([.5, .7, 1])

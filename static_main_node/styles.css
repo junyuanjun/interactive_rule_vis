@@ -123,8 +123,8 @@ rect {
 }
 
 .highlight-circle {
-  /*stroke: #fdcdac;*/
   stroke: black;
+  stroke-width: 1px;
   fill: none;
 }
 
@@ -206,10 +206,13 @@ rect {
 
 #radio_group {
   width: 15px;
+  margin-top: 18px
 }
 
 #radio_group input {
-  width: 13px;
+  width: 10px;
+  height: 10px;
+  margin: 4px;
 }
 
 #data-table {

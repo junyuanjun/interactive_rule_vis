@@ -50,7 +50,7 @@
         <path d="M-1,1 l2,-2
                  M0,4 l4,-4
                  M3,5 l2,-2" 
-              style="stroke:black; stroke-width:1" />
+              style="stroke:black; stroke-width:.5" />
       </pattern>
     </svg>
     <svg width="0" height="0">
@@ -59,11 +59,117 @@
         <path d="M-1,1 l2,-2
                  M0,4 l4,-4
                  M3,5 l2,-2" 
-              style="stroke:black; stroke-width:1" />
+              style="stroke:black; stroke-width:.5" />
       </pattern>
     </svg>
     <div class="flex-row">
-      
+      <!-- Statics -->
+              <div class="flex-col" style="margin-left: 5px">
+                <div class='flex-col'>
+              
+                  <!-- Tab links -->
+                  <!-- <div class="tab" id="setting-tabs">
+                    <input class="tablinks active" onclick="click_setting_tab(event, 'data-setting')"
+                       type="image" src="static_main_node/icon/data-icon.png" >
+                    </input>
+                    <input class="tablinks" onclick="click_setting_tab(event, 'vis-setting')"
+                      type="image" src="static_main_node/icon/vis-icon.png">
+                      
+                    </input>
+                  </div> -->
+
+                  <!-- Rule/Node Generation Setting -->
+                  <div class="flex-col" id="data-setting" style="display: flex">
+                    <!-- choose dataset -->
+                    <div class="title flex-row" style="margin-right: 20px">
+                      <span>Dataset: </span>
+                      <select id="dataset">
+                        <option value='fico'>FICO</option>
+                        <option value='creditcard'>CreditCard</option>
+                      </select>
+                    </div>
+
+                    <!-- Pruning -->
+                    <div class="title flex-row" style="margin-right: 20px">
+                      <span>Number of Rules: </span>
+                      <span id="rule-num" style="font-weight: normal;"></span>
+                      <div>
+                        <input style="border-bottom: none; width: 15px; margin-left: 10px"  type="image" src="static_main_node/icon/gear.png" 
+                        onclick="click_setting()">                      
+                      </div>
+                    </div>
+
+                    <div class='flex-row' id="x-setting" style="display: none">
+                      <div class="title"><span>x-axis</span></div>
+                      <select id="x_position">
+                        <option value="fidelity">Fidelity</option>
+                        <option value="accuracy">Accuracy</option>
+                      </select>
+                    </div>
+
+                    <div class='flex-row'>
+                      <div class="title"><span>Node Encoding </span></div>
+                      <select id="node_encoding">
+                        <option value="accuracy">Accuracy</option>
+                        <option value="purity">Purity</option>
+                        <option value="fidelity">Fidelity</option>
+                      </select>
+                    </div>
+
+                  </div>
+
+                  <!-- Visualization Settings -->
+                  <!-- <div class="tabcontent flex-col" id="vis-setting">
+                    
+
+                    <div class='flex-row'>
+                      <div class="title"><span>Layout</span></div>
+                      <select id="layout">
+                        <option value="tree">Tree Layout</option>
+                        <option value="stat">Statistics</option>
+                      </select>
+                    </div>
+                  </div> -->
+
+                  <!-- <hr width="190px" style="margin: 5px 0 5px 0;"> -->
+                </div>
+
+                <!-- legend -->
+                <div class="flex-col">
+                  <div class="title">
+                    <span>Legend</span>
+                  </div>
+                  <svg id="legend1"></svg>
+                </div>
+
+                <!-- Tab links -->
+                <div class="tab" id="setting-tabs">
+                  <input class="tablinks active" onclick="click_setting_tab(event, 'saved_view')"
+                    type="image" src="static_main_node/icon/save-icon.png">
+                  </input>
+                  <input class="tablinks" onclick="click_setting_tab(event, 'selection_summary')"
+                    type="image" src="static_main_node/icon/vis-icon.png">
+                  </input>
+                  <input class="tablinks" onclick="click_setting_tab(event, 'recommand_view')"
+                    type="image" src="static_main_node/icon/idea-icon.png">
+                  </input>
+                </div>
+
+                <div class='flex-col' id="setting-block">
+                    <div class="flex-col tabcontent" id="saved_view">
+                      
+                    </div>
+
+                    <div class="flex-col tabcontent" id="selection_summary">
+                      <svg></svg>
+                    </div>
+
+                    <div class="flex-col tabcontent" id="recommand_view">
+                    </div>
+                </div>
+
+              </div>
+
       <!-- Main view of the rules -->
       <div class="flex-col" style="border: 1px solid lightgrey; 
         margin-left: 5px;
@@ -89,114 +195,11 @@
                   <svg id="summary_view"></svg>
                 </div>
               </div>
-
-              <!-- Statics -->
-              <div class="flex-col" style="margin-left: 5px">
-                <div class='flex-col' id="setting-block">
-              
-                  <!-- Tab links -->
-                  <div class="tab" id="setting-tabs">
-                    <input class="tablinks active" onclick="click_setting_tab(event, 'data-setting')"
-                       type="image" src="static_main_node/icon/data-icon.png" >
-                    </input>
-                    <input class="tablinks" onclick="click_setting_tab(event, 'vis-setting')"
-                      type="image" src="static_main_node/icon/vis-icon.png">
-                      
-                    </input>
-                  </div>
-
-                  <!-- Rule/Node Generation Setting -->
-                  <div class="flex-col tabcontent" id="data-setting" style="display: flex">
-                    <!-- choose dataset -->
-                    <div class="title flex-row" style="margin-right: 20px">
-                      <span>Dataset: </span>
-                      <select id="dataset">
-                        <option value='fico'>FICO</option>
-                        <option value='creditcard'>CreditCard</option>
-                      </select>
-                    </div>
-
-                    <!-- Pruning -->
-                    <div class="title flex-row" style="margin-right: 20px">
-                      <span>Number of Rules: </span>
-                      <span id="rule-num" style="font-weight: normal;"></span>
-                      <div>
-                        <input style="border-bottom: none; width: 15px; margin-left: 10px"  type="image" src="static_main_node/icon/gear.png" 
-                        onclick="click_setting()">                      
-                      </div>
-                    </div>
-
-                    <!-- Filtering Accuracy -->
-                    <!-- <span id="accuracy-text" style="margin-bottom: 1px">Accuracy:</span>
-                    <div id="slider-accuracy"></div> -->
-
-                    <!-- Sorting rows -->
-                    <div class='flex-row'>
-                      <div class="title"><span>Sorting Rules by: </span></div>
-                      <select>
-                        <option>Accuracy</option>
-                        <option>F1</option>
-                        <option>Recall</option>
-                        <option>Precision</option>
-                        <option>Support</option>
-                        <option>Fidelity</option>
-                        <!-- <option>Dissimilarity</option> -->
-                      </select>
-                    </div>
-
-                    <!-- Sorting columns -->
-                    <!-- <div class='flex-row' style="margin-right: 20px">
-                      <div class="title"><span>Sorting Features by: </span></div>
-                      <select id="col_sort">
-                        <option value="feat_freq">Feature Frequency</option>
-                      </select>
-                    </div> -->
-                  </div>
-
-                  <!-- Visualization Settings -->
-                  <div class="tabcontent flex-col" id="vis-setting">
-                    <div class='flex-row'>
-                      <div class="title"><span>Node Encoding </span></div>
-                      <select id="node_encoding">
-                        <option value="accuracy">Accuracy</option>
-                        <option value="purity">Purity</option>
-                        <option value="fidelity">Fidelity</option>
-                      </select>
-                    </div>
-
-                    <div class='flex-row'>
-                      <div class="title"><span>Layout</span></div>
-                      <select id="layout">
-                        <option value="tree">Tree Layout</option>
-                        <option value="stat">Statistics</option>
-                      </select>
-                    </div>
-
-                    <div class='flex-row' id="x-setting" style="display: none">
-                      <div class="title"><span>x-axis</span></div>
-                      <select id="x_position">
-                        <option value="fidelity">Fidelity</option>
-                        <option value="accuracy">Accuracy</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <!-- <hr width="190px" style="margin: 5px 0 5px 0;"> -->
-                </div>
-
-                <!-- legend -->
-                <div class="flex-col">
-                  <div class="title">
-                    <span>Legend</span>
-                  </div>
-                  <svg id="legend1"></svg>
-                </div>
-              </div>
           </div>
         </div>
 
         <!-- Rules -->
-        <div id="rule-detail">
+        <div id="rule-detail" style="max-width: 1050px;">
           <!-- Tab links -->
           <div class="tab">
             <button class="tablinks active" onclick="showRule(event, 'overview')">
@@ -215,14 +218,14 @@
 
           <!-- Overview -->
           <div class="flex-col tabcontent" id="overview" style="display: flex">
-            <div id="column_div" style="max-width: 900px; overflow-x: scroll;">
+            <div id="column_div" style="max-width: 850px; overflow-x: scroll;">
               <div>
                 <svg id="column_svg"></svg>            
               </div>
             </div>
 
-            <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
-              <div id="rule_div" style="max-height: 150px; max-width: 900px; overflow: scroll;">
+            <div class="flex-row" style="max-height: 150px; max-width: 1200px; overflow: scroll;">
+              <div id="rule_div" style="max-height: 150px; max-width: 850px; overflow: scroll;">
                 <div>
                   <svg id="rule_svg"></svg>            
                 </div>

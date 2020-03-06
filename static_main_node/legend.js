@@ -18,10 +18,11 @@ nodeHighlightColor = "#cccccc"
 var font_family = "Times New Roman";
 var font_size = 10;
 var font = font_size + "px " + font_family;
+var legend_r = 5;
 
 function render_legend_label(id) {
   d3.select(id).select('g').remove();
-  var yoffset = 5, legend_r = 5;
+  var yoffset = 5;
   var indent = 20;
 
   var legend = d3.select(id)
@@ -155,7 +156,7 @@ function update_legend() {
   let g = d3.select('.legend');
 
   g.selectAll('.node_encoding_legend').remove();
-  let r = legend_r;
+  let r = legend_r, indent = 20, yoffset=5;
 
   if (NODE_ENCODING !== 'purity') {
       g.append('rect')

@@ -40,7 +40,7 @@ function generate_tree(treeData) {
 function update_tree(source) {
 	let view = d3.select('#summary_view')
 		.append('g')
-		.attr('transform', `translate(${view_margin.left}, ${view_margin.right})`)
+		.attr('transform', `translate(${view_margin.left}, ${view_margin.top})`)
 
 	// Compute the new tree layout.
 	let tree_hierarchy = tree(source);
@@ -87,28 +87,74 @@ function update_tree(source) {
 	  });
 
 	if (NODE_ENCODING === 'purity') {
-		nodeUpdate          
-          .selectAll('path')
-          .data(node => {
-             let ready = pie(node['data']['value'])
-             ready.forEach(part => {
-             	part['support'] = node['data']['support'];
-             	part['node_id'] = node['data']['node_id'];
-             });
-             return ready;
-          }).enter()
-          .append("path")
-          .attr('d', d => d3.arc()
-            .innerRadius(0)
-            .outerRadius(summary_size(d['support']))(d)
-          )
-          .style('fill', (d, i) => colorCate[i])
-          .style('fill-opacity', (d) => {
-          	if (!new_node_shown[d['node_id']]) {
-		  		return .1;
-		  	} else return 1;
-          })
-          .style("stroke", "none");  
+		let conf_fill = [ '#4f7d8c', colorCate[0], `#995a57`,colorCate[1],]
+		// nodeUpdate          
+  //         .selectAll('path')
+  //         .data(node => {
+  //            // let ready = pie(node['data']['value'])
+  //            conf_mat = [
+  //            	node['data']['conf_mat'][0][0],
+  //            	node['data']['conf_mat'][0][1],
+  //            	node['data']['conf_mat'][1][1],
+  //            	node['data']['conf_mat'][1][0],
+  //            ]
+  //            let ready = pie(conf_mat);
+  //            ready.forEach(part => {
+  //            	part['support'] = node['data']['support'];
+  //            	part['node_id'] = node['data']['node_id'];
+  //            });
+  //            return ready;
+  //         }).enter()
+  //         .append("path")
+  //         .attr('d', d => d3.arc()
+  //           .innerRadius(0)
+  //           .outerRadius(summary_size(d['support']))(d)
+  //         )
+  //         .style('fill', (d, i) => conf_fill[i])
+  //         .style('fill-opacity', (d) => {
+  //         	if (!new_node_shown[d['node_id']]) {
+		//   		return .1;
+		//   	} else return 1;
+  //         })
+  //         .style("stroke", "none");  
+  		nodeUpdate.selectAll('rect')
+  			.data(node => {
+  				let size = summary_size_(node['data']['support']);
+  				let v0 = d3.sum(node.data.conf_mat[0]), 
+  					v1 = d3.sum(node.data.conf_mat[1]);
+  				conf_mat = [
+  					{'name': 'fp', 
+  						'x': -size/2, 'width': size*v0,
+  						'y': -size/2, 
+  						'height': v0 > 0 ? size*node.data.conf_mat[0][1]/v0 : 0,
+  					},
+  					{'name': 'tp', 
+  						'x': -size/2, 'width': size*v0,
+  						'y': v0 > 0 ? -size/2+size*node.data.conf_mat[0][1]/v0 : 0, 
+  						'height': v0 > 0 ? size*node.data.conf_mat[0][0]/v0 : 0,
+  					},
+  					{'name': 'fn', 
+  						'x': -size/2+size*d3.sum(node.data.conf_mat[0]), 'width': size*v1,
+  						'y': -size/2, 
+  						'height': v1 > 0 ? size*node.data.conf_mat[1][0]/v1 : 0,
+  					},
+  					{'name': 'tn', 
+  						'x': -size/2+size*d3.sum(node.data.conf_mat[0]), 'width': size*v1,
+  						'y': v1 > 0 ? -size/2+size*node.data.conf_mat[1][0]/v1: 0, 
+  						'height': v1 > 0 ? size*node.data.conf_mat[1][1]/v1 : 0,
+  					},
+  				];
+  				return conf_mat;
+  			})
+  			.enter()
+  			.append('rect')
+  			.attr('x', d => d.x)
+  			.attr('y', d => d.y)
+  			.attr('width', d=> d.width)
+  			.attr('height', d=> d.height)
+  			.style('fill', (d, i) => conf_fill[i])
+  			.style('stroke', 'none')
+  			// .style('stroke-width', '.5')
 	} else {
 		nodeUpdate.append("circle")
 		  .attr("r", d => {
@@ -166,7 +212,7 @@ function update_tree(source) {
 		return diagonal(o, o);
 	  })
 	  .style('fill', 'none')
-	  .style('stroke', gridColor)
+	  .style('stroke', 'grey')
 	  .style("stroke-width", d => {
 	  	return .3;
 	  	// return linkWidthScale(d.target.value[0]+d.target.value[1])
