@@ -35,7 +35,7 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
         .attr("class", "row")
         .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; })
         .on('click', function (d, i) {
-            click_rule(d3.select(this), i, d);
+            click_rule(d3.select(this), i, d, idx);
         })
 
     // render the white background for better click react

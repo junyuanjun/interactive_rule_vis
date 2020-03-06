@@ -135,7 +135,7 @@ function update_tree(source) {
 	  	 return `Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};`
 	  	 	+ `\nFidelity: ${d['fidelity']};\nAccuracy: ${d['accuracy']}`
         	+ `\nNodeID: ${d['node_id']}; Rule index: ${node2rule[d['node_id']]}`;
-    })
+    });
 	
 
 	// Transition exiting nodes to the parent's new position.

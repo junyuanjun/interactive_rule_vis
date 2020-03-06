@@ -45,8 +45,10 @@ function find_leaf_rules(new_nodes, node_info, listData, tab_id) {
 
     // update node2rule pos
     node2rule[tab_id] = {};
+    rule2node[tab_id] = {}
     rules.forEach((d, idx) => {
       node2rule[tab_id][d['node_id']] = idx;
+      rule2node[tab_id][idx] = d['node_id'];
     })
 
     update_rule_rendering(rule_svg, col_svg, stat_svg, "", rules, col_order);

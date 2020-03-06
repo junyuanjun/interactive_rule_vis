@@ -122,6 +122,18 @@ rect {
   fill-opacity: .5;
 }
 
+.highlight-circle {
+  /*stroke: #fdcdac;*/
+  stroke: black;
+  fill: none;
+}
+
+.rule_clicked_node {
+  stroke: black;
+  stroke-width: 2px;
+  fill: none;
+}
+
 /* Style the tab */
 .tab {
   border: 1px solid #ccc;

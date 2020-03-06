@@ -112,14 +112,13 @@ function click_summary_node(node_id) {
 
     // highlight in the tree view
     d3.select(`#tree_node-${node_id} .highlight-circle`).remove();
+    d3.select(`#tree_node-${node_id} .rule_clicked_node`).remove();
 
     if (!(node_id in multiple_selection)) {
     	d3.select(`#tree_node-${node_id}`)
 			.append('circle')
 			.attr('class', 'highlight-circle')
-			.attr('r', summary_size(node_info[node_id]['support']))
-			.style('fill', 'none')
-			.style('stroke', 'black');
+			.attr('r', summary_size(node_info[node_id]['support']));
     }
 
     // get the linked node information
@@ -180,7 +179,11 @@ function click_summary_node(node_id) {
 
 	    // update linked node2rule pos
 		node2rule[1] = {};
-		rules.forEach((d, i) => node2rule[1][d['node_id']] = i);
+		rule2node[1] = {};
+		rules.forEach((d, i) => {
+			node2rule[1][d['node_id']] = i;
+			rule2node[1][i] = d['node_id'];
+		});
 	 	
 	    // update_column_rendering(col_svg2);
 		update_rule_rendering(rule_svg2, col_svg2, stat_svg2, 2, rules, col_order);
@@ -195,10 +198,12 @@ function click_summary_node(node_id) {
     	}
 		let multiple_rules = [];
 		node2rule[3] = {};
+		rule2node[3] = {}
 
 		Object.keys(multiple_selection).forEach((node_id, idx) => {
 			multiple_rules.push(multiple_selection[node_id]);
 			node2rule[3][node_id] = idx;
+			rule2node[3][idx] = node_id;
 		})
 	    col_order = column_order_by_feat_freq(multiple_rules);
 		update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, multiple_rules, col_order);
@@ -234,17 +239,38 @@ function highlight_in_tab(tab_id, tab_p, node_id) {
 	}
 }
 
-function click_rule(clicked_g, rule_idx, rule) {
+function click_rule(clicked_g, rule_idx, rule, tab_p) {
 	console.log('click rule row-'+rule_idx);
+
+	let tab_id;
+	if (tab_p == '') {
+		tab_id = 0;
+	} else {
+		tab_id = +tab_p - 1;
+	}
 
 	// highlight the rule in the rule view
 	rule_svg.selectAll('.rule_highlight')
 		.classed('rule_highlight', false);
 	rule_svg2.selectAll('.rule_highlight')
 		.classed('rule_highlight', false);
+	rule_svg3.selectAll('.rule_highlight')
+		.classed('rule_highlight', false);
+	rule_svg4.selectAll('.rule_highlight')
+		.classed('rule_highlight', false);
 
 	clicked_g.select('.back-rect')
 		.classed('rule_highlight', true);
+
+	// highlight the node in the tree view
+	let node_id = rule2node[tab_id][rule_idx];
+	d3.select(`#tree_node-${node_id} .highlight-circle`).remove();
+	d3.select(`.rule_clicked_node`).remove();
+
+	d3.select(`#tree_node-${node_id}`)
+		.append('circle')
+		.attr('class', 'rule_clicked_node')
+		.attr('r', summary_size(node_info[node_id]['support']))
 
 	// update rule description
 	let rule_des = d3.select('#rule_description');
@@ -421,8 +447,10 @@ function click_tree_level(idx) {
 
 	    // update linked node2rule pos
 	    node2rule[2] = {};
+	    rule2node[2] = {};
 	    rules.forEach((d, idx) => {
 	      node2rule[3][d['node_id']] = idx;
+	      rule2node[3][idx] = d['node_id'];
 	    })
 	    // update_column_rendering(col_svg2);
 		update_rule_rendering(rule_svg3, col_svg3, stat_svg3, 3, rules, col_order);
