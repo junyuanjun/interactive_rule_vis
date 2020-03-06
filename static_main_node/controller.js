@@ -112,7 +112,7 @@ function click_summary_node(node_id) {
 
     // highlight in the tree view
     d3.select(`#tree_node-${node_id} .highlight-circle`).remove();
-    d3.select(`#tree_node-${node_id} .rule_clicked_node`).remove();
+    d3.select(`.rule_clicked_node`).remove();
 
     if (!(node_id in multiple_selection)) {
     	d3.select(`#tree_node-${node_id}`)
@@ -264,7 +264,6 @@ function click_rule(clicked_g, rule_idx, rule, tab_p) {
 
 	// highlight the node in the tree view
 	let node_id = rule2node[tab_id][rule_idx];
-	d3.select(`#tree_node-${node_id} .highlight-circle`).remove();
 	d3.select(`.rule_clicked_node`).remove();
 
 	d3.select(`#tree_node-${node_id}`)
