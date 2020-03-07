@@ -52,8 +52,6 @@
                  M3,5 l2,-2" 
               style="stroke:black; stroke-width:.5" />
       </pattern>
-    </svg>
-    <svg width="0" height="0">
       <pattern id="fn_pattern" patternUnits="userSpaceOnUse" width="4" height="4">
         <rect width="4" height="4" fill="#e68882"></rect>
         <path d="M-1,1 l2,-2
@@ -61,114 +59,127 @@
                  M3,5 l2,-2" 
               style="stroke:black; stroke-width:.5" />
       </pattern>
+      <pattern id="fp_pattern_white" patternUnits="userSpaceOnUse" width="4" height="4">
+        <rect width="4" height="4" fill="#6babc1"></rect>
+        <path d="M-1,1 l2,-2
+                 M0,4 l4,-4
+                 M3,5 l2,-2" 
+              style="stroke:white; stroke-width:.5" />
+      </pattern>
+      <pattern id="fn_pattern_white" patternUnits="userSpaceOnUse" width="4" height="4">
+        <rect width="4" height="4" fill="#e68882"></rect>
+        <path d="M-1,1 l2,-2
+                 M0,4 l4,-4
+                 M3,5 l2,-2" 
+              style="stroke:white; stroke-width:.5" />
+      </pattern>
     </svg>
     <div class="flex-row">
       <!-- Statics -->
-              <div class="flex-col" style="margin-left: 5px">
-                <div class='flex-col'>
+      <div class="flex-col" style="margin-left: 5px">
+        <div class='flex-col'>
+      
+          <!-- Tab links -->
+          <!-- <div class="tab" id="setting-tabs">
+            <input class="tablinks active" onclick="click_setting_tab(event, 'data-setting')"
+               type="image" src="static_main_node/icon/data-icon.png" >
+            </input>
+            <input class="tablinks" onclick="click_setting_tab(event, 'vis-setting')"
+              type="image" src="static_main_node/icon/vis-icon.png">
               
-                  <!-- Tab links -->
-                  <!-- <div class="tab" id="setting-tabs">
-                    <input class="tablinks active" onclick="click_setting_tab(event, 'data-setting')"
-                       type="image" src="static_main_node/icon/data-icon.png" >
-                    </input>
-                    <input class="tablinks" onclick="click_setting_tab(event, 'vis-setting')"
-                      type="image" src="static_main_node/icon/vis-icon.png">
-                      
-                    </input>
-                  </div> -->
+            </input>
+          </div> -->
 
-                  <!-- Rule/Node Generation Setting -->
-                  <div class="flex-col" id="data-setting" style="display: flex">
-                    <!-- choose dataset -->
-                    <div class="title flex-row" style="margin-right: 20px">
-                      <span>Dataset: </span>
-                      <select id="dataset">
-                        <option value='fico'>FICO</option>
-                        <option value='creditcard'>CreditCard</option>
-                      </select>
-                    </div>
+          <!-- Rule/Node Generation Setting -->
+          <div class="flex-col" id="data-setting" style="display: flex">
+            <!-- choose dataset -->
+            <div class="title flex-row" style="margin-right: 20px">
+              <span>Dataset: </span>
+              <select id="dataset">
+                <option value='fico'>FICO</option>
+                <option value='creditcard'>CreditCard</option>
+              </select>
+            </div>
 
-                    <!-- Pruning -->
-                    <div class="title flex-row" style="margin-right: 20px">
-                      <span>Number of Rules: </span>
-                      <span id="rule-num" style="font-weight: normal;"></span>
-                      <div>
-                        <input style="border-bottom: none; width: 15px; margin-left: 10px"  type="image" src="static_main_node/icon/gear.png" 
-                        onclick="click_setting()">                      
-                      </div>
-                    </div>
-
-                    <div class='flex-row' id="x-setting" style="display: none">
-                      <div class="title"><span>x-axis</span></div>
-                      <select id="x_position">
-                        <option value="fidelity">Fidelity</option>
-                        <option value="accuracy">Accuracy</option>
-                      </select>
-                    </div>
-
-                    <div class='flex-row'>
-                      <div class="title"><span>Node Encoding </span></div>
-                      <select id="node_encoding">
-                        <option value="accuracy">Accuracy</option>
-                        <option value="purity">Purity</option>
-                        <option value="fidelity">Fidelity</option>
-                      </select>
-                    </div>
-
-                  </div>
-
-                  <!-- Visualization Settings -->
-                  <!-- <div class="tabcontent flex-col" id="vis-setting">
-                    
-
-                    <div class='flex-row'>
-                      <div class="title"><span>Layout</span></div>
-                      <select id="layout">
-                        <option value="tree">Tree Layout</option>
-                        <option value="stat">Statistics</option>
-                      </select>
-                    </div>
-                  </div> -->
-
-                  <!-- <hr width="190px" style="margin: 5px 0 5px 0;"> -->
-                </div>
-
-                <!-- legend -->
-                <div class="flex-col">
-                  <div class="title">
-                    <span>Legend</span>
-                  </div>
-                  <svg id="legend1"></svg>
-                </div>
-
-                <!-- Tab links -->
-                <div class="tab" id="setting-tabs">
-                  <input class="tablinks active" onclick="click_setting_tab(event, 'saved_view')"
-                    type="image" src="static_main_node/icon/save-icon.png">
-                  </input>
-                  <input class="tablinks" onclick="click_setting_tab(event, 'selection_summary')"
-                    type="image" src="static_main_node/icon/vis-icon.png">
-                  </input>
-                  <input class="tablinks" onclick="click_setting_tab(event, 'recommand_view')"
-                    type="image" src="static_main_node/icon/idea-icon.png">
-                  </input>
-                </div>
-
-                <div class='flex-col' id="setting-block">
-                    <div class="flex-col tabcontent" id="saved_view">
-                      
-                    </div>
-
-                    <div class="flex-col tabcontent" id="selection_summary">
-                      <svg></svg>
-                    </div>
-
-                    <div class="flex-col tabcontent" id="recommand_view">
-                    </div>
-                </div>
-
+            <!-- Pruning -->
+            <div class="title flex-row" style="margin-right: 20px">
+              <span>Number of Rules: </span>
+              <span id="rule-num" style="font-weight: normal;"></span>
+              <div>
+                <input style="border-bottom: none; width: 15px; margin-left: 10px"  type="image" src="static_main_node/icon/gear.png" 
+                onclick="click_setting()">                      
               </div>
+            </div>
+
+            <div class='flex-row' id="x-setting" style="display: none">
+              <div class="title"><span>x-axis</span></div>
+              <select id="x_position">
+                <option value="fidelity">Fidelity</option>
+                <option value="accuracy">Accuracy</option>
+              </select>
+            </div>
+
+            <div class='flex-row'>
+              <div class="title"><span>Node Encoding </span></div>
+              <select id="node_encoding">
+                <option value="accuracy">Accuracy</option>
+                <option value="purity">Purity</option>
+                <option value="fidelity">Fidelity</option>
+              </select>
+            </div>
+
+          </div>
+
+          <!-- Visualization Settings -->
+          <!-- <div class="tabcontent flex-col" id="vis-setting">
+            
+
+            <div class='flex-row'>
+              <div class="title"><span>Layout</span></div>
+              <select id="layout">
+                <option value="tree">Tree Layout</option>
+                <option value="stat">Statistics</option>
+              </select>
+            </div>
+          </div> -->
+
+          <!-- <hr width="190px" style="margin: 5px 0 5px 0;"> -->
+        </div>
+
+        <!-- legend -->
+        <div class="flex-col">
+          <div class="title">
+            <span>Legend</span>
+          </div>
+          <svg id="legend1"></svg>
+        </div>
+
+        <!-- Tab links -->
+        <div class="tab" id="setting-tabs">
+          <input class="tablinks" onclick="click_setting_tab(event, 'saved_view')"
+            type="image" src="static_main_node/icon/save-icon.png">
+          </input>
+          <input class="tablinks active" onclick="click_setting_tab(event, 'selection_summary')"
+            type="image" src="static_main_node/icon/vis-icon.png">
+          </input>
+          <input class="tablinks" onclick="click_setting_tab(event, 'recommand_view')"
+            type="image" src="static_main_node/icon/idea-icon.png">
+          </input>
+        </div>
+
+        <div class='flex-col' id="setting-block">
+            <div class="flex-col tabcontent" id="saved_view">
+            </div>
+
+            <div class="flex-col tabcontent" style="display:flex" id="selection_summary">
+              <svg width="200px"></svg>
+            </div>
+
+            <div class="flex-col tabcontent" id="recommand_view">
+            </div>
+        </div>
+
+      </div>
 
       <!-- Main view of the rules -->
       <div class="flex-col" style="border: 1px solid lightgrey; 
@@ -214,6 +225,9 @@
             <button class="tablinks" onclick="showRule(event, 'multiple')">
               Multiple Node Selection
             </button>
+            <button class="tablinks" onclick="showRule(event, 'data_tab')">
+              Data
+            </button>
           </div>
 
           <!-- Overview -->
@@ -224,13 +238,13 @@
               </div>
             </div>
 
-            <div class="flex-row" style="max-height: 150px; max-width: 1200px; overflow: scroll;">
-              <div id="rule_div" style="max-height: 150px; max-width: 850px; overflow: scroll;">
+            <div class="flex-row" style="max-height: 280px; max-width: 1200px; overflow: scroll;">
+              <div id="rule_div" style="max-height: 280px; max-width: 850px; overflow: scroll;">
                 <div>
                   <svg id="rule_svg"></svg>            
                 </div>
               </div>
-              <div id="stat_div" style="max-height: 150px; max-width: 300px; overflow-y: scroll;">
+              <div id="stat_div" style="max-height: 280px; max-width: 300px; overflow-y: scroll;">
                 <div>
                   <svg id="stat"></svg>              
                 </div>
@@ -240,19 +254,19 @@
 
           <!-- Linked nodes-->
           <div class="flex-col tabcontent" id="linked">
-            <div id="column_div2" style="max-width: 900px; overflow-x: scroll;">
+            <div id="column_div2" style="max-width: 850px; overflow-x: scroll;">
               <div>
                 <svg id="column_svg2"></svg>            
               </div>
             </div>
 
-            <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
-              <div id="rule_div2" style="max-height: 150px; max-width: 900px; overflow: scroll;">
+            <div class="flex-row" style="max-height: 280px; max-width: 1200px; overflow: scroll;">
+              <div id="rule_div2" style="max-height: 280px; max-width: 800px; overflow: scroll;">
                 <div>
                   <svg id="rule_svg2"></svg>            
                 </div>
               </div>
-              <div id="stat_div2" style="max-height: 150px; max-width: 300px; overflow-y: scroll;">
+              <div id="stat_div2" style="max-height: 280px; max-width: 300px; overflow-y: scroll;">
                 <div>
                   <svg id="stat2"></svg>              
                 </div>
@@ -262,19 +276,19 @@
 
           <!-- Selected Level -->
           <div class="flex-col tabcontent" id="level">
-            <div id="column_div3" style="max-width: 900px; overflow-x: scroll;">
+            <div id="column_div3" style="max-width: 850px; overflow-x: scroll;">
               <div>
                 <svg id="column_svg3"></svg>            
               </div>
             </div>
 
-            <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
-              <div id="rule_div3" style="max-height: 150px; max-width: 900px; overflow: scroll;">
+            <div class="flex-row" style="max-height: 280px; max-width: 1200px; overflow: scroll;">
+              <div id="rule_div3" style="max-height: 280px; max-width: 850px; overflow: scroll;">
                 <div>
                   <svg id="rule_svg3"></svg>            
                 </div>
               </div>
-              <div id="stat_div3" style="max-height: 150px; max-width: 300px; overflow-y: scroll;">
+              <div id="stat_div3" style="max-height: 280px; max-width: 300px; overflow-y: scroll;">
                 <div>
                   <svg id="stat3"></svg>              
                 </div>
@@ -290,17 +304,32 @@
               </div>
             </div>
 
-            <div class="flex-row" style="max-height: 150px; max-width: 1250px; overflow: scroll;">
-              <div id="rule_div4" style="max-height: 150px; max-width: 900px; overflow: scroll;">
+            <div class="flex-row" style="max-height: 280px; max-width: 1200px; overflow: scroll;">
+              <div id="rule_div4" style="max-height: 280px; max-width: 850px; overflow: scroll;">
                 <div>
                   <svg id="rule_svg4"></svg>            
                 </div>
               </div>
-              <div id="stat_div4" style="max-height: 150px; max-width: 300px; overflow-y: scroll;">
+              <div id="stat_div4" style="max-height: 280px; max-width: 300px; overflow-y: scroll;">
                 <div>
                   <svg id="stat4"></svg>              
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div class='flex-col tabcontent' id='data_tab'>
+            <div id="column_div5" style="max-width: 850px; overflow-x: scroll;">
+              <div>
+                <svg id="column_svg5"></svg>            
+              </div>
+            </div>
+            <div class='flex-row' >
+              <div id="data-table" style="max-height: 280px; max-width: 850px; overflow: scroll;">
+              </div>
+              <div id="data-pred" style="max-height: 280px; max-width: 300px; overflow-y: scroll;">
+                <svg></svg>
+              </div> 
             </div>
           </div>
 
@@ -309,13 +338,6 @@
         <div id="rule_description" class="flex-col">          
         </div>
 
-        <div class='flex-row'>
-          <div id="data-table">
-          </div>
-          <div id="data-pred">
-            <svg></svg>
-          </div> 
-        </div>
     </div>
     
     <canvas id="myCanvas" width="0" height="0"></canvas>
@@ -330,6 +352,7 @@
   <script src="/static_main_node/util.js"></script>
   <script src="/static_main_node/tree_summary.js"></script>
   <script src="/static_main_node/summary_view.js"></script>
+  <script src="/static_main_node/stat_summary_view.js"></script>
   <script src="/static_main_node/legend.js"></script>
   <script src="/static_main_node/controller.js"></script>
   <script src="/static_main_node/linked_rule_view.js"></script>

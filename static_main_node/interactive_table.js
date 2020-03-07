@@ -4,7 +4,7 @@ let margin = {top: 0, right: 45, bottom: 5, left: 10},
     height;
 let overviewWidth = 150;
 
-let folder = "fico";
+let folder = "fico_simplified";
 
 height = 650 - margin.top - margin.bottom;
 
@@ -148,6 +148,7 @@ function loadData() {
             scroll_functions(width, height, 2);
             scroll_functions(width, height, 3);
             scroll_functions(width, height, 4);
+            scroll_data(width, height);
 
             // scale for placing cells
             xScale = d3.scaleBand(d3.range(attrs.length+1),[0, width]);
@@ -207,7 +208,7 @@ function loadData() {
 }
 
 function scroll_functions(width, height, idx) {
-    d3.select(`#rule_di${idx} div`)
+    d3.select(`#rule_div${idx} div`)
         .style("height", `${height + margin.bottom}px`)
         .style("width", `${margin.left + width + margin.right}px`);
 
@@ -229,46 +230,42 @@ function scroll_functions(width, height, idx) {
 
     d3.select(`#rule_div${idx}`).on('scroll', function () {
         document.getElementById(`column_div${idx}`).scrollLeft = this.scrollLeft;
-        // document.getElementById(`data-table${idx}`).scrollLeft = this.scrollLeft;
-        document.getElementById(`data-table`).scrollLeft = this.scrollLeft;
 
         document.getElementById(`stat_div${idx}`).scrollTop = this.scrollTop;
     });
 
     d3.select(`#column_div${idx}`).on('scroll', function () {
         document.getElementById(`rule_div${idx}`).scrollLeft = this.scrollLeft;
-        document.getElementById(`data-table`).scrollLeft = this.scrollLeft;
-        // document.getElementById(`data-table${idx}`).scrollLeft = this.scrollLeft;
     });
 
     d3.select(`#stat_div${idx}`).on('scroll', function () {
         document.getElementById(`rule_div${idx}`).scrollTop = this.scrollTop;
     });
+}
 
-    // d3.select(`#data-table${idx}`).on('scroll', function () {
-    d3.select(`#data-table`).on('scroll', function () {
-        // document.getElementById(`rule_div${idx}`).scrollLeft = this.scrollLeft;
-        // document.getElementById(`column_div${idx}`).scrollLeft = this.scrollLeft;
-        document.getElementById(`rule_div`).scrollLeft = this.scrollLeft;
-        document.getElementById(`column_div`).scrollLeft = this.scrollLeft;
+function scroll_data(width, height,) {
+    d3.select(`#column_div5 div`)
+        .style("height", `${column_height}px`)
+        .style("width", `${margin.left + width + margin.right}px`);
 
-        document.getElementById(`rule_div${2}`).scrollLeft = this.scrollLeft;
-        document.getElementById(`column_div${2}`).scrollLeft = this.scrollLeft;
+    d3.select(`#column_svg5`)
+        .style("height", `${column_height}px`)
+        .style("width", `${margin.left + width + margin.right}px`);
 
-        document.getElementById(`rule_div${3}`).scrollLeft = this.scrollLeft;
-        document.getElementById(`column_div${3}`).scrollLeft = this.scrollLeft;
 
-        document.getElementById(`rule_div${4}`).scrollLeft = this.scrollLeft;
-        document.getElementById(`column_div${4}`).scrollLeft = this.scrollLeft;
-        // document.getElementById(`data-pred${idx}`).scrollTop = this.scrollTop;
-        document.getElementById(`data-pred`).scrollTop = this.scrollTop;
+
+    d3.select(`#column_div5`).on('scroll', function () {
+        document.getElementById(`data-table`).scrollLeft = this.scrollLeft;
     });
 
-    d3.select(`#data-pred${idx}`).on('scroll', function () {
-        // document.getElementById(`data-table${idx}`).scrollTop = this.scrollTop;
+    d3.select(`#data-table`).on('scroll', function () {
+       document.getElementById(`column_div5`).scrollLeft = this.scrollLeft;
+       document.getElementById(`data-pred`).scrollTop = this.scrollTop;
+    });
+
+    d3.select(`#data-pred`).on('scroll', function () {
         document.getElementById(`data-table`).scrollTop = this.scrollTop;
     }); 
-
 }
 
 function render_feature_names_and_grid(column_svg, col_order) {
@@ -384,7 +381,7 @@ function update_rules() {
 
     new_nodes = filter_nodes(node_info);
     find_leaf_rules(new_nodes, node_info, listData, 0);   
-    update_summary(new_nodes);
+    // update_summary(new_nodes);
 }
 
 function prune_nodes() {

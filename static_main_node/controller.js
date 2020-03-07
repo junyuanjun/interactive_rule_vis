@@ -232,15 +232,7 @@ function click_summary_node(node_id) {
 		update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, multiple_rules, col_order);
 
 		// get multiple selection summary
-		let summary_str = `<p>`
-		summary_str += `support: ${summary_info['support']} / ${d3.sum(node_info[0]['value'])} <br/>`
-		summary_str += `tp: ${summary_info['tp']} / ${Math.floor(node_info[0]['conf_mat'][0][0] * d3.sum(node_info[0]['value']))}<br/>`;
-		summary_str += `fp: ${summary_info['fp']} / ${Math.floor(node_info[0]['conf_mat'][0][1] * d3.sum(node_info[0]['value']))}<br/>`;
-		summary_str += `tn: ${summary_info['tn']} / ${Math.floor(node_info[0]['conf_mat'][1][1] * d3.sum(node_info[0]['value']))}<br/>`;
-		summary_str += `fn: ${summary_info['fn']} / ${Math.floor(node_info[0]['conf_mat'][1][0] * d3.sum(node_info[0]['value']))}<br/>`;
-		summary_str += `</p>`;
-		d3.select(`#selection_summary`)
-			.html(summary_str)
+		render_stat_summary(summary_info);
 
 		// highlight in the rule view TODO: DEBUG 
 	    if (node_id in node2rule[0]) {      
@@ -354,6 +346,7 @@ function click_rule(clicked_g, rule_idx, rule, tab_p) {
 	// update data table
 	let url = "get_matched_data"
 	postData(url, JSON.stringify({"rules": rules['rules']}), (data) => {
+		render_feature_names_and_grid(d3.select("#column_svg5"), col_order);
 		d3.select("#data-table tbody").remove();
 
 		let matched_data = data['matched_data'];

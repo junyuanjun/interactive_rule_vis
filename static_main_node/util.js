@@ -17,9 +17,6 @@ function filter_nodes(node_info) {
   new_node_shown = {};
 	Object.keys(node_info).forEach(idx => {
     let d = node_info[idx];
-    if (idx == '426') {
-      let a = 0;
-    }
 		if (d3.sum(d['value']) >= filter_threshold['support']
 			&& d['accuracy'] >= filter_threshold['accuracy'][0] && d['accuracy'] <= filter_threshold['accuracy'][1]
       && d['num_feat'] <= filter_threshold['num_feat']

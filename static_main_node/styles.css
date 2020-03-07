@@ -216,7 +216,7 @@ rect {
 }
 
 #data-table {
-  max-height: 120px; 
+  max-height: 280px; 
   max-width: 900px; 
   overflow: scroll;
 }
@@ -242,4 +242,21 @@ table td {
 #rule_description {
   margin: 5px 15px;
   width: 950px;
+}
+
+.des_text {
+  font-size: 10px;
+}
+
+.summary_back_bar {
+  fill: white;
+  stroke: black;
+  stroke-width: 1px;
+  height: 10px;
+  width: 80px;
+}
+
+.summary_front_bar {
+  stroke: none;
+  height: 10px;
 }
