@@ -34,6 +34,14 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
         .enter().append("g")
         .attr("class", "row")
         .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; })
+        .on('mouseover', function(d, i) {
+            hover_rule(d3.select(this), i, d, idx);
+        })
+        .on('mouseout', function(d, i) {
+            d3.select(`.rule_clicked_node`).remove();
+
+            d3.select('#rule_description').selectAll('p').remove();
+        })
         .on('click', function (d, i) {
             click_rule(d3.select(this), i, d, idx);
         })

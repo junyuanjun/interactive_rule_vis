@@ -6,17 +6,6 @@ let NODE_ENCODING = "accuracy";
 let SUMMARY_LAYOUT = "tree";
 let X_POS = 'fidelity';
 
-d3.select("#col_sort")
-	.on("change", function() {
-		let val = d3.select(this).property('value');
-
-		if (val == 'none') {
-
-		} else if (val = "feat_freq") {
-
-		}
-	});
-
 d3.select("#node_encoding")
 	.on("change", function() {
 		let val = d3.select(this).property('value');
@@ -266,15 +255,7 @@ function highlight_in_tab(tab_id, tab_p, node_id) {
 }
 
 function click_rule(clicked_g, rule_idx, rule, tab_p) {
-	console.log('click rule row-'+rule_idx);
-
-	let tab_id;
-	if (tab_p == '') {
-		tab_id = 0;
-	} else {
-		tab_id = +tab_p - 1;
-	}
-
+	console.log("click on rule", rule_idx);
 	// highlight the rule in the rule view
 	rule_svg.selectAll('.rule_highlight')
 		.classed('rule_highlight', false);
@@ -288,61 +269,11 @@ function click_rule(clicked_g, rule_idx, rule, tab_p) {
 	clicked_g.select('.back-rect')
 		.classed('rule_highlight', true);
 
-	// highlight the node in the tree view
-	let node_id = rule2node[tab_id][rule_idx];
-	d3.select(`.rule_clicked_node`).remove();
-
-	// d3.select(`#tree_node-${node_id}`)
-	// 	.append('circle')
-	// 	.attr('class', 'rule_clicked_node')
-	// 	.attr('r', summary_size(node_info[node_id]['support']))
-	let node = d3.select(`#tree_node-${node_id}`)
-
-	if (NODE_ENCODING == 'purity') {
-		let size = summary_size_(node_info[node_id]['support'])
-		node.append('rect')
-			.attr('class', 'rule_clicked_node')
-			.attr('x', -size/2)
-			.attr('y', -size/2)
-			.attr('width', size)
-			.attr('height', size);
-	} else {
-		node.append('circle')
-			.attr('class', 'rule_clicked_node')
-			.attr('r', summary_size(node_info[node_id]['support']));
-	}
-
-	// update rule description
-	let rule_des = d3.select('#rule_description');
-	rule_des.selectAll('p').remove();
-
+	// get rule content
 	let rules = listData[rule_idx];
 	if (rule) {
 		rules = rule;
 	}
-	let str = "";
-
-	let rule_to_show = Array.from(rules['rules']);
-	rule_to_show.sort((a, b) => col_order[a['feature']] - col_order[b['feature']]);
-	rule_to_show.forEach((d, i) => {
-		if (i>0) {
-			str += "<b>AND</b> "
-		} else {
-			str += "<b>IF</b> "
-		}
-		str += `<u>${attrs[d['feature']]}</u>`;
-		if (d['sign'] !== 'range') {
-			str += " " + d['sign'] + d['threshold'] + " "
-		} else {
-			str += " btw. [" + d['threshold0'] + ', ' + d['threshold1'] + ') '
-		}
-	})
-
-	str += "<b>THEN</b> " + `<span style="color: ${colorCate[rules['label']]}">` + target_names[rules['label']] + "</span>.";
-
-	rule_des.append('p')
-		.html(str);
-
 	// update data table
 	let url = "get_matched_data"
 	postData(url, JSON.stringify({"rules": rules['rules']}), (data) => {
@@ -406,6 +337,72 @@ function click_rule(clicked_g, rule_idx, rule, tab_p) {
 	        	}
 	        })
 	})
+}
+
+function hover_rule(clicked_g, rule_idx, rule, tab_p) {
+	console.log('hover on rule row-'+rule_idx);
+
+	let tab_id;
+	if (tab_p == '') {
+		tab_id = 0;
+	} else {
+		tab_id = +tab_p - 1;
+	}
+
+	// highlight the node in the tree view
+	let node_id = rule2node[tab_id][rule_idx];
+	d3.select(`.rule_clicked_node`).remove();
+
+	// d3.select(`#tree_node-${node_id}`)
+	// 	.append('circle')
+	// 	.attr('class', 'rule_clicked_node')
+	// 	.attr('r', summary_size(node_info[node_id]['support']))
+	let node = d3.select(`#tree_node-${node_id}`)
+
+	if (NODE_ENCODING == 'purity') {
+		let size = summary_size_(node_info[node_id]['support'])
+		node.append('rect')
+			.attr('class', 'rule_clicked_node')
+			.attr('x', -size/2)
+			.attr('y', -size/2)
+			.attr('width', size)
+			.attr('height', size);
+	} else {
+		node.append('circle')
+			.attr('class', 'rule_clicked_node')
+			.attr('r', summary_size(node_info[node_id]['support']));
+	}
+
+	// update rule description
+	let rule_des = d3.select('#rule_description');
+	rule_des.selectAll('p').remove();
+
+	let rules = listData[rule_idx];
+	if (rule) {
+		rules = rule;
+	}
+	let str = "";
+
+	let rule_to_show = Array.from(rules['rules']);
+	rule_to_show.sort((a, b) => col_order[a['feature']] - col_order[b['feature']]);
+	rule_to_show.forEach((d, i) => {
+		if (i>0) {
+			str += "<b>AND</b> "
+		} else {
+			str += "<b>IF</b> "
+		}
+		str += `<u>${attrs[d['feature']]}</u>`;
+		if (d['sign'] !== 'range') {
+			str += " " + d['sign'] + d['threshold'] + " "
+		} else {
+			str += " btw. [" + d['threshold0'] + ', ' + d['threshold1'] + ') '
+		}
+	})
+
+	str += "<b>THEN</b> " + `<span style="color: ${colorCate[rules['label']]}">` + target_names[rules['label']] + "</span>.";
+
+	rule_des.append('p')
+		.html(str);
 }
 
 function showRule(evt, id) {
