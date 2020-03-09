@@ -253,7 +253,6 @@ function scroll_data(width, height,) {
         .style("width", `${margin.left + width + margin.right}px`);
 
 
-
     d3.select(`#column_div5`).on('scroll', function () {
         document.getElementById(`data-table`).scrollLeft = this.scrollLeft;
     });

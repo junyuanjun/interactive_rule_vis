@@ -1,5 +1,6 @@
 let tree,
-	root1;
+	root1,
+	tree_hierarchy;
 
 let multiple_selection = {};
 
@@ -17,36 +18,23 @@ function diagonal(s, d) {
 function generate_tree(treeData) {
 	d3.selectAll('#summary_view > *:not(.depth-line)').remove();
 
+	d3.select('#summary_view')
+		.append('g')
+		.attr('transform', `translate(${view_margin.left}, ${view_margin.top})`);
+
 	root1 = d3.hierarchy(treeData, function(d) { return d.children; });
 	root1.x0 = tree_height / 2;
 	root1.y0 = 0;
 
+	// Compute the new tree layout.
+	tree_hierarchy = tree(root1);
+
 	update_tree(root1);
-
-	root1.children.forEach(collapse);
-
-	// Collapse the node and all it's children
-	function collapse(d) {
-	  if(d.children) {
-	    d._children = d.children
-	    d._children.forEach(collapse)
-	    d.children = null
-	  }
-}
-
-	// d3.select(self.frameElement).style("height", "500px");
 }
 
 function update_tree(source) {
-	let view = d3.select('#summary_view')
-		.append('g')
-		.attr('transform', `translate(${view_margin.left}, ${view_margin.top})`)
+	let view = d3.select('#summary_view g');
 
-	// Compute the new tree layout.
-	let tree_hierarchy = tree(source);
-
-	// var nodes = tree_hierarchy.nodes(root1).reverse(),
-	//   links = tree_hierarchy.links(nodes);
 	let nodes = tree_hierarchy.descendants(),
     	links = tree_hierarchy.descendants().slice(1);
 
@@ -66,6 +54,7 @@ function update_tree(source) {
 	  	return "translate(" + source.x0 + "," + source.y0 + ")"; 
 	  })
 	  .attr('id', d => `tree_node-${d['data']['node_id']}`)
+	  .on('dblclick', dblclick)
 	  .on("click", d => click_text(d['data']['node_id']));
 
 	// nodeEnter.append("circle")
@@ -198,9 +187,6 @@ function update_tree(source) {
 	nodeExit.select("circle")
 	  .attr("r", 1e-6);
 
-	nodeExit.select("text")
-	  .style("fill-opacity", 1e-6);
-
 	// Update the links…
 
 	var link = view.selectAll("path.link")
@@ -236,7 +222,7 @@ function update_tree(source) {
 	  .duration(duration)
 	  .attr("d", function(d) {
 		var o = {x: source.x, y: source.y};
-		return diagonal({source: o, target: o});
+		return diagonal(o, o);
 	  })
 	  .remove();
 
@@ -248,14 +234,17 @@ function update_tree(source) {
 }
 
 function click_text(node_id) {
- //  if (d.children) {
-	// d._children = d.children;
-	// d.children = null;
- //  } else {
-	// d.children = d._children;
-	// d._children = null;
- //  }
- //  update_text(d);
  	console.log("click tree node");
     click_summary_node(node_id);
+}
+
+function dblclick(d) {
+  if (d.children) {
+	d._children = d.children;
+	d.children = null;
+  } else {
+	d.children = d._children;
+	d._children = null;
+  }
+  update_tree(d);
 }
