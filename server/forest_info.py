@@ -170,5 +170,42 @@ class Forest():
 		if (self.node_info[node_id]['right'] > 0):
 			self.get_nodes_by_level(self.node_info[node_id]['right'], target_level)
 
+	def get_histogram(self, selection):
+		dist_list = []
+		node_list = []
+		for node in selection:
+			node_id = int(node)
+			node_list.append(node_id)
+		rule_list = self.find_node_rules(node_list)
 
+		cols = self.df.columns
+		matched_data = pd.DataFrame(self.df)
+		included_index = []
+		for rule in rule_list:
+			for cond in rule['rules']:
+				col = cols[cond['feature']]
+				if (cond['sign'] == '<='):	
+					matched_data = matched_data[matched_data[col] <= cond['threshold']]
+				elif (cond['sign'] == '>'):
+					matched_data = matched_data[matched_data[col] > cond['threshold']]
+				elif (cond['sign'] == 'range'):
+					matched_data = matched_data[(matched_data[col] > cond['threshold0']) & (matched_data[col] <= cond['threshold1'])]
+				else:
+					print("!!!!!! Error rule !!!!!!")
+			included_index.extend(matched_data.index.values)
+			to_exclude = self.df.index.isin(included_index)
+			matched_data = pd.DataFrame(self.df)[~to_exclude]
+
+		X = self.df.iloc[included_index].values
+		dist_list = []
+
+		for attr_idx in range(len(cols)):
+			hist = np.histogram(X[:, attr_idx], bins=10, range=self.ranges[attr_idx])
+			dist_list.append({
+				'hist': hist[0].tolist(),
+				'bin_edges': hist[1].tolist(),
+			})
+		return dist_list
+    	
+		
 

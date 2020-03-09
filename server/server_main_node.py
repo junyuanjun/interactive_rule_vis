@@ -90,5 +90,20 @@ def get_rules_by_level(depth):
 	res = forest.get_rules_by_level(int_depth)
 	return res
 
+@app.route("/generate_rules")
+def generate_rules_after_filtering():
+	print("===== generate_rules =====")
+	threshold = json.loads(str(request.get_json(force=True)))
+	res = forest.generate_tree_and_rules(threshold)
+	return res
+
+@app.route("/get_histogram", methods=['POST'])
+def get_histogram():
+	print("===== get_histogram =====")
+	selection = json.loads(str(request.get_json(force=True)))
+	selected_hist = forest.get_histogram(selection)
+	return {'res': selected_hist}
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=6060)

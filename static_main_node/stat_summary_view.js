@@ -1,13 +1,22 @@
+let hist_size = [200, 50],
+	hist_width = hist_size[0],
+	hist_height = hist_size[1];
+
+let hist_margin = {'top': 5, 'bottom': 15, left:5, right:5};
+let summary_height = 18, 
+		summary_bar_width = 80,
+		summary_bar_height = 10;
 
 function render_stat_summary(summary_info) {
 	d3.selectAll('#selection_summary svg *').remove();
 
-	let svg = d3.selectAll('#selection_summary svg');
+	let svg = d3.select('#selection_summary svg')
+		.attr('height', summary_height * 5 + summary_bar_height + 22*hist_height)
 
-	let summary_height = 18, 
-		summary_bar_width = 80,
-		summary_bar_height = 10,
-		margin = {left: 5, top: -10},
+	d3.select('#selection_summary svg')
+		.attr('height', summary_height * 5 + summary_bar_height + 22*hist_height)
+
+	let margin = {left: 5, top: -10},
 		xoffset = 50;
 
 	let stat = svg.append('g')
@@ -45,4 +54,101 @@ function render_stat_summary(summary_info) {
 			.attr('class', 'des_text')
 			.text(`${summary_info[key_list[i]]} / ${size_list[i]}`);
 	}
+
+	render_histogram(svg);
+
+	let node_list = [];
+
+	Object.keys(multiple_selection).forEach((node_id) => node_list.push(+node_id));
+	postData("get_histogram", node_list, (res) => {
+		covered_hist = res['res'];
+		update_histogram(covered_hist);
+	})
+}
+
+function render_histogram(svg) {
+	let max_hist = d3.max(histogram, (d) => d3.max(d['hist']));
+
+	let y = d3.scaleLinear().domain([0, max_hist])
+		.range([hist_height-hist_margin.bottom ,hist_margin.top]);
+	let x = d3.scaleLinear().domain([0, histogram[0]['hist'].length])
+		.range([hist_margin.left, hist_width-hist_margin.right]);
+
+	let hist = svg.append('g')
+		.attr('id', 'histogram');
+
+	let reverse_col_order = {};
+	let histEnter = hist.selectAll('.hist')
+		.data(histogram)
+		.enter()
+		.append('g')
+		.attr('class', 'hist')
+		.attr('id', (d, i) => `hist_group_${i}`)
+		.attr('transform', (d,i) => 
+			`translate(0, ${summary_height * 5 + summary_bar_height*2 + col_order[i] * hist_height})`);
+
+	// attr name
+	histEnter.append('text')
+		.attr('x', 0)
+		.attr('y', 0)
+		.text((d, i) => {
+			return attrs[i]
+		});
+
+	// attr distribution
+	histEnter.append('rect')
+		.attr('x', hist_margin.left)
+		.attr('y', hist_margin.top)
+		.attr('width', hist_width-hist_margin.right-hist_margin.left)
+		.attr('height', hist_height-hist_margin.top-hist_margin.bottom)
+		.attr('fill', 'white')
+		.attr('stroke', 'lightgrey');
+
+	let line_function = d3.line()
+		.x((d) => x(d.x))
+		.y(d => y(d.y));
+
+	histEnter.append('path')
+		.attr('class', 'hist_line')
+		.attr('d', d => {
+			let values = [{x: 0, y: 0}];
+			d['hist'].forEach((h, i) => values.push({x: i+1, y: h}));
+			values.push({x: d['hist'].length, y:0});
+
+			return line_function(values)
+		})
+		.style('stroke', 'steelblue')
+		.style('fill', 'steelblue')
+		.style('fill-opacity', .5)
+}
+
+
+function update_histogram(selected_hist) {
+	let max_hist = d3.max(histogram, (d) => d3.max(d['hist']));
+
+	let y = d3.scaleLinear().domain([0, max_hist])
+		.range([hist_height-hist_margin.bottom ,hist_margin.top]);
+	let x = d3.scaleLinear().domain([0, histogram[0]['hist'].length])
+		.range([hist_margin.left, hist_width-hist_margin.right]);
+
+	let line_function = d3.line()
+		.x((d) => x(d.x))
+		.y(d => y(d.y));
+
+	d3.selectAll('.multi_selection').remove()
+
+	selected_hist.forEach((d, i) => {
+		g = d3.select(`#hist_group_${i}`);
+
+		let values = [{x: 0, y: 0}];
+		d['hist'].forEach((h, i) => values.push({x: i+1, y: h}));
+		values.push({x: d['hist'].length, y:0});
+
+		g.append('path')
+			.attr('class', 'hist_line')
+			.attr('d', line_function(values))
+			.style('stroke', '#33a02c')
+			.style('fill', '#b2df8a')
+			.style('fill-opacity', .9)
+	})
 }

@@ -70,6 +70,8 @@ let selected_range = [];
 let rule_attr_ranges = [];
 let rules_to_keep = [];
 
+let histogram = [];
+
 let param_set = false;
 
 let i = 0,
@@ -102,9 +104,10 @@ function loadData() {
     d3.queue()
         .defer(d3.json, path + "/test.json")
         .defer(d3.json, path + "/list.json")
+        .defer(d3.json, path + "/histogram.json")
         .defer(d3.json, path + "/node_info.json")
         .defer(d3.json, path + "/tree.json")
-        .await((err, file1, file2, file4, file5) => {
+        .await((err, file1, file2, file3, file4, file5) => {
             if (err) {
                 console.log(err);
                 return;
@@ -126,6 +129,7 @@ function loadData() {
             max_depth = file4['max_depth'];
             tot_train = node_info[0]['value'][0] + node_info[0]['value'][1];
             treeData = file5['tree'][0];
+            histogram = file3['histogram'];
 
             present_rules = listData;
             summary_nodes = filter_nodes(node_info);
