@@ -46,7 +46,7 @@ function intialize_scales(max_depth) {
 
 	summary_y = d3.scaleLinear()
 		.domain([0, max_depth])
-		.range([view_margin.top, tree_height]);
+		.range([view_margin.top, tree_height+view_margin.top]);
 
 	summary_size = d3.scaleLinear()
 		.domain([min_support, 1])

@@ -20,6 +20,7 @@ function generate_tree(treeData) {
 
 	d3.select('#summary_view')
 		.append('g')
+		.attr('id', 'tree_structure')
 		.attr('transform', `translate(${view_margin.left}, ${view_margin.top})`);
 
 	root1 = d3.hierarchy(treeData, function(d) { return d.children; });
@@ -33,13 +34,13 @@ function generate_tree(treeData) {
 }
 
 function update_tree(source) {
-	let view = d3.select('#summary_view g');
+	let view = d3.select('#tree_structure');
 
 	let nodes = tree_hierarchy.descendants(),
     	links = tree_hierarchy.descendants().slice(1);
 
 	// Normalize for fixed-depth.
-	nodes.forEach(function(d) { d.y = d.depth * 17 });
+	nodes.forEach(function(d) { d.y = d.depth * depth_height });
 
 	// Update the nodes…
 	var node = view.selectAll("g.node")
