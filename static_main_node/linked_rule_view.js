@@ -1,5 +1,9 @@
 
 function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_order,) {
+    // !!! temeporay for categorical
+    widthScale = d3.scaleLinear()
+        .domain([0, 2])
+        .range([0, rectWidth]);
 
     // remove the column lines and the outdated rules
     rule_svg.selectAll(".grid-col").remove();
@@ -86,18 +90,31 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
             if (d["sign"] === "<=") {
                 return xoffset;
             } else if (d["sign"] === ">") {
-                return xoffset + widthScale[d["feature"]](d["threshold"])
+                // return xoffset + widthScale[d["feature"]](d["threshold"])
+                return xoffset + widthScale(d["threshold"])
+
             } else {
-                return xoffset + widthScale[d["feature"]](d["threshold0"])
+                return xoffset + widthScale(d["threshold0"])
+                // return xoffset + widthScale[d["feature"]](d["threshold0"])
             }
         })
         .attr("width", function(d) {
+            // if (d["sign"] === "<=") {
+            //     return widthScale[d["feature"]](d["threshold"]);
+            // } else if (d["sign"] === ">"){
+            //     return rectWidth - widthScale[d["feature"]](d["threshold"]);
+            // } else if (d["sign"] === "range") {
+            //     return (widthScale[d["feature"]](d["threshold1"]-d["threshold0"]))
+            // }
             if (d["sign"] === "<=") {
-                return widthScale[d["feature"]](d["threshold"]);
+                return widthScale(d["threshold"]);
+                // return widthScale(Math.round(d['threshold']))
             } else if (d["sign"] === ">"){
-                return rectWidth - widthScale[d["feature"]](d["threshold"]);
+                // return rectWidth - widthScale(Math.round(d["threshold"]));
+                return rectWidth - widthScale(d["threshold"]);
             } else if (d["sign"] === "range") {
-                return (widthScale[d["feature"]](d["threshold1"]-d["threshold0"]))
+                return (widthScale(d["threshold1"]-d["threshold0"]));
+                // return (widthScale(Math.round(d["threshold1"])-Math.round(d["threshold0"])));
             }
         })
         .attr("y",  0)

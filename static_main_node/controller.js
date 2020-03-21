@@ -2,7 +2,7 @@ let ori_order = [];
 let col_order = [];
 
 let phrased_rule_id = -1;
-let NODE_ENCODING = "accuracy";
+let NODE_ENCODING = "purity";
 let SUMMARY_LAYOUT = "tree";
 let X_POS = 'fidelity';
 
@@ -394,8 +394,14 @@ function hover_rule(clicked_g, rule_idx, rule, tab_p) {
 		str += `<u>${attrs[d['feature']]}</u>`;
 		if (d['sign'] !== 'range') {
 			str += " " + d['sign'] + d['threshold'] + " "
+			// if (d['sign'] === '<=') {
+			// 	str += ` is <span style="color: silver">low</span> `
+			// } else {
+			// 	str += ` is <span style="color: dimgrey">high</span> `
+			// }
 		} else {
 			str += " btw. [" + d['threshold0'] + ', ' + d['threshold1'] + ') '
+			// str += ` is <span style="color: grey">medium</span> `
 		}
 	})
 

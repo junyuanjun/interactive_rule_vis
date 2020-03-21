@@ -117,8 +117,8 @@ function render_histogram(svg) {
 
 			return line_function(values)
 		})
-		.style('stroke', 'steelblue')
-		.style('fill', 'steelblue')
+		.style('stroke', 'darkgrey')
+		.style('fill', 'darkgrey')
 		.style('fill-opacity', .5)
 }
 
@@ -147,8 +147,8 @@ function update_histogram(selected_hist) {
 		g.append('path')
 			.attr('class', 'hist_line')
 			.attr('d', line_function(values))
-			.style('stroke', '#33a02c')
-			.style('fill', '#b2df8a')
+			.style('stroke', 'steelblue')
+			.style('fill', 'steelblue')
 			.style('fill-opacity', .9)
 	})
 }

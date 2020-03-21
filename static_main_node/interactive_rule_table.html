@@ -36,6 +36,19 @@
             <input id="feature_val" value=22>
           </div>
           <div>
+            <span>Data to include for tree generation:</span>
+            <div class="flex-row">
+              <input type="checkbox" id="conf_tp" name="conf_tp" value="tp">
+                <label for="conf_tp"> True Positive</label><br>
+              <input type="checkbox" id="conf_fp" name="conf_fp" value="fp">
+                  <label for="conf_fp"> False Positive</label><br>
+              <input type="checkbox" id="conf_tn" name="conf_tn" value="tn">
+                  <label for="conf_tn"> True Negative</label><br>
+              <input type="checkbox" id="conf_fn" name="conf_fn" value="fn">
+                  <label for="conf_fn"> False Negative</label><br>
+            </div>
+          </div>
+          <div>
             <button id="update_cancel" onclick="click_cancel()">Cancel</button>
             <button id="generate_rule">Generate Rules</button>
           </div>
@@ -96,7 +109,7 @@
             <div class="title flex-row" style="margin-right: 20px">
               <span>Dataset: </span>
               <select id="dataset">
-                <option value='fico'>FICO</option>
+                <option value='fico_simplified'>FICO</option>
                 <option value='creditcard'>CreditCard</option>
               </select>
             </div>
@@ -122,8 +135,8 @@
             <div class='flex-row'>
               <div class="title"><span>Node Encoding </span></div>
               <select id="node_encoding">
-                <option value="accuracy">Accuracy</option>
                 <option value="purity">Purity</option>
+                <option value="accuracy">Accuracy</option>
                 <option value="fidelity">Fidelity</option>
               </select>
             </div>

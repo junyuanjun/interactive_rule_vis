@@ -146,7 +146,7 @@ function update_tree(source) {
   			.style('stroke', 'none')
   			.style('fill-opacity', (d) => {
 	          	if (!new_node_shown[d['id']]) {
-			  		return .1;
+			  		return 0;
 			  	} else return 1;
           	})
   			// .style('stroke-width', '.5')
@@ -164,16 +164,16 @@ function update_tree(source) {
 		  })
 		  .style('fill-opacity', function(d) {
 		  	if (!new_node_shown[d['data']['node_id']]) {
-		  		return .05
+		  		return .0
 		  	} else return 1;
 		  })
-		  // .style("fill-opacity", .8)
 		  .style("stroke", "none")
 	}
 	nodeUpdate.append('title')
 	  .text(node => {
 	  		let d = node['data'];
-	  	 return `Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};`
+	  	 return `Feature: ${attrs[d['feature']]}`
+	  	 	+ `\nSupport: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])};`
 	  	 	+ `\nFidelity: ${d['fidelity']};\nAccuracy: ${d['accuracy']}`
         	+ `\nNodeID: ${d['node_id']}; Rule index: ${node2rule[d['node_id']]}`;
     });
@@ -216,7 +216,10 @@ function update_tree(source) {
 	linkUpdate.transition()
 	  .duration(duration)
 	  // .attr("d", diagonal);
-      .attr('d', function(d){ return diagonal(d, d.parent) });
+      .attr('d', function(d){ 
+	    if (!new_node_shown[d['data']['node_id']]) return "";
+      	 else return diagonal(d, d.parent) 
+      });
 
 	// Transition exiting nodes to the parent's new position.
 	let linkExit = link.exit().transition()
