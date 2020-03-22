@@ -349,6 +349,13 @@ function hover_rule(clicked_g, rule_idx, rule, tab_p) {
 		tab_id = +tab_p - 1;
 	}
 
+	// highlight the rule in the rule view
+	clicked_g.select('.back-rect')
+		.classed('rule_hover', true);
+	// highlight in the stat
+	d3.select(`#stat${tab_p}-back-rect-${rule_idx}`)
+		.classed('rule_hover', true);
+
 	// highlight the node in the tree view
 	let node_id = rule2node[tab_id][rule_idx];
 	d3.select(`.rule_clicked_node`).remove();

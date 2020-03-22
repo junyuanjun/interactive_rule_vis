@@ -54,7 +54,7 @@ function intialize_scales(max_depth) {
 
   summary_size_ = d3.scaleLinear()
     .domain([min_support, 1])
-    .range([2, max_r*3]);
+    .range([2*3, max_r*3]);
 
 	summary_color = d3.scaleLinear()
 		.domain([.5, .7, 1])

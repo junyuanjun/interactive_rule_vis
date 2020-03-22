@@ -279,7 +279,7 @@ function render_feature_names_and_grid(column_svg, col_order) {
         .classed("column", true)
         .classed((d, i) => `col-title-${i}`, true)
         .attr("transform", function(d, i) { 
-            return `translate(${xScale(col_order[i])}, 
+            return `translate(${xScale(col_order[i])+rectMarginH}, 
             ${column_height+yScale(0)-font_size})rotate(330)`; });
 
     column.append("text")
@@ -445,11 +445,22 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
 
     stat_svg.style('height', `${height}px`)
 
+    let stat_id = stat_svg._groups[0][0].id;
+
     let res = stat_svg.selectAll('g')
         .data(listData)
         .enter()
         .append('g')
-        .attr('class', 'support')
+        .attr('class', 'support');
+
+    res.append('rect')
+        .attr("class", "back-rect")
+        .attr('id', (d,i) => `${stat_id}-back-rect-${i}`)
+        .attr('x', 0)
+        .attr('y', (d,i)=>yScale(i))
+        .attr('height', `${yScale.bandwidth()}px`)
+        .attr('width', `${width-xScale.bandwidth()}px`)
+        .attr('fill', 'white');
 
     let circles = res.append("circle")
         .attr("class", "label_circle")

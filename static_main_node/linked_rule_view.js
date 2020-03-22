@@ -28,7 +28,7 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
         .style("height", `${height + margin.bottom}px`);
 
     // scale for placing cells
-    let yScale = d3.scaleBand(d3.range(listData.length), [margin.top, height - margin.bottom]);
+    let yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
 
     render_feature_names_and_grid(col_svg, col_order);
 
@@ -43,6 +43,8 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
         })
         .on('mouseout', function(d, i) {
             d3.select(`.rule_clicked_node`).remove();
+            d3.selectAll('.rule_hover')
+                .classed('rule_hover', false)
 
             d3.select('#rule_description').selectAll('p').remove();
         })
@@ -159,7 +161,7 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
         .attr("transform", function(d, i) { return `translate(${xScale(i)}, ${margin.top})`; })
         .append("line")
         .attr("y1", 0)
-        .attr("y2", height-margin.top-margin.bottom)
+        .attr("y2", yScale(listData.length))
         .style("stroke", gridColor);
 
     // render_size_circle(listData);

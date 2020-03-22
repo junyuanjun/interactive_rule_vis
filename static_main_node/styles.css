@@ -122,6 +122,11 @@ rect {
   fill-opacity: .5;
 }
 
+.rule_hover {
+  fill: black;
+  fill-opacity: .1;
+}
+
 .highlight-circle {
   stroke: black;
   stroke-width: 1px;

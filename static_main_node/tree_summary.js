@@ -40,7 +40,7 @@ function update_tree(source) {
     	links = tree_hierarchy.descendants().slice(1);
 
 	// Normalize for fixed-depth.
-	nodes.forEach(function(d) { d.y = d.depth * (depth_height-1) });
+	nodes.forEach(function(d) { d.y = d.depth * (depth_height) });
 
 	// Update the nodes…
 	var node = view.selectAll("g.node")
