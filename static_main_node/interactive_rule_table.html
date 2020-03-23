@@ -33,9 +33,9 @@
             <!-- <p id="feat-text" style="margin-bottom: 1px">Max Number of Features:</p>
             <div id="slider-feat"></div> -->
             <span>Max Number of Features: </span>
-            <input id="feature_val" value=22>
+            <input id="feature_val" value=5>
           </div>
-          <div>
+          <!-- <div>
             <span>Data to include for tree generation:</span>
             <div class="flex-row">
               <input type="checkbox" id="conf_tp" name="conf_tp" value="tp">
@@ -47,7 +47,7 @@
               <input type="checkbox" id="conf_fn" name="conf_fn" value="fn">
                   <label for="conf_fn"> False Negative</label><br>
             </div>
-          </div>
+          </div> -->
           <div>
             <button id="update_cancel" onclick="click_cancel()">Cancel</button>
             <button id="generate_rule">Generate Rules</button>
@@ -216,11 +216,13 @@
           <div class="flex-row">
               <!-- Summary View -->
               <div class="flex-col">
-                <div id="summary_div" class="flex-row" style="overflow: scroll; max-height: 240px; border: 1px solid lightgrey; margin-bottom: 5px;">
+                <div id="summary_div" class="flex-row" style="overflow: scroll; max-height: 220px; border: 1px solid lightgrey; margin-bottom: 5px;">
                   <div id="radio_group" class="felx-col"></div>
                   <svg id="summary_view"></svg>
                 </div>
               </div>
+          </div>
+          <div id="node_description" class="flex-col" style="height: 20px">          
           </div>
         </div>
 

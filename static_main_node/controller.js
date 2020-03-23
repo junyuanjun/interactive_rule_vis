@@ -38,15 +38,24 @@ d3.select('#dataset')
 	})
 
 function generate_rules() {
-	let support_val, fidelity_val;
+	let support_val, num_feat_val;
 		d3.select('#support_val')
 	        .attr('value', function() {
 	            support_val = this.value;
 	            return this.value;
 	        });
 
+	    d3.select('#feature_val')
+	        .attr('value', function() {
+	            num_feat_val = this.value;
+	            return this.value;
+	        });
+
 	    support_val = parseFloat(support_val);
 		filter_threshold['support'] = support_val;
+
+		num_feat_val = parseFloat(num_feat_val);
+		filter_threshold['num_feat'] = num_feat_val;
 
 		d3.select(".modal")
 			.style("display", "none");
@@ -149,7 +158,7 @@ function click_summary_node(node_id) {
 	    })
     } else if (SUMMARY_LAYOUT == 'tree') {
     	summary_view.selectAll('.link')
-    		.style('stroke-width', '.3px')
+    		.style('stroke-width', '1px')
 
     	// highlight the path in the tree layout
 		linked_node_ids.sort((a,b) => a-b);
@@ -167,7 +176,7 @@ function click_summary_node(node_id) {
 	    	}
 	    	
 	    	summary_view.select(`#tree_link_${id}_${parent}`)
-			    .style("stroke-width", "1.5px");
+			    .style("stroke-width", "2px");
 	    })
     }
    

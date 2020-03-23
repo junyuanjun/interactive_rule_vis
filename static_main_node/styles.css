@@ -117,6 +117,9 @@ rect {
   margin-bottom: 5px;
 }
 
+#node_description p {
+  margin: 0px;
+}
 .rule_highlight {
   fill: #fdcdac;
   fill-opacity: .5;
@@ -136,6 +139,12 @@ rect {
 .rule_clicked_node {
   stroke: black;
   stroke-width: 2px;
+  fill: none;
+}
+
+.hovered_node {
+  stroke: black;
+  stroke-width: 1.5px;
   fill: none;
 }
 
