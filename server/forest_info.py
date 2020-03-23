@@ -21,6 +21,26 @@ class Forest():
 		self.df = df
 		self.y_pred = np.array(y_pred)
 		self.y_gt = np.array(y_gt)
+		# cate_X initialization
+		self.initialize_cate_X(self.df.values)
+
+	def initialize_cate_X(self, X):
+		self.real_3_1 = np.percentile(X, q=33, axis=0)
+		self.real_3_2 = np.percentile(X, q=67, axis=0)
+		cate_X = []
+		for col_idx in range(X.shape[1]):
+			cate_X.append([self.transform_func(col_idx, ele) for ele in X[:, col_idx]])
+
+		cate_X = np.transpose(np.array(cate_X))
+		self.cate_X = cate_X
+
+	def transform_func(self, col_idx, ele):
+		if (ele < self.real_3_1[col_idx]):
+			return 0
+		elif (ele < self.real_3_2[col_idx]):
+			return 1
+		else:
+			return 2
 
 	def empty_has_leaves(self):
 		self.has_leaves = np.zeros(len(self.node_info))
@@ -52,6 +72,13 @@ class Forest():
 		self.node_feature_ranges[right] = copy.deepcopy(self.node_feature_ranges[parent_id])
 		self.node_feature_ranges[right][f_id][0] = np.max([self.node_feature_ranges[right][f_id][0], threshold])
 		self.node_feature_marked[right] = True
+
+	def tree_traversal_limite_depth(self, node_id):
+		if (self.node_info[node_id]['depth'] == self.depth_limit):
+			self.node_order.append(node_info)
+			return
+		self.tree_traversal_limite_depth(node_info[node_id]['left'])
+		self.tree_traversal_limite_depth(node_info[node_id]['right'])
 
 	def convert2rule(self, node_id):
 		feature_range = self.node_feature_ranges[node_id]
@@ -179,7 +206,8 @@ class Forest():
 		rule_list = self.find_node_rules(node_list)
 
 		cols = self.df.columns
-		matched_data = pd.DataFrame(self.df)
+		# matched_data = pd.DataFrame(self.df)
+		matched_data = pd.DataFrame(data = self.cate_X, columns=cols)
 		included_index = []
 		for rule in rule_list:
 			for cond in rule['rules']:
@@ -198,6 +226,7 @@ class Forest():
 
 		X = self.df.iloc[included_index].values
 		dist_list = []
+		print(X.shape)
 
 		for attr_idx in range(len(cols)):
 			hist = np.histogram(X[:, attr_idx], bins=10, range=self.ranges[attr_idx])
@@ -206,6 +235,21 @@ class Forest():
 				'bin_edges': hist[1].tolist(),
 			})
 		return dist_list
-    	
+	
+	def get_r_sqaured():
+		# calculate R-squared
+		leave_pred = estimator.predict(cate_X)
+		sse = np.sum((leave_pred - y_svm_)**2)
+		sst = np.sum((y_svm_ - y)**2)
+		rsqr = 1-sse/sst
+		return rsqr
 		
+	def get_level_rules(depth_limit):
+		self.depth_limit = depth_limit
+		self.node_order = []
+		self.tree_traversal_limite_depth(0)
+		rule_list = []
+		for node_id in self.node_order:
+			rule_list.append(self.convert2rule(node_id))
+		return rule_list
 

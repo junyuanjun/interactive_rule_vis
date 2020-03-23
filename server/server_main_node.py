@@ -30,7 +30,7 @@ def send_data(path):
 @app.route("/initialize/<dataname>")
 def initialize(dataname):
 	print("start initialization")
-	folder = "../data/" + dataname + "/"
+	folder = "./data/" + dataname + "/"
 	node_info = []
 	real_min = []
 	real_max = []
