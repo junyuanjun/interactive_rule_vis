@@ -59,6 +59,15 @@ rect {
   flex-direction: row; 
 }
 
+.stat {
+  max-height: 280px; max-width: 300px; overflow-y: scroll;
+  direction: rtl;
+}
+
+.stat div {
+  direction: ltr;
+}
+
 .title {
   margin-top: 5px;
   margin-bottom: 10px;

@@ -1,4 +1,4 @@
-let margin = {top: 0, right: 45, bottom: 5, left: 10},
+let margin = {top: 0, right: 45, bottom: 5, left: 0},
     column_height = 60,
     width = 860 - margin.right - margin.left,
     height;
@@ -18,7 +18,7 @@ let rectMarginTop = 5, rectMarginBottom = 5,
 let glyphCellWidth = 5, glyphCellHeight = 10;
 let rectHeight, rectWidth;
 let supportRectWidth = 50, fidelityChartWidth = 50, rule_radius = 7;
-let statWidth = supportRectWidth * 2 + fidelityChartWidth + rule_radius * 2 + 50;
+let statWidth = supportRectWidth * 2 + fidelityChartWidth + rule_radius * 2 + 20;
 
 let tot_train;
 
@@ -27,7 +27,7 @@ let rule_svg = d3.select("#rule_svg")
     .attr("transform", `translate(${margin.left})`);
 
 let col_svg = d3.select("#column_svg")
-    .style("height", `${column_height}px`);
+    .style("height", `${column_height}px`)
 
 let stat_svg = d3.select('#stat')
     .style("width", `${statWidth}px`)
@@ -212,6 +212,9 @@ function loadData() {
 }
 
 function scroll_functions(width, height, idx) {
+    d3.select(`#column_div${idx}`)
+        .style("margin-left", `${statWidth}px`);
+
     d3.select(`#rule_div${idx} div`)
         .style("height", `${height + margin.bottom}px`)
         .style("width", `${margin.left + width + margin.right}px`);
@@ -610,16 +613,16 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
         .attr('fill', 'lightgrey')
         .attr('stroke', 'black');
 
-    res.append('rect')
-        .attr('class', 'support_bar')
-        .attr('x', xoffset)
-        .attr("y", (d, i) => {
-            return yScale(i) + yScale.bandwidth()/4;
-        })
-        .attr('width', d => supportScale(d3.sum(node_info[d['node_id']]['conf_mat'][0])*d3.sum(node_info[d['node_id']]['value'])))
-        .attr('height', glyphCellHeight)
-        .attr('fill', 'darkgrey')
-        .attr('stroke', 'black');
+    // res.append('rect')
+    //     .attr('class', 'support_bar')
+    //     .attr('x', xoffset)
+    //     .attr("y", (d, i) => {
+    //         return yScale(i) + yScale.bandwidth()/4;
+    //     })
+    //     .attr('width', d => supportScale(d3.sum(node_info[d['node_id']]['conf_mat'][0])*d3.sum(node_info[d['node_id']]['value'])))
+    //     .attr('height', glyphCellHeight)
+    //     .attr('fill', 'darkgrey')
+    //     .attr('stroke', 'black');
 
     res.append('text')
         .attr('class', 'label1-text')
@@ -628,8 +631,7 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
             return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
         })
         .style('fill', 'black')
-        .text(d => `${Math.floor(d3.sum(node_info[d['node_id']]['conf_mat'][0]) * d3.sum(node_info[d['node_id']]['value']))}`
-                + `/ ${d3.sum(node_info[d['node_id']]['value'])}`)
+        .text(d => `${d3.sum(node_info[d['node_id']]['value'])}`)
 
 
     // fidelity lines
