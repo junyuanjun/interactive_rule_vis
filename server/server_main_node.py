@@ -40,11 +40,12 @@ def initialize(dataname):
 		data = json.load(json_input)
 		real_min = data['real_min']
 		real_max = data['real_max']
+		real_percentile = data['real_percentile']
 		df = pd.DataFrame(columns=data['columns'], data=data['data'])
 		y_pred = data['y_pred']
 		y_gt = data['y_gt']
 
-	forest.initialize(node_info, real_min, real_max, df, y_pred, y_gt)
+	forest.initialize(node_info, real_min, real_max, real_percentile, df, y_pred, y_gt)
 	print("====initialized====")
 	return "initialized"
 

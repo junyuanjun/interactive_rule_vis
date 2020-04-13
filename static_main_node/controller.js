@@ -410,14 +410,13 @@ function hover_rule(clicked_g, rule_idx, rule, tab_p) {
 		str += `<u>${attrs[d['feature']]}</u>`;
 		if (d['sign'] !== 'range') {
 			str += " " + d['sign'] + d['threshold'] + " "
-			// if (d['sign'] === '<=') {
-			// 	str += ` is <span style="color: silver">low</span> `
-			// } else {
-			// 	str += ` is <span style="color: dimgrey">high</span> `
-			// }
+			
 		} else {
-			str += " btw. [" + d['threshold0'] + ', ' + d['threshold1'] + ') '
-			// str += ` is <span style="color: grey">medium</span> `
+			// str += " btw. (" + d['threshold0'] + ', ' + d['threshold1'] + '] '
+			// let threshold0 = real_percentile['percentile_table'][Math.ceil(d['threshold0'])][d['feature']],
+			// 	threshold1 = real_percentile['percentile_table'][Math.floor(d['threshold1'])][d['feature']]
+
+			str += " from " + d['threshold0'] + " to " + d['threshold1'];
 		}
 	})
 

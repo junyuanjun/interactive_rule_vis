@@ -1,2 +1,2 @@
 .idea/
-*.pyc
+server/__pycache__/

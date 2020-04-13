@@ -81,7 +81,7 @@ let i = 0,
     treeData,
     real_min,
     real_max,
-    real_5_1, real_5_2, real_5_3, real_5_4,
+    real_percentile,
     support, true_support, false_support, class_support, tot_data,
     raw_data,
     attrs,
@@ -118,10 +118,7 @@ function loadData() {
             real_min = file1["real_min"];
             real_max = file1["real_max"];
             median = file1["median"]
-            real_5_1 = file1['real_5_1']
-            real_5_2 = file1['real_5_2']
-            real_5_3 = file1['real_5_3']
-            real_5_4 = file1['real_5_4']
+            real_percentile = file1["real_percentile"];
             listData = file2["rule_lists"];
             target_names = file2["target_names"];
             tot_data = file1['data'].length;
@@ -168,7 +165,6 @@ function loadData() {
             handleHeight = rectHeight + handleLedge * 2;
             widthScale = [];
             colorScale = [];
-            valueStops = [];
 
             attrs.forEach((d, i) => {
                 widthScale.push(d3.scaleLinear()
@@ -179,14 +175,6 @@ function loadData() {
                     .domain([real_min[i], (real_min[i]+real_max[i])/2, real_max[i]])
                     .range([d3.lab("#91bfdb"),d3.lab("#ffffbf"),d3.lab("#fc8d59")])
                     .interpolate(d3.interpolateLab));
-            });
-
-
-            attrs.forEach((d, i) => {
-                // let step = (real_max[i] - real_min[i]) / 5;
-                // let rangeArr = [real_min[i]+step, real_min[i]+step*2, real_min[i]+step*3, real_min[i]+step*4];
-                let rangeArr = [real_5_1[i], real_5_2[i], real_5_3[i], real_5_4[i]];
-                valueStops.push(rangeArr);
             });
 
             // render_slider();

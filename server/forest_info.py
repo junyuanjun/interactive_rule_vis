@@ -3,12 +3,12 @@ import pandas as pd
 import copy
 
 class Forest():
-	def initialize(self, node_info, real_min, real_max, df, y_pred, y_gt):
+	def initialize(self, node_info, real_min, real_max, real_percentile, df, y_pred, y_gt):
 		self.node_info = { int(x) : node_info[x] for x in node_info }
 		# self.node_info = node_info
 		ranges = np.zeros(shape=(len(real_max), 2))
-		ranges[:, 0] = real_min
-		ranges[:, 1] = real_max
+		ranges[:, 0] = 0
+		ranges[:, 1] = real_percentile['num_threshold']
 		self.ranges = ranges
 
 		self.has_leaves = []
@@ -22,7 +22,16 @@ class Forest():
 		self.y_pred = np.array(y_pred)
 		self.y_gt = np.array(y_gt)
 		# cate_X initialization
-		self.initialize_cate_X(self.df.values)
+		# self.initialize_cate_X(self.df.values)
+
+		self.real_percentile = real_percentile
+		self.rep_range = np.zeros(shape=(len(real_min), real_percentile['num_threshold']+1, 2))
+		for idx in range(len(real_min)):
+			self.rep_range[idx][0] = np.array([real_min[idx], real_percentile['percentile_table'][0][idx]])
+			for i in range(real_percentile['num_threshold']-1):
+				self.rep_range[idx][1] = np.array([real_percentile['percentile_table'][i][idx], 
+					real_percentile['percentile_table'][i+1][idx]])
+			self.rep_range[idx][2] = np.array([real_percentile['percentile_table'][i+1][idx], real_max[idx]])
 
 	def initialize_cate_X(self, X):
 		self.real_3_1 = np.percentile(X, q=33, axis=0)
@@ -84,30 +93,46 @@ class Forest():
 		feature_range = self.node_feature_ranges[node_id]
 		rules = []
 		for j in range(self.ranges.shape[0]):
-			if (feature_range[j][0]!=self.ranges[j][0] and feature_range[j][1]!=self.ranges[j][1]):
-				rules.append({
-					"feature": j,
-					"sign": "range",
-					"threshold0": float(feature_range[j][0]),
-					"threshold1": float(feature_range[j][1]),
-				})
-			elif (feature_range[j][0]!=self.ranges[j][0]):
-				rules.append({
-					"feature": j,
-					"sign": ">",
-					"threshold": float(feature_range[j][0])
-				})
-			elif (feature_range[j][1]!=self.ranges[j][1]):
-				rules.append({
-					"feature": j,
-					"sign": "<=",
-					"threshold": float(feature_range[j][1])
-				})
+			if (feature_range[j][0]!=0 or feature_range[j][1]!=self.real_percentile['num_threshold']):
+				new_cond = self.translate_rule(feature_range[j], j)
+				rules.append(new_cond)
 		return {
 			"label": int(np.argmax(self.node_info[node_id]['value'])),
 			"node_id": node_id,
-            "rules": rules,
+			"rules": rules,
 		}
+
+	def translate_rule(self, feat_range, feat_idx):
+		# find the integers that fit
+		ranges = []
+		for i in range(3):
+		    if (i >= feat_range[0] and i <= feat_range[1]):
+		        ranges.append(i)
+
+		# translate the integer into rule condition
+		if (ranges[0] == 0):
+		    # (min, threshold]
+		    cond = {
+		        'feature': feat_idx,
+		        'sign': '<=',
+		        'threshold': self.rep_range[feat_idx][ranges[-1]][1]
+		    }
+		elif (ranges[-1] == 2):
+		    # (threshold, max]
+		    cond = {
+		        'feature': feat_idx,
+		        'sign': '>',
+		        'threshold': self.rep_range[feat_idx][ranges[0]][0]
+		    }
+		else:
+		    # (threshold0, threshold1]
+		    cond = {
+		        'feature': feat_idx,
+		        'sign': 'range',
+		        'threshold0': self.rep_range[feat_idx][ranges[0]][0],
+		        'threshold1': self.rep_range[feat_idx][ranges[-1]][1]
+		    }
+		return cond
 					
 
 	def find_leaf_rules(self, new_node_ids):
@@ -206,8 +231,8 @@ class Forest():
 		rule_list = self.find_node_rules(node_list)
 
 		cols = self.df.columns
-		# matched_data = pd.DataFrame(self.df)
-		matched_data = pd.DataFrame(data = self.cate_X, columns=cols)
+		matched_data = pd.DataFrame(self.df)
+		# matched_data = pd.DataFrame(data = self.cate_X, columns=cols)
 		included_index = []
 		for rule in rule_list:
 			for cond in rule['rules']:
