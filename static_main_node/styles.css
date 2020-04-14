@@ -231,6 +231,28 @@ rect {
   font-size: 10px;
 }
 
+.node_feature_name {
+  text-anchor: middle;
+}
+
+.node_mask {
+  fill: 'white';
+  stroke: 'white';
+  fill-opacity: 0;
+  stroke-opacity: 0;
+}
+
+.sign_threshold {
+  text-anchor: middle;
+}
+
+.link_mask {
+  fill: 'white';
+  stroke: 'white';
+  fill-opacity: 0;
+  stroke-opacity: 0;
+}
+
 #radio_group {
   width: 15px;
   margin-top: 18px
