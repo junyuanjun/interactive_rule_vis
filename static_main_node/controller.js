@@ -106,8 +106,6 @@ function click_cancel() {
 }
 
 function click_summary_node(node_id) {
-    console.log('click node: '+ node_id)
-
     // highlight in the tree view
     d3.select(`#tree_node-${node_id} .highlight-circle`).remove();
     d3.select(`.rule_clicked_node`).remove();
