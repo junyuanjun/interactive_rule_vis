@@ -132,16 +132,6 @@
                 <option value="accuracy">Accuracy</option>
               </select>
             </div>
-
-            <div class='flex-row'>
-              <div class="title"><span>Node Encoding </span></div>
-              <select id="node_encoding">
-                <option value="purity">Purity</option>
-                <option value="accuracy">Accuracy</option>
-                <option value="fidelity">Fidelity</option>
-              </select>
-            </div>
-
           </div>
 
           <!-- Visualization Settings -->
@@ -158,14 +148,6 @@
           </div> -->
 
           <!-- <hr width="190px" style="margin: 5px 0 5px 0;"> -->
-        </div>
-
-        <!-- legend -->
-        <div class="flex-col">
-          <div class="title">
-            <span>Legend</span>
-          </div>
-          <svg id="legend1"></svg>
         </div>
 
         <!-- Tab links -->
@@ -218,12 +200,16 @@
               <!-- Summary View -->
               <div class="flex-col">
                 <div id="summary_div" class="flex-row" style="overflow: scroll; max-height: 220px; border: 1px solid lightgrey; margin-bottom: 5px;">
-                  <div id="radio_group" class="felx-col"></div>
+                  <div id="radio_group" class="flex-col"></div>
                   <svg id="summary_view"></svg>
                 </div>
               </div>
           </div>
           <div id="node_description" class="flex-col" style="height: 20px">          
+          </div>
+          <!-- legend -->
+          <div class="flex-col" style="height: 20px">
+            <svg id="legend1"></svg>
           </div>
         </div>
 
@@ -250,9 +236,14 @@
 
           <!-- Overview -->
           <div class="flex-col tabcontent" id="overview" style="display: flex">
-            <div id="column_div" style="max-width: 850px; overflow-x: scroll;">
+            <div class='flex-row'>
               <div>
-                <svg id="column_svg"></svg>            
+                <svg id='stat_legend'></svg>
+              </div>
+              <div id="column_div" style="max-width: 850px; overflow-x: scroll;">
+                <div>
+                  <svg id="column_svg"></svg>            
+                </div>
               </div>
             </div>
 
@@ -272,10 +263,15 @@
 
           <!-- Linked nodes-->
           <div class="flex-col tabcontent" id="linked">
-            <div id="column_div2" style="max-width: 850px; overflow-x: scroll;">
-              <div>
-                <svg id="column_svg2"></svg>            
-              </div>
+             <div class='flex-row'>
+                <div>
+                  <svg id='stat_legend2'></svg>
+                </div>
+                <div id="column_div2" style="max-width: 850px; overflow-x: scroll;">
+                  <div>
+                    <svg id="column_svg2"></svg>            
+                  </div>
+                </div>
             </div>
 
             <div class="flex-row" style="max-height: 280px; max-width: 1200px; overflow: scroll;">
@@ -294,9 +290,14 @@
 
           <!-- Selected Level -->
           <div class="flex-col tabcontent" id="level">
-            <div id="column_div3" style="max-width: 850px; overflow-x: scroll;">
+             <div class='flex-row'>
               <div>
-                <svg id="column_svg3"></svg>            
+                <svg id='stat_legend3'></svg>
+              </div>
+              <div id="column_div3" style="max-width: 850px; overflow-x: scroll;">
+                <div>
+                  <svg id="column_svg3"></svg>            
+                </div>
               </div>
             </div>
 
@@ -316,9 +317,14 @@
 
           <!-- Selected multiple nodes -->
           <div class="flex-col tabcontent" id="multiple">
-            <div id="column_div4" style="max-width: 900px; overflow-x: scroll;">
+             <div class='flex-row'>
               <div>
-                <svg id="column_svg4"></svg>            
+                <svg id='stat_legend4'></svg>
+              </div>
+              <div id="column_div4" style="max-width: 900px; overflow-x: scroll;">
+                <div>
+                  <svg id="column_svg4"></svg>            
+                </div>
               </div>
             </div>
 

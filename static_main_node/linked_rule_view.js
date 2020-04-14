@@ -25,6 +25,7 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
     // scale for placing cells
     let yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
 
+    render_stat_legend(d3.select(`#stat_legend${idx}`));
     render_feature_names_and_grid(col_svg, col_order);
 
     // render by rows

@@ -200,8 +200,8 @@ function loadData() {
 }
 
 function scroll_functions(width, height, idx) {
-    d3.select(`#column_div${idx}`)
-        .style("margin-left", `${statWidth}px`);
+    // d3.select(`#column_div${idx}`)
+    //     .style("margin-left", `${statWidth}px`);
 
     d3.select(`#rule_div${idx} div`)
         .style("height", `${height + margin.bottom}px`)
@@ -652,6 +652,149 @@ function update_column_rendering(svg, col_order) {
                 ${column_height+yScale(0)-font_size*2})rotate(330)`; 
             });    
     }
+}
+
+function render_stat_legend(stat_svg) {
+    if (stat_svg.select('g')._groups[0][0] !== undefined) {
+        return;
+    }
+
+    stat_svg.style('height', `${column_height}px`)
+        .style('width', `${statWidth}px`);
+
+    let stat_id = stat_svg._groups[0][0].id;
+
+    let rectHeight = glyphCellHeight + rectMarginTop + rectMarginBottom;
+
+    let res = stat_svg.append('g')
+        .attr('class', 'legend')
+        .attr('transform', `translate(0, ${column_height-rectHeight})`);
+
+    // rule prediction
+    let pie = d3.pie()
+          .value(function(d) {return d.value; })
+    let data_ready = pie(d3.entries({0: 50, 1: 50}))
+
+    let circle_area = res.append('g')
+        .attr('transform', `translate(${xScale.bandwidth()/2}, ${rectHeight/2})`)
+
+    circle_area.selectAll('.rule_pred')
+        .data(data_ready)
+        .enter()
+        .append('path')
+        .attr('d', d3.arc()
+            .innerRadius(0)
+            .outerRadius(rule_radius)
+        )
+        .classed('rule_pred', true)
+        .attr('fill', function(d, i){ return colorCate[i] })
+        .attr("stroke", "none");
+
+    // render the confusion matrix
+    // covered instances of label 0, tp
+
+    let xoffset = 10 + xScale.bandwidth()/2;
+    res.append("rect")
+        .attr("class", "label0_0")
+        .attr("x", xoffset)
+        .attr("y", rectHeight/4)
+        .attr("width", supportRectWidth/4)
+        .attr("height", glyphCellHeight)
+        .attr("fill", d => colorCate[0])
+
+    res.append('text')
+        .attr('class', 'label0-text')
+        .attr("x", xoffset+2)
+        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
+        .style('fill', 'white')
+        .text("tp")
+
+    // fp
+    res.append("rect")
+        .attr("class", "label0_1")
+        .attr("x", d=>xoffset+supportRectWidth/4)
+        .attr("y", rectHeight/4)
+        .attr("width", d => supportRectWidth/4)
+        .attr("height", glyphCellHeight)
+        .attr("fill", d => 'url(#fp_pattern)')
+
+    res.append('text')
+        .attr('class', 'label0-text')
+        .attr("x", d=>2+xoffset+supportRectWidth/4)
+        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
+        .style('fill', 'white')
+        .text("fp")
+
+
+    // covered instances of label 1, true negative
+    res.append("rect")
+        .attr("class", "label0_0")
+        .attr("x", xoffset+supportRectWidth/2)
+        .attr("y", rectHeight/4)
+        .attr("width", supportRectWidth/4)
+        .attr("height", glyphCellHeight)
+        .attr("fill", d => colorCate[1])
+
+    res.append('text')
+        .attr('class', 'label0-text')
+        .attr("x", xoffset+2+supportRectWidth/2)
+        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
+        .style('fill', 'white')
+        .text("tn")
+
+    // false negative
+    res.append("rect")
+        .attr("class", "label0_1")
+        .attr("x", d=>xoffset+supportRectWidth*3/4)
+        .attr("y", rectHeight/4)
+        .attr("width", d => supportRectWidth/4)
+        .attr("height", glyphCellHeight)
+        .attr("fill", d => 'url(#fn_pattern)')
+
+    res.append('text')
+        .attr('class', 'label0-text')
+        .attr("x", d=>2+xoffset+supportRectWidth*3/4)
+        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
+        .style('fill', 'white')
+        .text("fn")
+
+    // overall support
+    xoffset += supportRectWidth + 10;
+   
+    res.append('rect')
+        .attr('class', 'support_bar')
+        .attr('x', xoffset)
+        .attr("y", rectHeight/4)
+        .attr('width', supportRectWidth)
+        .attr('height', glyphCellHeight)
+        .attr('fill', 'white')
+        .attr('stroke', 'black')
+
+    res.append('rect')
+        .attr('class', 'support_bar')
+        .attr('x', xoffset)
+        .attr("y", rectHeight/4)
+        .attr('width', supportRectWidth/2)
+        .attr('height', glyphCellHeight)
+        .attr('fill', 'lightgrey')
+        .attr('stroke', 'black');
+
+    res.append('text')
+        .attr('class', 'label1-text')
+        .attr("x", xoffset + 10)
+        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
+        .style('fill', 'black')
+        .text("support")
+
+
+    // fidelity 
+    xoffset += supportRectWidth;
+    res.append('text')
+        .attr('class', 'label1-text')
+        .attr("x", xoffset + 10)
+        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
+        .style('fill', 'black')
+        .text("fidelity")
 }
 
 function main() {

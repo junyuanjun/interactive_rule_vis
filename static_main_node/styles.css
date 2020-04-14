@@ -227,6 +227,10 @@ rect {
   font-size: 8px;
 }
 
+.legend {
+  font-size: 10px;
+}
+
 #radio_group {
   width: 15px;
   margin-top: 18px
