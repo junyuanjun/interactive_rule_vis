@@ -105,145 +105,122 @@ function click_cancel() {
 		.style("display", "none");
 }
 
-function click_summary_node(node_id) {
-    // highlight in the tree view
-    d3.select(`#tree_node-${node_id} .highlight-circle`).remove();
-    d3.select(`.rule_clicked_node`).remove();
+function click_summary_node(node_id, add_to_selection) {
+	// highlight in the tree view
+	d3.select(`#tree_node-${node_id} .highlight-circle`).remove();
+	d3.select(`.rule_clicked_node`).remove();
+	d3.selectAll('.link').style('stroke-width', 1)
 
-    if (!(node_id in multiple_selection)) {
-    	let node = d3.select(`#tree_node-${node_id}`)
+	// get the linked node information
+	let linked_node_ids = find_connection(node_id);
+	linked_node_ids.sort((a,b) => a-b);
 
-    	if (NODE_ENCODING == 'purity') {
-    		let size = summary_size_(node_info[node_id]['support'])
-    		node.append('rect')
-				.attr('class', 'highlight-circle')
-    			.attr('x', -size/2)
-    			.attr('y', -size/2)
-    			.attr('width', size)
-    			.attr('height', size);
-    	} else {
-			node.append('circle')
-				.attr('class', 'highlight-circle')
-				.attr('r', summary_size(node_info[node_id]['support']));
-    	}
-    }
+	if (!add_to_selection) {
+		// link the node in the summary view
+		let summary_view = d3.select('#summary_view');
 
-    // get the linked node information
-    let linked_node_ids = find_connection(node_id);
-
-	// link the node in the summary view
-    let summary_view = d3.select('#summary_view');
-
-    if (SUMMARY_LAYOUT == 'stat') {
-	    summary_view.selectAll(".link").remove();
-	    linked_node_ids.sort((a,b) => a-b);
-	    linked_node_ids.forEach((id, i) => {
-	    	if (i == 0) {
-	    		return;
-	    	}
-	    	let parent = linked_node_ids[i-1];
-	    	
-	    	summary_view.append('line')
-				.attr('class', 'link')
-				.attr("x1", X_POS === 'fidelity' ? summary_x(node_info[parent]['fidelity'])
-						: summary_x(node_info[parent]['accuracy']))
-			    .attr("x2", X_POS === 'fidelity' ? summary_x(node_info[id]['fidelity'])
-			    		: summary_x(node_info[id]['accuracy']))
-			    .attr("y1", summary_y(node_info[parent]['depth']))
-			    .attr("y2", summary_y(node_info[id]['depth']))
-			    .style("stroke", nodeHighlightColor)
-			    .style("stroke-width", "1.5px");
-	    })
-    } else if (SUMMARY_LAYOUT == 'tree') {
-    	summary_view.selectAll('.link')
-    		.style('stroke-width', '1px')
-
-    	// highlight the path in the tree layout
-		linked_node_ids.sort((a,b) => a-b);
-	    linked_node_ids.forEach((id, i) => {
-	    	if (i == 0) {
-	    		return;
-	    	}
-	    	let parent = node_info[id]['parent'];
-	    	let present_node = id;
-	    	while (parent !== linked_node_ids[i-1]) {
+		if (SUMMARY_LAYOUT == 'tree') {
+			// highlight the path in the tree layout
+			
+			linked_node_ids.forEach((id, i) => {
+				if (i == 0) {
+					return;
+				}
+				let parent = node_info[id]['parent'];
+				let present_node = id;
+				while (parent !== linked_node_ids[i-1]) {
+					summary_view.select(`#tree_link_${id}_${parent}`)
+						.style("stroke-width", "2px");
+					id = parent;
+					parent = node_info[id]['parent'];
+				}
+				
 				summary_view.select(`#tree_link_${id}_${parent}`)
-			   	 .style("stroke-width", "1.5px");
-			   	id = parent;
-			   	parent = node_info[id]['parent'];
-	    	}
-	    	
-	    	summary_view.select(`#tree_link_${id}_${parent}`)
-			    .style("stroke-width", "2px");
-	    })
-    }
-   
-    // show details in the detail view
-    postData("find_node_rules", linked_node_ids, (node_rules)=>{
-		let rules = node_rules['rule_lists'];
-	    present_rules = rules;
-	    col_order = column_order_by_feat_freq(rules);
+					.style("stroke-width", "2px");
+			})
+		}
+	}
 
-	    // update linked node2rule pos
+	postData("find_node_rules", linked_node_ids, (node_rules)=>{
+		let rules = node_rules['rule_lists'];
+		present_rules = rules;
+		col_order = column_order_by_feat_freq(rules);
+
+		// update linked node2rule pos
 		node2rule[1] = {};
 		rule2node[1] = {};
 		rules.forEach((d, i) => {
 			node2rule[1][d['node_id']] = i;
 			rule2node[1][i] = d['node_id'];
 		});
-	 	
-	    // update_column_rendering(col_svg2);
+		
+		// update_column_rendering(col_svg2);
 		update_rule_rendering(rule_svg2, col_svg2, stat_svg2, 2, rules, col_order);
 
-    	// add one selected rule to multiple selection
-    	// TODO: remove multiple selection on the same path
-    	let node_id = rules[rules.length-1]['node_id'];
-    	if (node_id in multiple_selection) {
-    		delete multiple_selection[node_id];
-    	} else {
-    		multiple_selection[node_id] = rules[rules.length-1];
-    	}
-		let multiple_rules = [];
-		node2rule[3] = {};
-		rule2node[3] = {}
+		if (add_to_selection) {
+	    	// add one selected rule to multiple selection
+			// TODO: remove multiple selection on the same path
+			if (node_id in multiple_selection) {
+				delete multiple_selection[node_id];
+			} else {
+				multiple_selection[node_id] = rules[rules.length-1];
+			}
+			// re-render node highlight
+			// highlight selected nodes
+			d3.select(`#tree_node-${node_id} .highlight-circle`).remove();
+			if (node_id in multiple_selection) {
+				let node = d3.select(`#tree_node-${node_id}`)
+				let size = summary_size_(node_info[node_id]['support'])
+				node.append('rect')
+					.attr('class', 'highlight-circle')
+					.attr('x', -size/2)
+					.attr('y', -size/2)
+					.attr('width', size)
+					.attr('height', size);
+			}
 
-		let summary_info = {
-			'support': 0,
-			'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0,
-			'r-squared': [0, 0]
+			let multiple_rules = [];
+			node2rule[3] = {};
+			rule2node[3] = {}
+
+			let summary_info = {
+				'support': 0,
+				'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0,
+				'r-squared': [0, 0]
+			}
+			Object.keys(multiple_selection).forEach((node_id, idx) => {
+				multiple_rules.push(multiple_selection[node_id]);
+				node2rule[3][node_id] = idx;
+				rule2node[3][idx] = node_id;
+				summary_info['support'] += d3.sum(node_info[node_id]['value'])
+				summary_info['tp'] += Math.floor(node_info[node_id]['conf_mat'][0][0] * d3.sum(node_info[node_id]['value']))
+				summary_info['fp'] += Math.floor(node_info[node_id]['conf_mat'][0][1] * d3.sum(node_info[node_id]['value']))
+				summary_info['tn'] += Math.floor(node_info[node_id]['conf_mat'][1][1] * d3.sum(node_info[node_id]['value']))
+				summary_info['fn'] += Math.floor(node_info[node_id]['conf_mat'][1][0] * d3.sum(node_info[node_id]['value']))
+				// summary_info['r-squared'][0] += summary_info['tp'] + summary_info['tn'];
+				// summary_info['r-squared'][1] += 
+			})
+			col_order = column_order_by_feat_freq(multiple_rules);
+			update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, multiple_rules, col_order);
+
+			// get multiple selection summary
+			render_stat_summary(summary_info);
 		}
-		Object.keys(multiple_selection).forEach((node_id, idx) => {
-			multiple_rules.push(multiple_selection[node_id]);
-			node2rule[3][node_id] = idx;
-			rule2node[3][idx] = node_id;
-			summary_info['support'] += d3.sum(node_info[node_id]['value'])
-			summary_info['tp'] += Math.floor(node_info[node_id]['conf_mat'][0][0] * d3.sum(node_info[node_id]['value']))
-			summary_info['fp'] += Math.floor(node_info[node_id]['conf_mat'][0][1] * d3.sum(node_info[node_id]['value']))
-			summary_info['tn'] += Math.floor(node_info[node_id]['conf_mat'][1][1] * d3.sum(node_info[node_id]['value']))
-			summary_info['fn'] += Math.floor(node_info[node_id]['conf_mat'][1][0] * d3.sum(node_info[node_id]['value']))
-			// summary_info['r-squared'][0] += summary_info['tp'] + summary_info['tn'];
-			// summary_info['r-squared'][1] += 
-		})
-	    col_order = column_order_by_feat_freq(multiple_rules);
-		update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, multiple_rules, col_order);
-
-		// get multiple selection summary
-		render_stat_summary(summary_info);
 
 		// highlight in the rule view TODO: DEBUG 
-	    if (node_id in node2rule[0]) {      
-	    	highlight_in_tab(0, '', node_id);
-	    }
-	    for (let tab_id = 1; tab_id < 4; tab_id++) {
-		    if (node_id in node2rule[tab_id]) {
-		    	highlight_in_tab(tab_id, tab_id+1, node_id);
-		    }	
-	    }
-	    if (clicked_summary_node_id == node_id) {
-	    	clicked_summary_node_id = -1;
-	    } else {
-	    	clicked_summary_node_id = node_id;
-	    }
+		if (node_id in node2rule[0]) {      
+			highlight_in_tab(0, '', node_id);
+		}
+		for (let tab_id = 1; tab_id < 4; tab_id++) {
+			if (node_id in node2rule[tab_id]) {
+				highlight_in_tab(tab_id, tab_id+1, node_id);
+			}	
+		}
+		if (clicked_summary_node_id == node_id) {
+			clicked_summary_node_id = -1;
+		} else {
+			clicked_summary_node_id = node_id;
+		}
 	})
 }
 

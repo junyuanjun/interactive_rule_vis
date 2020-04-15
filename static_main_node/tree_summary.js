@@ -127,78 +127,6 @@ function update_tree(source) {
 			}
 		});
 
-	// make a mask for click/mouseover area 
-	let node_mask = nodeUpdate.append('rect')
-		.attr('class', 'node_mask')
-		.attr('x', d => -summary_size_(d['data']['support'])/2)
-		.attr('y', d => -summary_size_(d['data']['support'])/2)
-		.attr('width', d => summary_size_(d['data']['support']))
-		.attr('height', d => summary_size_(d['data']['support']))
-		.attr('visibility', (d) => {
-			if (!new_node_shown[d['data']['node_id']]) {
-				return "hidden";
-			} else return "visible";
-		})
-
-	node_mask.on('dblclick', d => {
-		clearTimeout(timeout);
-		console.log("node was double clicked", new Date());
-
-		dblclick(d);
-	}).on('click', d => {
-		clearTimeout(timeout);
-
-		timeout = setTimeout(function() {
-			console.log("node was single clicked", new Date());
-			click_node(d['data']['node_id']);
-		}, 300)
-	}).on('mouseover', function(node) {
-		let d = node['data'];
-		d3.select(`#feat_name_${d['node_id']}`)
-			.style('visibility', 'visible');
-
-		if (new_node_shown[d['left']]) {
-			d3.select(`#link_text_${d['left']}_${d['node_id']}`)
-				.style('visibility', 'visible');
-			d3.select(`#tree_link_${d['left']}_${d['node_id']}`)
-				.style('stroke', 'steelblue');
-		}
-		if (new_node_shown[d['right']]) {
-			d3.select(`#link_text_${d['right']}_${d['node_id']}`)
-				.style('visibility', 'visible');
-			d3.select(`#tree_link_${d['right']}_${d['node_id']}`)
-				.style('stroke', 'steelblue')
-		}
-
-		let str  = `Feature: ${attrs[d['feature']]}; `
-		 	+ `Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])}; `
-		 	+ `Fidelity: ${d3.format('.2%')(d['fidelity'])}; `
-		 	+ `Accuracy: ${d3.format('.2%')(d['accuracy'])}`
-		// + `\nNodeID: ${d['node_id']}; Rule index: ${node2rule[d['node_id']]}`;
-		d3.select('#node_description')
-			.html(`<p>${str}</p>`);
-
-		let tree_node = d3.select(this), node_id = d['node_id'];
-		let size = summary_size_(node_info[node_id]['support'])
-		tree_node.append('rect')
-			.attr('class', 'hovered_node')
-			.attr('x', -size/2)
-			.attr('y', -size/2)
-			.attr('width', size)
-			.attr('height', size);
-	}).on('mouseout', () => {
-		d3.select('#node_description').selectAll('p').remove();
-		d3.selectAll('.hovered_node').remove();
-
-		d3.selectAll('.node_feature_name')
-			.style('visibility', "hidden");
-		d3.selectAll('.sign_threshold')
-			.style('visibility', "hidden");
-		d3.selectAll('.link')
-			.style('stroke', 'lightgrey')
-	});
-	
-
 	// Transition exiting nodes to the parent's new position.
 	var nodeExit = node.exit().transition()
 	  .duration(duration)
@@ -276,6 +204,7 @@ function update_tree(source) {
 	// Transition exiting nodes to the parent's new position.
 	var textExit = linktext.exit().remove();
 
+	// link mask for link hovering
 	let link_mask = link.enter().append("path", "g")
 	  .attr("class", "link_mask")
 	  .attr('d', function(d){ 
@@ -322,6 +251,87 @@ function update_tree(source) {
 			.attr('height', size);
 	});
 
+	// make a mask for click/mouseover area 
+	let node_mask = view.selectAll("g.node_mask")
+	  .data(nodes, function(d) { 
+	  	return d.id || (d.id = ++i); 
+	  }).enter()
+	  .append("g")
+	  .attr("class", "node_mask")
+	  .attr("transform", (d, i) => { 
+	  	return "translate(" + d.x + "," + d.y + ")"; 
+	  })
+
+	node_mask.append('rect')
+		.attr('class', 'node_mask')
+		.attr('x', d => -summary_size_(d['data']['support'])/2)
+		.attr('y', d => -summary_size_(d['data']['support'])/2)
+		.attr('width', d => summary_size_(d['data']['support']))
+		.attr('height', d => summary_size_(d['data']['support']))
+		.attr('visibility', (d) => {
+			if (!new_node_shown[d['data']['node_id']]) {
+				return "hidden";
+			} else return "visible";
+		})
+
+	node_mask.on('dblclick', d => {
+		clearTimeout(timeout);
+		console.log("node was double clicked", new Date());
+
+		dblclick(d);
+	}).on('click', d => {
+		clearTimeout(timeout);
+
+		timeout = setTimeout(function() {
+			console.log("node was single clicked", new Date());
+			click_node(d['data']['node_id']);
+		}, 300)
+	}).on('mouseover', function(node) {
+		let d = node['data'];
+		d3.select(`#feat_name_${d['node_id']}`)
+			.style('visibility', 'visible');
+
+		if (new_node_shown[d['left']]) {
+			d3.select(`#link_text_${d['left']}_${d['node_id']}`)
+				.style('visibility', 'visible');
+			d3.select(`#tree_link_${d['left']}_${d['node_id']}`)
+				.style('stroke', 'steelblue');
+		}
+		if (new_node_shown[d['right']]) {
+			d3.select(`#link_text_${d['right']}_${d['node_id']}`)
+				.style('visibility', 'visible');
+			d3.select(`#tree_link_${d['right']}_${d['node_id']}`)
+				.style('stroke', 'steelblue')
+		}
+
+		let str  = `Feature: ${attrs[d['feature']]}; `
+		 	+ `Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])}; `
+		 	+ `Fidelity: ${d3.format('.2%')(d['fidelity'])}; `
+		 	+ `Accuracy: ${d3.format('.2%')(d['accuracy'])}`
+		// + `\nNodeID: ${d['node_id']}; Rule index: ${node2rule[d['node_id']]}`;
+		d3.select('#node_description')
+			.html(`<p>${str}</p>`);
+
+		let tree_node = d3.select(this), node_id = d['node_id'];
+		let size = summary_size_(node_info[node_id]['support'])
+		tree_node.append('rect')
+			.attr('class', 'hovered_node')
+			.attr('x', -size/2)
+			.attr('y', -size/2)
+			.attr('width', size)
+			.attr('height', size);
+	}).on('mouseout', () => {
+		d3.select('#node_description').selectAll('p').remove();
+		d3.selectAll('.hovered_node').remove();
+
+		d3.selectAll('.node_feature_name')
+			.style('visibility', "hidden");
+		d3.selectAll('.sign_threshold')
+			.style('visibility', "hidden");
+		d3.selectAll('.link')
+			.style('stroke', 'lightgrey')
+	});
+
 	// Stash the old positions for transition.
 	nodes.forEach(function(d) {
 		d.x0 = d.x;
@@ -331,7 +341,11 @@ function update_tree(source) {
 
 function click_node(node_id) {
  	console.log("click tree node");
-    click_summary_node(node_id);
+    click_summary_node(node_id=node_id, add_to_selection=false);
+
+    // jump to the linked selection view
+	d3.select('#tab_linked')
+		.dispatch('click')
 }
 
 function dblclick(d) {
@@ -342,8 +356,8 @@ function dblclick(d) {
 		d.children = d._children;
 		d._children = null;
 	}
+	click_summary_node(node_id=d['data']['node_id'], add_to_selection=true);
 	update_tree(d);
-	click_summary_node(d['data']['node_id']);
 
 	// jump to the multiple selection view
 	d3.select('#tab_multiple')
