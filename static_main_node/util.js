@@ -37,6 +37,7 @@ function find_leaf_rules(new_nodes, node_info, listData, tab_id) {
 	new_nodes.forEach(d => node_list.push(d['node_id']));
 	postData(url, node_list, (leaf_rules) => {
 		let rules = leaf_rules['rule_lists'];
+    rules.sort((a,b) => in_order[a.node_id]-in_order[b.node_id])
     present_rules = rules;
     col_order = column_order_by_feat_freq(rules);
 
