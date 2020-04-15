@@ -95,11 +95,15 @@ let present_rules;
 let RULE_MODE = GRADIENT_RULE_VIS;
 
 let added_filters = [];
+let in_order = {};
 
 function loadData() {
     let path = "/data/" + folder;
 
-    fetch(domain + "initialize/" + folder);
+    // fetch(domain + "initialize/" + folder);
+    postData("initialize/" + folder, {}, (info) => {
+        in_order = info['in_order'];
+    })
 
     d3.queue()
         .defer(d3.json, path + "/test.json")

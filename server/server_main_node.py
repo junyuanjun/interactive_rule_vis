@@ -27,7 +27,7 @@ def send_data(path):
 	print("return data: "+path)
 	return send_from_directory('../data', path)
 
-@app.route("/initialize/<dataname>")
+@app.route("/initialize/<dataname>", methods=['POST', 'GET'])
 def initialize(dataname):
 	print("start initialization")
 	folder = "./data/" + dataname + "/"
@@ -45,9 +45,9 @@ def initialize(dataname):
 		y_pred = data['y_pred']
 		y_gt = data['y_gt']
 
-	forest.initialize(node_info, real_min, real_max, real_percentile, df, y_pred, y_gt)
+	info = forest.initialize(node_info, real_min, real_max, real_percentile, df, y_pred, y_gt)
 	print("====initialized====")
-	return "initialized"
+	return info
 
 @app.route("/find_leaf_rules", methods=['POST'])
 def find_leaf_rules():

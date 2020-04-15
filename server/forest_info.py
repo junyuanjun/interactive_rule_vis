@@ -33,6 +33,12 @@ class Forest():
 					real_percentile['percentile_table'][i+1][idx]])
 			self.rep_range[idx][2] = np.array([real_percentile['percentile_table'][i+1][idx], real_max[idx]])
 
+		# generate node order (left < middle < right)
+		self.inOrder = {}
+		self.tot_idx = 0
+		self.inOrderTraverse(0)
+		return {"in_order": self.inOrder}
+
 	def initialize_cate_X(self, X):
 		self.real_3_1 = np.percentile(X, q=33, axis=0)
 		self.real_3_2 = np.percentile(X, q=67, axis=0)
@@ -278,3 +284,11 @@ class Forest():
 			rule_list.append(self.convert2rule(node_id))
 		return rule_list
 
+	def inOrderTraverse(self, root):
+		if (self.node_info[root]['right'] > 0):
+			self.inOrderTraverse(self.node_info[root]['right'])
+		self.inOrder[self.node_info[root]['node_id']] = self.tot_idx
+		self.tot_idx += 1
+		if (self.node_info[root]['left'] > 0):
+			self.inOrderTraverse(self.node_info[root]['left'])
+		

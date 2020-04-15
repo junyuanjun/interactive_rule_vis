@@ -106,6 +106,7 @@ function click_cancel() {
 }
 
 function click_summary_node(node_id, add_to_selection) {
+	console.log('click node', node_id)
 	// highlight in the tree view
 	d3.select(`#tree_node-${node_id} .highlight-circle`).remove();
 	d3.select(`.rule_clicked_node`).remove();
@@ -165,6 +166,7 @@ function click_summary_node(node_id, add_to_selection) {
 			} else {
 				multiple_selection[node_id] = rules[rules.length-1];
 			}
+
 			// re-render node highlight
 			// highlight selected nodes
 			d3.select(`#tree_node-${node_id} .highlight-circle`).remove();
@@ -190,8 +192,6 @@ function click_summary_node(node_id, add_to_selection) {
 			}
 			Object.keys(multiple_selection).forEach((node_id, idx) => {
 				multiple_rules.push(multiple_selection[node_id]);
-				node2rule[3][node_id] = idx;
-				rule2node[3][idx] = node_id;
 				summary_info['support'] += d3.sum(node_info[node_id]['value'])
 				summary_info['tp'] += Math.floor(node_info[node_id]['conf_mat'][0][0] * d3.sum(node_info[node_id]['value']))
 				summary_info['fp'] += Math.floor(node_info[node_id]['conf_mat'][0][1] * d3.sum(node_info[node_id]['value']))
@@ -200,6 +200,13 @@ function click_summary_node(node_id, add_to_selection) {
 				// summary_info['r-squared'][0] += summary_info['tp'] + summary_info['tn'];
 				// summary_info['r-squared'][1] += 
 			})
+			multiple_rules.sort((a,b) => in_order[a.node_id]-in_order[b.node_id]);
+
+			multiple_rules.forEach((rule, idx)=>{
+				let node_id = rule['node_id'];
+				node2rule[3][node_id] = idx;
+				rule2node[3][idx] = node_id;
+			});
 			col_order = column_order_by_feat_freq(multiple_rules);
 			update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, multiple_rules, col_order);
 
