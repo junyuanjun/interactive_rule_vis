@@ -95,14 +95,14 @@ let present_rules;
 let RULE_MODE = GRADIENT_RULE_VIS;
 
 let added_filters = [];
-let in_order = {};
+let ipre_order = {};
 
 function loadData() {
     let path = "/data/" + folder;
 
     // fetch(domain + "initialize/" + folder);
     postData("initialize/" + folder, {}, (info) => {
-        in_order = info['in_order'];
+        pre_order = info['pre_order'];
     })
 
     d3.queue()
@@ -198,7 +198,7 @@ function loadData() {
             }
 
             render_legend_label("#legend1");
-            find_leaf_rules(summary_nodes, node_info, listData, 0);
+            find_leaf_rules(summary_nodes, node_info, 0);
             render_summary(summary_nodes, max_depth);
     });
 }
@@ -410,7 +410,7 @@ function prune_nodes() {
     // re-render rules
     new_nodes = filter_nodes(node_info,);
     update_summary(new_nodes);
-    let rules = find_leaf_rules(new_nodes, node_info, listData, 0);
+    find_leaf_rules(new_nodes, node_info, 0);
 }
 
 function render_size_circle(listData) {

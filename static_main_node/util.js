@@ -29,7 +29,7 @@ function filter_nodes(node_info) {
 	return new_nodes;
 }
 
-function find_leaf_rules(new_nodes, node_info, listData, tab_id) {
+function find_leaf_rules(new_nodes, node_info, tab_id) {
 	let url = 'find_leaf_rules';
 
 	// make a node id list
@@ -37,7 +37,9 @@ function find_leaf_rules(new_nodes, node_info, listData, tab_id) {
 	new_nodes.forEach(d => node_list.push(d['node_id']));
 	postData(url, node_list, (leaf_rules) => {
 		let rules = leaf_rules['rule_lists'];
-    rules.sort((a,b) => in_order[a.node_id]-in_order[b.node_id])
+    rules.sort((a,b) => pre_order[a.node_id].order-pre_order[b.node_id].order);
+    listData = rules;
+
     present_rules = rules;
     col_order = column_order_by_feat_freq(rules);
 

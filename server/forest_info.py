@@ -33,11 +33,11 @@ class Forest():
 					real_percentile['percentile_table'][i+1][idx]])
 			self.rep_range[idx][2] = np.array([real_percentile['percentile_table'][i+1][idx], real_max[idx]])
 
-		# generate node order (left < middle < right)
-		self.inOrder = {}
+		# generate node pre_order (root < left < right)
+		self.preOrder = {}
 		self.tot_idx = 0
-		self.inOrderTraverse(0)
-		return {"in_order": self.inOrder}
+		self.preOrderTraverse(0)
+		return {"pre_order": self.preOrder}
 
 	def initialize_cate_X(self, X):
 		self.real_3_1 = np.percentile(X, q=33, axis=0)
@@ -194,7 +194,7 @@ class Forest():
 			col = cols[cond['feature']]
 			if (cond['sign'] == '<='):	
 				matched_data = matched_data[matched_data[col] <= cond['threshold']]
-			elif (cond['sign'] == '>'):
+			elif (cond['sign'] == '>='):
 				matched_data = matched_data[matched_data[col] > cond['threshold']]
 			elif (cond['sign'] == 'range'):
 				matched_data = matched_data[(matched_data[col] > cond['threshold0']) & (matched_data[col] <= cond['threshold1'])]
@@ -283,12 +283,13 @@ class Forest():
 		for node_id in self.node_order:
 			rule_list.append(self.convert2rule(node_id))
 		return rule_list
-
-	def inOrderTraverse(self, root):
-		if (self.node_info[root]['right'] > 0):
-			self.inOrderTraverse(self.node_info[root]['right'])
-		self.inOrder[self.node_info[root]['node_id']] = self.tot_idx
-		self.tot_idx += 1
-		if (self.node_info[root]['left'] > 0):
-			self.inOrderTraverse(self.node_info[root]['left'])
 		
+	def preOrderTraverse(self, root):
+		self.preOrder[self.node_info[root]['node_id']] = {'order': self.tot_idx}
+		self.tot_idx += 1
+		if (self.node_info[root]['right'] > 0):
+			self.preOrderTraverse(self.node_info[root]['right'])
+		if (self.node_info[root]['left'] > 0):
+			self.preOrderTraverse(self.node_info[root]['left'])
+		self.preOrder[self.node_info[root]['node_id']]['max_descendant'] = self.tot_idx-1
+

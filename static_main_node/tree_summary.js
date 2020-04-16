@@ -182,18 +182,22 @@ function update_tree(source) {
 	        return d.id;
 		}).enter()
 	    .insert("g")
-	    .attr("class", "link-text");
+	    .attr("class", "link-text")
+	  	.attr("id", d => `link_text_${d['data']['node_id']}_${d['data']['parent']}`)
+		.style('visibility', 'hidden');
+
+	// add background for the link text
+	linktext.append('rect')
+		.attr('class', 'link_text_back');
 
     linktext.append("text")
 		.attr("fill", "Black")
 		.style("font", "normal 12px " + font_family)
 		.attr("dy", ".35em")
 		.attr("class", "sign_threshold")
-	  	.attr("id", d => `link_text_${d['data']['node_id']}_${d['data']['parent']}`)
 		.text(function (d) {
 			return d.data.sign + d.parent['data'].threshold.toFixed(2);
 		})
-		.attr('visibility', 'hidden');
 
 	var textUpdate = linktext
 	  .attr("transform", (d) => `translate(${((d.x + d.parent.x)/2)}, ${(d.y + d.parent.y)/2})`);
@@ -233,10 +237,10 @@ function update_tree(source) {
 		d3.select(`#tree_link_${d['node_id']}_${d['parent']}`)
 			.style('stroke', 'lightgrey');
 		d3.select('#node_description p').remove();
-		d3.selectAll('.sign_threshold')
-			.style('visibility', 'hidden');
 		d3.selectAll('.node_feature_name')
 			.style('visibility', 'hidden');
+		d3.selectAll('.link-text')
+			.style('visibility', "hidden");
 	})
 
 	// highlight selected nodes
@@ -326,7 +330,7 @@ function update_tree(source) {
 
 		d3.selectAll('.node_feature_name')
 			.style('visibility', "hidden");
-		d3.selectAll('.sign_threshold')
+		d3.selectAll('.link-text')
 			.style('visibility', "hidden");
 		d3.selectAll('.link')
 			.style('stroke', 'lightgrey')
@@ -359,7 +363,7 @@ function dblclick(d) {
 	click_summary_node(node_id=d['data']['node_id'], add_to_selection=true);
 	update_tree(d);
 
-	// jump to the multiple selection view
-	d3.select('#tab_multiple')
-		.dispatch('click')
+	// // jump to the multiple selection view
+	// d3.select('#tab_multiple')
+	// 	.dispatch('click')
 }

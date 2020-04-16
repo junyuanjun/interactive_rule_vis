@@ -157,6 +157,16 @@ rect {
   fill: none;
 }
 
+.link_text_back{
+  x: -10;
+  y: -5;
+  width: 20px;
+  height: 10px;
+  stroke: none;
+  fill: white;
+  fill-opacity: .5;
+}
+
 /* Style the tab */
 .tab {
   border: 1px solid #ccc;
