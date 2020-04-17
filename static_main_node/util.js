@@ -115,5 +115,123 @@ function postData(url, data, cb) {
       console.log(res);
     });
   }
+}
 
+function column_order_by_feat_freq(listData) {
+  // initialize feature used freq.
+  let col_info = [];
+  col_order = [];
+  for (let i = 0; i<attrs.length; i++) {
+    col_info.push({
+      'idx': i,
+      'freq': 0
+    });
+    col_order.push(i);
+  }
+
+  listData.forEach((d)=> {
+    let rule = d['rules']
+    rule.forEach((r) => {
+      col_info[r['feature']].freq++;
+    });
+  })
+
+  // sort columns by freq.
+  col_info.sort((a, b) => (a.freq > b.freq) ? -1 : 1);
+  col_info.forEach((d, i) => col_order[d.idx] = i);
+
+  return col_order;
+}
+
+function generate_row_order_by_label(listData) {
+  let row_info = [];
+
+  // initialize label.
+  listData.forEach((d, i)=> {
+    row_info.push({
+      'idx': i,
+      'node_id': d['node_id'],
+      'label': d['label'],
+    })
+  })
+
+  // sort columns by label, ascending
+  // left to right for the same label
+  row_info.sort((a, b) => {
+    if (a.label !== b.label)
+      return a.label - b.label;
+    else
+      return pre_order[a.node_id].order - pre_order[b.node_id].order;
+  });
+  row_info.forEach((d, i) => row_order[d.idx] = i);
+
+  return row_order;
+}
+
+function generate_row_order_by_confmat(listData, conf_idx) {
+ let row_info = [];
+
+  // initialize conf val.
+  listData.forEach((d, i)=> {
+    row_info.push({
+      'idx': i,
+      'node_id': d['node_id'],
+      'conf_val': node_info[d['node_id']]['conf_mat'][conf_idx],
+    })
+  })
+
+  // sort columns by conf_val, descending
+  // left to right for the same label
+  row_info.sort((a, b) => {
+    if (a.conf_val !== b.conf_val)
+      return b.conf_val - a.conf_val;
+    else
+      return pre_order[a.node_id].order - pre_order[b.node_id].order;
+  });
+  row_info.forEach((d, i) => row_order[d.idx] = i);
+
+  return row_order;
+}
+
+function generate_row_order_by_key(listData, key) {
+  let row_info = [];
+
+  // initialize val.
+  listData.forEach((d, i)=> {
+    row_info.push({
+      'idx': i,
+      'node_id': d['node_id'],
+      'val': node_info[d['node_id']][key],
+    })
+  })
+
+  // sort columns by val, descending
+  // left to right for the same label
+  row_info.sort((a, b) => {
+    if (a.val !== b.val)
+      return b.val - a.val;
+    else
+      return pre_order[a.node_id].order - pre_order[b.node_id].order;
+  });
+  row_info.forEach((d, i) => row_order[d.idx] = i);
+
+  return row_order;
+}
+
+function generate_row_order_by_feature(listData) {
+  let row_info = [];
+
+  for (let i = 0; i<attrs.length; i++) {
+    col_info.push({
+      'idx': i,
+    });
+    col_order.push(i);
+  }
+
+  listData.forEach((d)=> {
+    let rule = d['rules']
+    rule.forEach((r) => {
+      col_info[r['feature']].freq++;
+    });
+  })
 }

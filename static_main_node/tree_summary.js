@@ -283,13 +283,13 @@ function update_tree(source) {
 		console.log("node was double clicked", new Date());
 
 		dblclick(d);
-	}).on('click', d => {
-		clearTimeout(timeout);
+	// }).on('click', d => {
+		// clearTimeout(timeout);
 
-		timeout = setTimeout(function() {
-			console.log("node was single clicked", new Date());
-			click_node(d['data']['node_id']);
-		}, 300)
+		// timeout = setTimeout(function() {
+		// 	console.log("node was single clicked", new Date());
+		// 	click_node(d['data']['node_id']);
+		// }, 300)
 	}).on('mouseover', function(node) {
 		let d = node['data'];
 		d3.select(`#feat_name_${d['node_id']}`)

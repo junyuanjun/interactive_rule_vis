@@ -183,7 +183,7 @@ function loadData() {
 
             // render_slider();
 
-            let col_order = column_order_by_feat_freq(listData);
+            column_order_by_feat_freq(listData);
 
             switch (RULE_MODE) {
                 case BAND_RULE_VIS:
@@ -694,99 +694,167 @@ function render_stat_legend(stat_svg) {
         .attr('fill', function(d, i){ return colorCate[i] })
         .attr("stroke", "none");
 
+    circle_area.on('mouseover', function (){
+        d3.select(this).append('circle')
+            .classed('highlight-circle', true)
+            .attr('r', rule_radius);
+    }).on('mouseout', function() {
+        d3.select(this).select('.highlight-circle').remove();
+    }).on('click', function() {
+
+        row_order = generate_row_order_by_label()
+    });
+
     // render the confusion matrix
     // covered instances of label 0, tp
 
     let xoffset = 10 + xScale.bandwidth()/2;
-    res.append("rect")
+    let tp_g = res.append('g')
+        .attr('transform', `translate(${xoffset}, ${rectHeight/4})`)
+        .on('mouseover', function (){
+            d3.select(this).append('rect')
+                .classed('highlight-circle', true)
+                .attr("width", supportRectWidth/4)
+                .attr("height", glyphCellHeight)
+        }).on('mouseout', function() {
+            d3.select(this).select('.highlight-circle').remove();
+        }).on('click', function() {
+
+            row_order = generate_row_order_by_confmat()
+        })
+
+    tp_g.append("rect")
         .attr("class", "label0_0")
-        .attr("x", xoffset)
-        .attr("y", rectHeight/4)
         .attr("width", supportRectWidth/4)
         .attr("height", glyphCellHeight)
         .attr("fill", d => colorCate[0])
+        ;
 
-    res.append('text')
+    tp_g.append('text')
         .attr('class', 'label0-text')
-        .attr("x", xoffset+2)
-        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
+        .attr("x", 2)
+        .attr("y", rectMarginTop+3)
         .style('fill', 'white')
         .text("tp")
 
     // fp
-    res.append("rect")
+    let fp_g = res.append('g')
+        .attr('transform', `translate(${xoffset+supportRectWidth/4}, ${rectHeight/4})`)
+        .on('mouseover', function (){
+            d3.select(this).append('rect')
+                .classed('highlight-circle', true)
+                .attr("width", supportRectWidth/4)
+                .attr("height", glyphCellHeight)
+        }).on('mouseout', function() {
+            d3.select(this).select('.highlight-circle').remove();
+        }).on('click', function() {
+
+            row_order = generate_row_order_by_confmat()
+        })
+
+    fp_g.append("rect")
         .attr("class", "label0_1")
-        .attr("x", d=>xoffset+supportRectWidth/4)
-        .attr("y", rectHeight/4)
         .attr("width", d => supportRectWidth/4)
         .attr("height", glyphCellHeight)
         .attr("fill", d => 'url(#fp_pattern)')
 
-    res.append('text')
+    fp_g.append('text')
         .attr('class', 'label0-text')
-        .attr("x", d=>2+xoffset+supportRectWidth/4)
-        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
+        .attr("x", 2)
+        .attr("y", rectMarginTop+3)
         .style('fill', 'white')
         .text("fp")
 
 
     // covered instances of label 1, true negative
-    res.append("rect")
+    let tn_g = res.append('g')
+        .attr('transform', `translate(${xoffset+supportRectWidth/2}, ${rectHeight/4})`)
+        .on('mouseover', function (){
+            d3.select(this).append('rect')
+                .classed('highlight-circle', true)
+                .attr("width", supportRectWidth/4)
+                .attr("height", glyphCellHeight)
+        }).on('mouseout', function() {
+            d3.select(this).select('.highlight-circle').remove();
+        }).on('click', function() {
+
+            row_order = generate_row_order_by_confmat()
+        })
+    tn_g.append("rect")
         .attr("class", "label0_0")
-        .attr("x", xoffset+supportRectWidth/2)
-        .attr("y", rectHeight/4)
         .attr("width", supportRectWidth/4)
         .attr("height", glyphCellHeight)
         .attr("fill", d => colorCate[1])
 
-    res.append('text')
+    tn_g.append('text')
         .attr('class', 'label0-text')
-        .attr("x", xoffset+2+supportRectWidth/2)
-        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
+        .attr("x", 2)
+        .attr("y", rectMarginTop+3)
         .style('fill', 'white')
         .text("tn")
 
     // false negative
-    res.append("rect")
+    let fn_g = res.append('g')
+        .attr('transform', `translate(${xoffset+supportRectWidth*3/4}, ${rectHeight/4})`)
+        .on('mouseover', function (){
+            d3.select(this).append('rect')
+                .classed('highlight-circle', true)
+                .attr("width", supportRectWidth/4)
+                .attr("height", glyphCellHeight)
+        }).on('mouseout', function() {
+            d3.select(this).select('.highlight-circle').remove();
+        }).on('click', function() {
+
+            row_order = generate_row_order_by_confmat()
+        });
+
+    fn_g.append("rect")
         .attr("class", "label0_1")
-        .attr("x", d=>xoffset+supportRectWidth*3/4)
-        .attr("y", rectHeight/4)
         .attr("width", d => supportRectWidth/4)
         .attr("height", glyphCellHeight)
         .attr("fill", d => 'url(#fn_pattern)')
 
-    res.append('text')
+    fn_g.append('text')
         .attr('class', 'label0-text')
-        .attr("x", d=>2+xoffset+supportRectWidth*3/4)
-        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
+        .attr("x", 2)
+        .attr("y", rectMarginTop+3)
         .style('fill', 'white')
         .text("fn")
 
     // overall support
     xoffset += supportRectWidth + 10;
    
-    res.append('rect')
+    let support_g = res.append('g')
+        .attr('transform', `translate(${xoffset}, ${rectHeight/4})`)
+        .on('mouseover', function (){
+            d3.select(this).select('text')
+                .classed('highlight-circle', true)
+        }).on('mouseout', function() {
+            d3.select(this).select('.highlight-circle')
+                .classed('highlight-circle', false);
+        }).on('click', function() {
+
+            row_order = generate_row_order_by_key('support')
+        });
+
+    support_g.append('rect')
         .attr('class', 'support_bar')
-        .attr('x', xoffset)
-        .attr("y", rectHeight/4)
         .attr('width', supportRectWidth)
         .attr('height', glyphCellHeight)
         .attr('fill', 'white')
         .attr('stroke', 'black')
 
-    res.append('rect')
+    support_g.append('rect')
         .attr('class', 'support_bar')
-        .attr('x', xoffset)
-        .attr("y", rectHeight/4)
         .attr('width', supportRectWidth/2)
         .attr('height', glyphCellHeight)
         .attr('fill', 'lightgrey')
         .attr('stroke', 'black');
 
-    res.append('text')
+    support_g.append('text')
         .attr('class', 'label1-text')
-        .attr("x", xoffset + 10)
-        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
+        .attr("x", 10)
+        .attr("y", rectMarginTop+3)
         .style('fill', 'black')
         .text("support")
 
@@ -796,9 +864,19 @@ function render_stat_legend(stat_svg) {
     res.append('text')
         .attr('class', 'label1-text')
         .attr("x", xoffset + 10)
-        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
+        .attr("y", rectHeight/4+rectMarginTop+3)
         .style('fill', 'black')
         .text("fidelity")
+        .on('mouseover', function (){
+            d3.select(this)
+                .classed('highlight-circle', true)
+        }).on('mouseout', function() {
+            d3.select(this)
+                .classed('highlight-circle', false);
+        }).on('click', function() {
+
+            row_order = generate_row_order_by_key('fidelity')
+        })
 }
 
 function main() {

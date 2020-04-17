@@ -143,6 +143,7 @@ rect {
   stroke: black;
   stroke-width: 1px;
   fill: none;
+  font-weight: 500;
 }
 
 .rule_clicked_node {

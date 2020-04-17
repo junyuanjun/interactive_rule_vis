@@ -1,5 +1,5 @@
 let ori_order = [];
-let col_order = [];
+let col_order = [], row_order = [];
 
 let phrased_rule_id = -1;
 let NODE_ENCODING = "purity";
@@ -64,32 +64,6 @@ function generate_rules() {
 		} else {
 			update_rules();
 		}
-}
-
-function column_order_by_feat_freq(listData) {
-	// initialize feature used freq.
-	let col_info = [];
-	col_order = [];
-	for (let i = 0; i<attrs.length; i++) {
-		col_info.push({
-			'idx': i,
-			'freq': 0
-		});
-		col_order.push(i);
-	}
-
-	listData.forEach((d)=> {
-		let rule = d['rules']
-		rule.forEach((r) => {
-			col_info[r['feature']].freq++;
-		});
-	})
-
-	// sort columns by freq.
-	col_info.sort((a, b) => (a.freq > b.freq) ? -1 : 1);
-	col_info.forEach((d, i) => col_order[d.idx] = i);
-
-	return col_order;
 }
 
 function click_setting() {
@@ -234,6 +208,10 @@ function click_summary_node(node_id, add_to_selection) {
 					new_rules.push(rule);
 				}
 			});
+			if (replace_subtree < multiple_rules.length && 
+				pre_order[overview_rules[overview_rules.length-1].node_id].order <= pre_order[multiple_rules[replace_subtree].node_id].max_descendant) {
+				new_rules.push(multiple_rules[replace_subtree]);
+			}
 			new_rules.forEach((rule, idx)=>{
 				let node_id = rule['node_id'];
 				node2rule[0][node_id] = idx;
