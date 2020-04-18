@@ -8,6 +8,8 @@ let filter_threshold = {
 
 let node2rule = [{}, {}, {}, {}];
 let rule2node = [{}, {}, {}, {}];
+let tab_rules = [[], [], [], []];
+let row_sorted = [false, false, false, false];
 
 let new_node_shown = {};
 
@@ -43,9 +45,11 @@ function find_leaf_rules(new_nodes, node_info, tab_id) {
     present_rules = rules;
     col_order = column_order_by_feat_freq(rules);
 
+    // rule
+    tab_rules[0] = rules;
     // update node2rule pos
     node2rule[tab_id] = {};
-    rule2node[tab_id] = {}
+    rule2node[tab_id] = {};
     rules.forEach((d, idx) => {
       node2rule[tab_id][d['node_id']] = idx;
       rule2node[tab_id][idx] = d['node_id'];
@@ -176,7 +180,7 @@ function generate_row_order_by_confmat(listData, conf_idx) {
     row_info.push({
       'idx': i,
       'node_id': d['node_id'],
-      'conf_val': node_info[d['node_id']]['conf_mat'][conf_idx],
+      'conf_val': node_info[d['node_id']]['conf_mat'][Math.floor(conf_idx/2)][conf_idx%2] * d3.sum(node_info[d['node_id']]['value']),
     })
   })
 

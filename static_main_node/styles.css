@@ -146,6 +146,19 @@ rect {
   font-weight: 500;
 }
 
+.highlight-stat {
+  stroke: black;
+  stroke-width: 1.5px;
+  fill: none;
+  font-weight: 500;
+}
+
+
+.unselected-stat {
+  stroke: none;
+  fill: none;
+}
+
 .rule_clicked_node {
   stroke: black;
   stroke-width: 2px;

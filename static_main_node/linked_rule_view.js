@@ -1,5 +1,5 @@
 
-function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_order,) {
+function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, row_order,) {
     // remove the column lines and the outdated rules
     rule_svg.selectAll(".grid-col").remove();
     rule_svg.selectAll(".grid-row").remove();
@@ -23,9 +23,9 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
         .style("height", `${height + margin.bottom}px`);
 
     // scale for placing cells
-    let yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
+    let yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]),
+        tab_idx = idx !== "" ? idx-1 : 0;
 
-    render_stat_legend(d3.select(`#stat_legend${idx}`));
     render_feature_names_and_grid(col_svg, col_order);
 
     // render by rows
@@ -33,37 +33,42 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
         .data(listData)
         .enter().append("g")
         .attr("class", "row")
-        .attr("transform", function(d, i) { return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; })
-        .on('mouseover', function(d, i) {
-            hover_rule(d3.select(this), i, d, idx);
+        .attr("transform", function(d, i) { 
+            if (row_sorted[tab_idx]) {
+                return `translate(${rectMarginH}, ${yScale(row_order[i])+rectMarginTop})`; 
+            }
+            return `translate(${rectMarginH}, ${yScale(i)+rectMarginTop})`; 
         })
-        .on('mouseout', function(d, i) {
+        .on('mouseover', function(d, r_i) {
+            hover_rule(d3.select(this), r_i, d, idx);
+        })
+        .on('mouseout', function() {
             d3.select(`.rule_clicked_node`).remove();
             d3.selectAll('.rule_hover')
                 .classed('rule_hover', false)
 
             d3.select('#rule_description').selectAll('p').remove();
         })
-        .on('click', function (d, i) {
-            click_rule(d3.select(this), i, d, idx);
+        .on('click', function (d, r_i) {
+            click_rule(d3.select(this), r_i, d, idx);
         })
 
     // render the white background for better click react
     row.append('rect')
-        .attr('id', (d, i) => `back-rect-${i}`)
+        .attr('id', (d, r_i) => `back-rect-${r_i}`)
         .attr('class', 'back-rect')
         .attr('x', -rectMarginH)
         .attr('y', -rectMarginTop)
         .attr('height', `${yScale.bandwidth()}px`)
         .attr('width', `${width-xScale.bandwidth()}px`)
         // .attr('fill', 'white')
-        .attr('fill', (d, i) => 
+        .attr('fill', (d) => 
             new_node_shown[d['node_id']] ? 'white': 'rgba(0,0,0,.05)'
         );
 
     // render the horizontal_line
     row.selectAll(".middle")
-        .data(function(d, i) { 
+        .data(function(d) { 
             return d["rules"]; 
         })
         .enter().append("line")
@@ -161,5 +166,5 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, col_o
         .style("stroke", gridColor);
 
     // render_size_circle(listData);
-    render_confusion_bars(stat_svg, listData);
+    render_confusion_bars(stat_svg, listData, row_order);
 }

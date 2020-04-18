@@ -175,6 +175,7 @@ function click_summary_node(node_id, add_to_selection) {
 				// summary_info['r-squared'][1] += 
 			})
 			multiple_rules.sort((a,b) => pre_order[a.node_id].order-pre_order[b.node_id].order);
+			tab_rules[3] = multiple_rules;
 
 			multiple_rules.forEach((rule, idx)=>{
 				let node_id = rule['node_id'];
@@ -212,6 +213,7 @@ function click_summary_node(node_id, add_to_selection) {
 				pre_order[overview_rules[overview_rules.length-1].node_id].order <= pre_order[multiple_rules[replace_subtree].node_id].max_descendant) {
 				new_rules.push(multiple_rules[replace_subtree]);
 			}
+			tab_rules[0] = new_rules;
 			new_rules.forEach((rule, idx)=>{
 				let node_id = rule['node_id'];
 				node2rule[0][node_id] = idx;
@@ -503,7 +505,6 @@ function click_tree_level(idx) {
 	      node2rule[3][d['node_id']] = idx;
 	      rule2node[3][idx] = d['node_id'];
 	    })
-	    // update_column_rendering(col_svg2);
 		update_rule_rendering(rule_svg3, col_svg3, stat_svg3, 3, rules, col_order);
 	})
 }

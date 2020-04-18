@@ -95,7 +95,7 @@ let present_rules;
 let RULE_MODE = GRADIENT_RULE_VIS;
 
 let added_filters = [];
-let ipre_order = {};
+let pre_order = {};
 
 function loadData() {
     let path = "/data/" + folder;
@@ -149,15 +149,15 @@ function loadData() {
 
             height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
 
+            // scale for placing cells
+            xScale = d3.scaleBand(d3.range(attrs.length+1),[0, width]);
+            yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
+            
             scroll_functions(width, height, "");
             scroll_functions(width, height, 2);
             scroll_functions(width, height, 3);
             scroll_functions(width, height, 4);
             scroll_data(width, height);
-
-            // scale for placing cells
-            xScale = d3.scaleBand(d3.range(attrs.length+1),[0, width]);
-            yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
 
             // scale for render the support bar
             fidelityScale = d3.scaleLinear([0, 1], [0, fidelityChartWidth]);
@@ -206,6 +206,10 @@ function loadData() {
 function scroll_functions(width, height, idx) {
     // d3.select(`#column_div${idx}`)
     //     .style("margin-left", `${statWidth}px`);
+    render_stat_legend(d3.select(`#stat_legend${idx}`), 
+        d3.select(`#rule_svg${idx}`), 
+        d3.select(`#col_svg${idx}`), 
+        d3.select(`#stat${idx}`), idx);
 
     d3.select(`#rule_div${idx} div`)
         .style("height", `${height + margin.bottom}px`)
@@ -434,60 +438,52 @@ function render_size_circle(listData) {
         .attr("stroke", "none")
 }
 
-function render_confusion_bars(stat_svg, listData, customized_y) {
+function render_confusion_bars(stat_svg, listData, row_order) {
     let yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
     stat_svg.selectAll('.support').remove();
 
     stat_svg.style('height', `${height}px`)
 
-    let stat_id = stat_svg._groups[0][0].id;
+    let stat_id = stat_svg._groups[0][0].id,
+        tab_idx = stat_id.substr(4).length > 0 ? parseInt(stat_id.substr(4))-1 : 0;
 
     let res = stat_svg.selectAll('g')
         .data(listData)
         .enter()
         .append('g')
-        .attr('class', 'support');
+        .attr('class', 'support')
+        .attr('transform', (d, i)=> {
+            if (row_sorted[tab_idx]) {
+                return `translate(0, ${yScale(row_order[i])})`; 
+            }
+            return `translate(0, ${yScale(i)})`; 
+        });
 
     res.append('rect')
         .attr("class", "back-rect")
         .attr('id', (d,i) => `${stat_id}-back-rect-${i}`)
-        .attr('x', 0)
-        .attr('y', (d,i)=>yScale(i))
         .attr('height', `${yScale.bandwidth()}px`)
-        .attr('width', `${width-xScale.bandwidth()}px`)
+        .attr('width', `${statWidth}px`)
         .attr('fill', 'white');
 
     let circles = res.append("circle")
         .attr("class", "label_circle")
         .attr("cx", xScale.bandwidth()/2)
         .attr("cy", (d, i) => {
-            return yScale(i) + yScale.bandwidth()/2
+            return yScale.bandwidth()/2
         })
         // .attr("r", d => radiusScale(d["coverage"]))
         .attr("r", rule_radius)
         .attr("fill", d => colorCate[d["label"]])
         .attr("stroke", "none");
     
-    // res.append('text')
-    //     .attr('x', xScale.bandwidth()/2+1)
-    //     .attr('y', (d, i) => {
-    //         return yScale(i) + yScale.bandwidth()/2 + 2
-    //     })
-    //     .style('font-size', '8px')
-    //     .style('fill', 'black')
-    //     .style('text-anchor', 'middle')
-    //     .text((d,i) => 
-    //         d3.format('0d')(d3.sum(node_info[d['node_id']]['value'])/tot_train*100)+'%')
-
     // render the confusion matrix
     // covered instances of label 0, tp
     let xoffset = 10 + xScale.bandwidth()/2;
     res.append("rect")
         .attr("class", "label0_0")
         .attr("x", xoffset)
-        .attr("y", (d, i) => {
-            return yScale(i) + yScale.bandwidth()/4
-        })
+        .attr("y", yScale.bandwidth()/4)
         .attr("width", d => confScale(node_info[d['node_id']]['conf_mat'][0][0]))
         .attr("height", glyphCellHeight)
         .attr("fill", d => colorCate[0])
@@ -497,9 +493,7 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
     res.append('text')
         .attr('class', 'label0-text')
         .attr("x", xoffset+2)
-        .attr("y", (d, i) => {
-            return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
-        })
+        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
         .style('fill', 'white')
         .text(d => node_info[d['node_id']]['conf_mat'][0][0] > .1 
             ? Math.floor(node_info[d['node_id']]['conf_mat'][0][0] * d3.sum(node_info[d['node_id']]['value'])) : "")
@@ -508,9 +502,7 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
     res.append("rect")
         .attr("class", "label0_1")
         .attr("x", d=>xoffset+confScale(node_info[d['node_id']]['conf_mat'][0][0]))
-        .attr("y", (d, i) => {
-            return yScale(i) + yScale.bandwidth()/4
-        })
+        .attr("y", yScale.bandwidth()/4)
         .attr("width", d => confScale(node_info[d['node_id']]['conf_mat'][0][1]))
         .attr("height", glyphCellHeight)
         .attr("fill", d => 'url(#fp_pattern)')
@@ -520,22 +512,17 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
     res.append('text')
         .attr('class', 'label0-text')
         .attr("x", d=>2+xoffset+confScale(node_info[d['node_id']]['conf_mat'][0][0]))
-        .attr("y", (d, i) => {
-            return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
-        })
+        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
         .style('fill', 'white')
         .text(d => node_info[d['node_id']]['conf_mat'][0][1] > .1 
             ? Math.floor(node_info[d['node_id']]['conf_mat'][0][1] * d3.sum(node_info[d['node_id']]['value'])) : "")
-
 
     // covered instances of label 1, true negative
     res.append("rect")
         .attr("class", "label1_1")
         .attr("x", d => xoffset+ confScale(node_info[d['node_id']]['conf_mat'][0][0] 
             + node_info[d['node_id']]['conf_mat'][0][1]))
-        .attr("y", (d, i) => {
-            return yScale(i) + yScale.bandwidth()/4
-        })
+        .attr("y", yScale.bandwidth()/4)
         .attr("width", d => confScale(node_info[d['node_id']]['conf_mat'][1][1]))
         .attr("height", glyphCellHeight)
         .attr("fill", d => colorCate[1])
@@ -546,9 +533,7 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
         .attr('class', 'label1-text')
         .attr("x", d => 1+xoffset+ confScale(node_info[d['node_id']]['conf_mat'][0][0] 
             + node_info[d['node_id']]['conf_mat'][0][1]))
-        .attr("y", (d, i) => {
-            return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
-        })
+        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
         .style('fill', 'white')
         .text(d => node_info[d['node_id']]['conf_mat'][1][1] > .1 
             ? Math.floor(node_info[d['node_id']]['conf_mat'][1][1] * d3.sum(node_info[d['node_id']]['value'])) : "")
@@ -558,9 +543,7 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
         .attr("class", "label1_1")
         .attr("x", d => xoffset+ confScale(node_info[d['node_id']]['conf_mat'][0][0] 
             + node_info[d['node_id']]['conf_mat'][0][1] + node_info[d['node_id']]['conf_mat'][1][1]))
-        .attr("y", (d, i) => {
-            return yScale(i) + yScale.bandwidth()/4
-        })
+        .attr("y", yScale.bandwidth()/4)
         .attr("width", d => confScale(node_info[d['node_id']]['conf_mat'][1][0]))
         .attr("height", glyphCellHeight)
         .attr("fill", `url(#fn_pattern)`)
@@ -571,9 +554,7 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
         .attr('class', 'label1-text')
         .attr("x", d => 1+xoffset+ confScale(node_info[d['node_id']]['conf_mat'][0][0] 
             + node_info[d['node_id']]['conf_mat'][0][1] + node_info[d['node_id']]['conf_mat'][1][1]))
-        .attr("y", (d, i) => {
-            return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
-        })
+        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
         .style('fill', 'white')
         .text(d => node_info[d['node_id']]['conf_mat'][1][0] > .1 
             ? Math.floor(node_info[d['node_id']]['conf_mat'][1][0] * d3.sum(node_info[d['node_id']]['value'])) : "")
@@ -586,9 +567,7 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
     res.append('rect')
         .attr('class', 'support_bar')
         .attr('x', xoffset)
-        .attr("y", (d, i) => {
-            return yScale(i) + yScale.bandwidth()/4;
-        })
+        .attr("y", yScale.bandwidth()/4)
         .attr('width', supportRectWidth)
         .attr('height', glyphCellHeight)
         .attr('fill', 'white')
@@ -597,47 +576,26 @@ function render_confusion_bars(stat_svg, listData, customized_y) {
     res.append('rect')
         .attr('class', 'support_bar')
         .attr('x', xoffset)
-        .attr("y", (d, i) => {
-            return yScale(i) + yScale.bandwidth()/4;
-        })
+        .attr("y", yScale.bandwidth()/4)
         .attr('width', d => supportScale(d3.sum(node_info[d['node_id']]['value'])))
         .attr('height', glyphCellHeight)
         .attr('fill', 'lightgrey')
         .attr('stroke', 'black');
 
-    // res.append('rect')
-    //     .attr('class', 'support_bar')
-    //     .attr('x', xoffset)
-    //     .attr("y", (d, i) => {
-    //         return yScale(i) + yScale.bandwidth()/4;
-    //     })
-    //     .attr('width', d => supportScale(d3.sum(node_info[d['node_id']]['conf_mat'][0])*d3.sum(node_info[d['node_id']]['value'])))
-    //     .attr('height', glyphCellHeight)
-    //     .attr('fill', 'darkgrey')
-    //     .attr('stroke', 'black');
-
     res.append('text')
         .attr('class', 'label1-text')
         .attr("x", xoffset + 10)
-        .attr("y", (d, i) => {
-            return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
-        })
+        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
         .style('fill', 'black')
         .text(d => `${d3.sum(node_info[d['node_id']]['value'])}`)
 
 
-    // fidelity lines
-    let line = d3.line()
-        .x(10 + rule_radius * 2)
-        .y((d, i) => yScale(i) + rectMarginTop + glyphCellHeight /2)
-
+    // fidelity
     xoffset += supportRectWidth;
     res.append('text')
         .attr('class', 'label1-text')
         .attr("x", xoffset + 10)
-        .attr("y", (d, i) => {
-            return yScale(i) + rectMarginTop + glyphCellHeight /2 +2;
-        })
+        .attr("y", rectMarginTop + glyphCellHeight /2 +2)
         .style('fill', 'black')
         .text(d => `${d3.format('.2%')(node_info[d['node_id']]['fidelity'])}`)
 
@@ -658,19 +616,19 @@ function update_column_rendering(svg, col_order) {
     }
 }
 
-function render_stat_legend(stat_svg) {
-    if (stat_svg.select('g')._groups[0][0] !== undefined) {
+function render_stat_legend(stat_legend, rule_svg, col_svg, stat_svg, tab_id) {
+    if (stat_legend.select('g')._groups[0][0] !== undefined) {
         return;
     }
 
-    stat_svg.style('height', `${column_height}px`)
+    stat_legend.style('height', `${column_height}px`)
         .style('width', `${statWidth}px`);
 
-    let stat_id = stat_svg._groups[0][0].id;
+    let tab_idx = tab_id=="" ? 0 : tab_id-1;
 
     let rectHeight = glyphCellHeight + rectMarginTop + rectMarginBottom;
 
-    let res = stat_svg.append('g')
+    let res = stat_legend.append('g')
         .attr('class', 'legend')
         .attr('transform', `translate(0, ${column_height-rectHeight})`);
 
@@ -680,6 +638,7 @@ function render_stat_legend(stat_svg) {
     let data_ready = pie(d3.entries({0: 50, 1: 50}))
 
     let circle_area = res.append('g')
+        .attr('id', `stat_legend_circle_${tab_idx}`)
         .attr('transform', `translate(${xScale.bandwidth()/2}, ${rectHeight/2})`)
 
     circle_area.selectAll('.rule_pred')
@@ -694,148 +653,130 @@ function render_stat_legend(stat_svg) {
         .attr('fill', function(d, i){ return colorCate[i] })
         .attr("stroke", "none");
 
-    circle_area.on('mouseover', function (){
-        d3.select(this).append('circle')
-            .classed('highlight-circle', true)
-            .attr('r', rule_radius);
-    }).on('mouseout', function() {
-        d3.select(this).select('.highlight-circle').remove();
-    }).on('click', function() {
+    circle_area.append('circle')
+        .classed('unselected-stat', true)
+        .classed('mask', true)
+        .attr('r', rule_radius)
 
-        row_order = generate_row_order_by_label()
+    circle_area.on('mouseover', function (){
+        d3.select(this).select('.mask')
+            .classed('unselected-stat', false)
+            .classed('highlight-stat', true)
+            .style('stroke-width', '1.5px');
+    }).on('mouseout', function() {
+        let stat_id = d3.select(this)._groups[0][0].id,
+            tab_idx = parseInt(stat_id[stat_id.length-1]);
+        if (row_sorted[tab_idx]!=='label') {
+            d3.select(this).select('.highlight-stat')
+                .classed('unselected-stat', true)
+                .classed('highlight-stat', false);
+        } else {
+            d3.select(this).select('.highlight-stat')
+                .style('stroke-width', '1px');
+        }
+    }).on('click', function() {
+        let stat_id = d3.select(this)._groups[0][0].id,
+            tab_idx = parseInt(stat_id[stat_id.length-1]);
+            
+        if (row_sorted[tab_idx]!=='label') {
+            row_sorted[tab_idx] = "label";
+            row_order = generate_row_order_by_label(tab_rules[tab_idx]);
+            d3.select(this.parentNode).selectAll('.mask')
+                        .classed('highlight-stat', false)
+                        .classed('unselected-stat', true);
+
+            d3.select(this).select('.mask')
+                .classed('highlight-stat', true)
+                .classed('unselected-stat', false)
+                .attr('r', rule_radius);   
+        } else {
+            row_sorted[tab_idx] = false;
+            d3.select(this).select('.mask')
+                .classed('highlight-stat', false)
+                .classed('unselected-stat', true);
+        }
+        update_rule_rendering(rule_svg, col_svg, stat_svg, tab_id, tab_rules[tab_idx], row_order,)
     });
 
     // render the confusion matrix
     // covered instances of label 0, tp
 
     let xoffset = 10 + xScale.bandwidth()/2;
-    let tp_g = res.append('g')
-        .attr('transform', `translate(${xoffset}, ${rectHeight/4})`)
-        .on('mouseover', function (){
-            d3.select(this).append('rect')
-                .classed('highlight-circle', true)
-                .attr("width", supportRectWidth/4)
-                .attr("height", glyphCellHeight)
-        }).on('mouseout', function() {
-            d3.select(this).select('.highlight-circle').remove();
-        }).on('click', function() {
 
-            row_order = generate_row_order_by_confmat()
-        })
+    let fill_arr = [colorCate[0], 'url(#fp_pattern)', colorCate[1], 'url(#fn_pattern)'],
+        text_arr = ['tp', 'fp', 'tn', 'fn'];
 
-    tp_g.append("rect")
-        .attr("class", "label0_0")
-        .attr("width", supportRectWidth/4)
-        .attr("height", glyphCellHeight)
-        .attr("fill", d => colorCate[0])
-        ;
+    for (let i = 0; i < 4; i++) {
+        let conf_g = res.append('g')
+            .attr('id', `stat_legend_${tab_idx}_${i}`)
+            .attr('transform', `translate(${xoffset+supportRectWidth*i/4}, ${rectHeight/4})`);
 
-    tp_g.append('text')
-        .attr('class', 'label0-text')
-        .attr("x", 2)
-        .attr("y", rectMarginTop+3)
-        .style('fill', 'white')
-        .text("tp")
+        conf_g.append("rect")
+            .attr("width", supportRectWidth/4)
+            .attr("height", glyphCellHeight)
+            .attr("fill", fill_arr[i]);
 
-    // fp
-    let fp_g = res.append('g')
-        .attr('transform', `translate(${xoffset+supportRectWidth/4}, ${rectHeight/4})`)
-        .on('mouseover', function (){
-            d3.select(this).append('rect')
-                .classed('highlight-circle', true)
-                .attr("width", supportRectWidth/4)
-                .attr("height", glyphCellHeight)
-        }).on('mouseout', function() {
-            d3.select(this).select('.highlight-circle').remove();
-        }).on('click', function() {
+        conf_g.append('text')
+            .attr("x", 2)
+            .attr("y", rectMarginTop+3)
+            .style('fill', 'white')
+            .text(text_arr[i]);
 
-            row_order = generate_row_order_by_confmat()
-        })
+        conf_g.append('rect')
+            .classed('mask', true)
+            .classed('unselected-stat', true)
+            .attr("width", supportRectWidth/4)
+            .attr("height", glyphCellHeight);
 
-    fp_g.append("rect")
-        .attr("class", "label0_1")
-        .attr("width", d => supportRectWidth/4)
-        .attr("height", glyphCellHeight)
-        .attr("fill", d => 'url(#fp_pattern)')
+        conf_g.on('mouseover', function (){
+                d3.select(this).select('.mask')
+                    .classed('unselected-stat', false)
+                    .classed('highlight-stat', true)
+                    .style('stroke-width', '1.5px');
+            }).on('mouseout', function() {
+                let stat_str = d3.select(this)._groups[0][0].id.split('_'),
+                    tab_idx = stat_str[2],
+                    conf_idx = stat_str[3];
+                if (row_sorted[tab_idx]!==`conf_${conf_idx}`) {
+                    d3.select(this).select('.highlight-stat')
+                        .classed('unselected-stat', true)
+                        .classed('highlight-stat', false);
+                } else {
+                    d3.select(this).select('.highlight-stat')
+                        .style('stroke-width', '1px');
+                }
+            }).on('click', function() {
+                let stat_str = d3.select(this)._groups[0][0].id.split('_'),
+                    tab_idx = stat_str[2],
+                    conf_idx = stat_str[3];
 
-    fp_g.append('text')
-        .attr('class', 'label0-text')
-        .attr("x", 2)
-        .attr("y", rectMarginTop+3)
-        .style('fill', 'white')
-        .text("fp")
+                if (row_sorted[tab_idx]!==`conf_${conf_idx}`) {
+                    row_sorted[tab_idx] = `conf_${conf_idx}`;
+                    row_order = generate_row_order_by_confmat(tab_rules[tab_idx], conf_idx);
+                    d3.select(this.parentNode).selectAll('.mask')
+                        .classed('highlight-stat', false)
+                        .classed('unselected-stat', true);
 
-
-    // covered instances of label 1, true negative
-    let tn_g = res.append('g')
-        .attr('transform', `translate(${xoffset+supportRectWidth/2}, ${rectHeight/4})`)
-        .on('mouseover', function (){
-            d3.select(this).append('rect')
-                .classed('highlight-circle', true)
-                .attr("width", supportRectWidth/4)
-                .attr("height", glyphCellHeight)
-        }).on('mouseout', function() {
-            d3.select(this).select('.highlight-circle').remove();
-        }).on('click', function() {
-
-            row_order = generate_row_order_by_confmat()
-        })
-    tn_g.append("rect")
-        .attr("class", "label0_0")
-        .attr("width", supportRectWidth/4)
-        .attr("height", glyphCellHeight)
-        .attr("fill", d => colorCate[1])
-
-    tn_g.append('text')
-        .attr('class', 'label0-text')
-        .attr("x", 2)
-        .attr("y", rectMarginTop+3)
-        .style('fill', 'white')
-        .text("tn")
-
-    // false negative
-    let fn_g = res.append('g')
-        .attr('transform', `translate(${xoffset+supportRectWidth*3/4}, ${rectHeight/4})`)
-        .on('mouseover', function (){
-            d3.select(this).append('rect')
-                .classed('highlight-circle', true)
-                .attr("width", supportRectWidth/4)
-                .attr("height", glyphCellHeight)
-        }).on('mouseout', function() {
-            d3.select(this).select('.highlight-circle').remove();
-        }).on('click', function() {
-
-            row_order = generate_row_order_by_confmat()
-        });
-
-    fn_g.append("rect")
-        .attr("class", "label0_1")
-        .attr("width", d => supportRectWidth/4)
-        .attr("height", glyphCellHeight)
-        .attr("fill", d => 'url(#fn_pattern)')
-
-    fn_g.append('text')
-        .attr('class', 'label0-text')
-        .attr("x", 2)
-        .attr("y", rectMarginTop+3)
-        .style('fill', 'white')
-        .text("fn")
+                    d3.select(this).select('.mask')
+                        .classed('highlight-stat', true)
+                        .classed('unselected-stat', false)
+                        .attr('r', rule_radius);   
+                } else {
+                    row_sorted[tab_idx] = false;
+                    d3.select(this).select('.mask')
+                        .classed('highlight-stat', false)
+                        .classed('unselected-stat', true);
+                }
+                update_rule_rendering(rule_svg, col_svg, stat_svg, tab_id, tab_rules[tab_idx], row_order,)
+            });
+    }
 
     // overall support
     xoffset += supportRectWidth + 10;
    
     let support_g = res.append('g')
+        .attr('id', `stat_legend_support_${tab_idx}`)
         .attr('transform', `translate(${xoffset}, ${rectHeight/4})`)
-        .on('mouseover', function (){
-            d3.select(this).select('text')
-                .classed('highlight-circle', true)
-        }).on('mouseout', function() {
-            d3.select(this).select('.highlight-circle')
-                .classed('highlight-circle', false);
-        }).on('click', function() {
-
-            row_order = generate_row_order_by_key('support')
-        });
 
     support_g.append('rect')
         .attr('class', 'support_bar')
@@ -856,27 +797,105 @@ function render_stat_legend(stat_svg) {
         .attr("x", 10)
         .attr("y", rectMarginTop+3)
         .style('fill', 'black')
-        .text("support")
+        .text("support");
+
+    support_g.append('rect')
+        .classed('unselected-stat', true)
+        .classed('mask', true)
+        .attr('width', supportRectWidth)
+        .attr('height', glyphCellHeight);
+
+    support_g.on('mouseover', function (){
+        d3.select(this).select('.mask')
+            .classed('unselected-stat', false)
+            .classed('highlight-stat', true);
+    }).on('mouseout', function() {
+        let stat_id = d3.select(this)._groups[0][0].id,
+            tab_idx = parseInt(stat_id[stat_id.length-1]);
+        if (row_sorted[tab_idx]!=='support') {
+            d3.select(this).select('.highlight-stat')
+                .classed('unselected-stat', true)
+                .classed('highlight-stat', false);
+        }
+    }).on('click', function() {
+        let stat_id = d3.select(this)._groups[0][0].id,
+            tab_idx = parseInt(stat_id[stat_id.length-1]);
+            
+        if (row_sorted[tab_idx]!=='support') {
+            row_sorted[tab_idx] = "support";
+            row_order = generate_row_order_by_key(tab_rules[tab_idx], 'support');
+            d3.select(this.parentNode).selectAll('.mask')
+                        .classed('highlight-stat', false)
+                        .classed('unselected-stat', true);
+            d3.select(this).select('.mask')
+                .classed('highlight-stat', true)
+                .classed('unselected-stat', false)
+                .attr('r', rule_radius);   
+        } else {
+            row_sorted[tab_idx] = false;
+            d3.select(this).select('.mask')
+                .classed('highlight-stat', false)
+                .classed('unselected-stat', true);
+        }
+        update_rule_rendering(rule_svg, col_svg, stat_svg, tab_id, tab_rules[tab_idx], row_order,)
+    });
 
 
     // fidelity 
     xoffset += supportRectWidth;
-    res.append('text')
-        .attr('class', 'label1-text')
-        .attr("x", xoffset + 10)
-        .attr("y", rectHeight/4+rectMarginTop+3)
-        .style('fill', 'black')
-        .text("fidelity")
-        .on('mouseover', function (){
-            d3.select(this)
-                .classed('highlight-circle', true)
-        }).on('mouseout', function() {
-            d3.select(this)
-                .classed('highlight-circle', false);
-        }).on('click', function() {
+    let feidelity_g = res.append('g')
+        .attr('transform', `translate(${xoffset}, ${rectHeight/4})`)
+        .attr('id', `stat_legend_fidelity_${tab_idx}`)
 
-            row_order = generate_row_order_by_key('fidelity')
-        })
+    feidelity_g.append('text')
+        .attr('class', 'label1-text')
+        .attr("x", 10)
+        .attr('y', rectMarginTop+3)
+        .style('fill', 'black')
+        .text("fidelity");
+
+    feidelity_g.append('rect')
+        .classed('unselected-stat', true)
+        .classed('mask', true)
+        .attr('x', 8)
+        .attr('width', supportRectWidth * .65)
+        .attr('height', glyphCellHeight);
+
+    feidelity_g.on('mouseover', function (){
+        d3.select(this).select('.mask')
+            .classed('unselected-stat', false)
+            .classed('highlight-stat', true);
+    }).on('mouseout', function() {
+        let stat_id = d3.select(this)._groups[0][0].id,
+            tab_idx = parseInt(stat_id[stat_id.length-1]);
+        if (row_sorted[tab_idx]!=='fidelity') {
+            d3.select(this).select('.highlight-stat')
+                .classed('unselected-stat', true)
+                .classed('highlight-stat', false);
+        }
+    }).on('click', function() {
+        let stat_id = d3.select(this)._groups[0][0].id,
+            tab_idx = parseInt(stat_id[stat_id.length-1]);
+            
+        if (row_sorted[tab_idx]!=='fidelity') {
+            row_sorted[tab_idx] = "fidelity";
+            row_order = generate_row_order_by_key(tab_rules[tab_idx], 'fidelity');
+            d3.select(this.parentNode).selectAll('.mask')
+                        .classed('highlight-stat', false)
+                        .classed('unselected-stat', true);
+            d3.select(this).select('.mask')
+                .classed('highlight-stat', true)
+                .classed('unselected-stat', false)
+                .attr('r', rule_radius);   
+        } else {
+            row_sorted[tab_idx] = false;
+            d3.select(this).select('.mask')
+                .classed('highlight-stat', false)
+                .classed('unselected-stat', true);
+        }
+        update_rule_rendering(rule_svg, col_svg, stat_svg, tab_id, tab_rules[tab_idx], row_order,)
+    });
+
 }
 
 function main() {
