@@ -1,5 +1,7 @@
 let margin = {top: 0, right: 45, bottom: 5, left: 0},
-    column_height = 60,
+    feat_name_height = 60,
+    col_hist_height = 20,
+    column_height = feat_name_height + col_hist_height,
     width = 860 - margin.right - margin.left,
     height;
 let overviewWidth = 150;
@@ -265,14 +267,15 @@ function scroll_data(width, height,) {
 
 function render_feature_names_and_grid(column_svg, col_order) {
     column_svg.selectAll(".column").remove();
+    column_svg.selectAll(".hist").remove();
 
     let column = column_svg.selectAll(".column").data(attrs)
         .enter().append("g")
-        .classed("column", true)
-        .classed((d, i) => `col-title-${i}`, true)
+        .attr("class", `column`)
+        .attr("id", (d, i) => `col-title-${i}`)
         .attr("transform", function(d, i) { 
             return `translate(${xScale(col_order[i])+rectMarginH}, 
-            ${column_height+yScale(0)-font_size})rotate(330)`; });
+            ${feat_name_height+yScale(0)-font_size})rotate(330)`; });
 
     column.append("text")
         .attr("x", 6)
@@ -283,7 +286,7 @@ function render_feature_names_and_grid(column_svg, col_order) {
             let textLength = ctx.measureText(d).width;
             let text = d;
             let txt = d;
-            while (textLength > column_height * 2 - 50) {
+            while (textLength > feat_name_height * 2 - 50) {
                 text = text.slice(0, -1);
                 textLength = ctx.measureText(text+'...').width;
                 txt = text+'...';
@@ -292,6 +295,42 @@ function render_feature_names_and_grid(column_svg, col_order) {
         })
         .append('title')
         .text(d => d);
+
+    let max_hist = d3.max(histogram, (d) => d3.max(d['hist']));
+
+    let y = d3.scaleLinear().domain([0, max_hist])
+        .range([ 0, col_hist_height]);
+    let x = d3.scaleLinear().domain([0, histogram[0]['hist'].length])
+        .range([0, rectWidth]);
+
+    let col_hist = column.append('g')
+        .classed('col_hist', true);
+
+    let histEnter = column_svg.selectAll(".hist")
+        .data(histogram)
+        .enter()
+        .append('g')
+        .attr('class', 'hist')
+        .attr('transform', (d,i) => 
+            `translate(${xScale(col_order[i]) + rectMarginH}, ${feat_name_height})`);
+
+    stepWidth = rectWidth / 10;
+    histEnter.selectAll('.hist_rect')
+        .data(d=> d['hist'])
+        .enter()
+        .append('rect')
+        .attr('class', 'hist_rect')
+        .style('x', (d, i) => i * stepWidth)
+        .style('y', d => col_hist_height - y(d))
+        .style('width', stepWidth)
+        .style('height', d => y(d))
+        .style('fill', 'darkgrey');
+    histEnter.append('line')
+        .attr('x1', 0)
+        .attr('x2', rectWidth)
+        .attr('y1', col_hist_height)
+        .attr('y2', col_hist_height)
+        .style('stroke', 'darkgrey')
 }
 
 function render_slider() {
