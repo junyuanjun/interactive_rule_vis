@@ -22,9 +22,7 @@ let statWidth = supportRectWidth * 2 + fidelityChartWidth + rule_radius * 2 + 20
 
 let tot_train;
 
-let rule_svg = d3.select("#rule_svg")
-    .append("g")
-    .attr("transform", `translate(${margin.left})`);
+let rule_svg = d3.select("#rule_svg");
 
 let col_svg = d3.select("#column_svg")
     .style("height", `${column_height}px`)
@@ -33,25 +31,20 @@ let stat_svg = d3.select('#stat')
     .style("width", `${statWidth}px`)
     .style("height", `${height + margin.top + margin.bottom}px`);
 
-let rule_svg2 = d3.select("#rule_svg2")
-    .append("g")
-    .attr("transform", `translate(${margin.left})`);
+let rule_svg2 = d3.select("#rule_svg2");
+
 let stat_svg2 = d3.select("#stat2")
     .style("width", `${statWidth}px`);
 let col_svg2 = d3.select("#column_svg2")
     .style("height", `${column_height}px`);
 
-let rule_svg3 = d3.select("#rule_svg3")
-    .append("g")
-    .attr("transform", `translate(${margin.left})`);
+let rule_svg3 = d3.select("#rule_svg3");
 let stat_svg3 = d3.select("#stat3")
     .style("width", `${statWidth}px`);
 let col_svg3 = d3.select("#column_svg3")
     .style("height", `${column_height}px`);
 
-let rule_svg4 = d3.select("#rule_svg4")
-    .append("g")
-    .attr("transform", `translate(${margin.left})`);
+let rule_svg4 = d3.select("#rule_svg4");
 let stat_svg4 = d3.select("#stat4")
     .style("width", `${statWidth}px`);
 let col_svg4 = d3.select("#column_svg4")

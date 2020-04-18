@@ -116,6 +116,12 @@ function click_summary_node(node_id, add_to_selection) {
 		}
 	}
 
+	// reset sorting
+	row_sorted = [false, false, false, false];
+	d3.selectAll('.mask')
+		.classed('highlight-stat', false)
+		.classed('unselected-stat', true);
+
 	postData("find_node_rules", linked_node_ids, (node_rules)=>{
 		let rules = node_rules['rule_lists'];
 		present_rules = rules;
@@ -220,7 +226,6 @@ function click_summary_node(node_id, add_to_selection) {
 				rule2node[0][idx] = node_id;
 			});
 			update_rule_rendering(rule_svg, col_svg, stat_svg, "", new_rules, col_order);
-
 
 			// get multiple selection summary
 			render_stat_summary(summary_info);
