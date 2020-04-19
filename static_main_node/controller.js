@@ -90,32 +90,6 @@ function click_summary_node(node_id, add_to_selection) {
 	let linked_node_ids = find_connection(node_id);
 	linked_node_ids.sort((a,b) => a-b);
 
-	if (!add_to_selection) {
-		// link the node in the summary view
-		let summary_view = d3.select('#summary_view');
-
-		if (SUMMARY_LAYOUT == 'tree') {
-			// highlight the path in the tree layout
-			
-			linked_node_ids.forEach((id, i) => {
-				if (i == 0) {
-					return;
-				}
-				let parent = node_info[id]['parent'];
-				let present_node = id;
-				while (parent !== linked_node_ids[i-1]) {
-					summary_view.select(`#tree_link_${id}_${parent}`)
-						.style("stroke-width", "2px");
-					id = parent;
-					parent = node_info[id]['parent'];
-				}
-				
-				summary_view.select(`#tree_link_${id}_${parent}`)
-					.style("stroke-width", "2px");
-			})
-		}
-	}
-
 	// reset sorting
 	row_sorted = [false, false, false, false];
 	d3.selectAll('.mask')

@@ -196,7 +196,23 @@ function update_tree(source) {
 		.attr("dy", ".35em")
 		.attr("class", "sign_threshold")
 		.text(function (d) {
-			return d.data.sign + d.parent['data'].threshold.toFixed(2);
+			let cate_threshold = d.parent['data'].threshold,
+				parent = d.parent['data'],
+				real_threshold;
+			if (cate_threshold == 0.5) {
+				real_threshold = real_percentile['percentile_table'][0][parent['feature']];
+				if (!Number.isInteger(real_threshold)) {
+					real_threshold = real_threshold.toFixed(1)
+				}
+			} else if (cate_threshold == 1.5){
+				real_threshold = real_percentile['percentile_table'][1][parent['feature']];
+				if (!Number.isInteger(real_threshold)) {
+					real_threshold = real_threshold.toFixed(1)
+				}
+			} else {
+				real_threshold = 'error:' + cate_threshold;
+			}
+			return d.data.sign + real_threshold;
 		})
 
 	var textUpdate = linktext
@@ -295,6 +311,7 @@ function update_tree(source) {
 		d3.select(`#feat_name_${d['node_id']}`)
 			.style('visibility', 'visible');
 
+		// show the link conditions of left/right children
 		if (new_node_shown[d['left']]) {
 			d3.select(`#link_text_${d['left']}_${d['node_id']}`)
 				.style('visibility', 'visible');
@@ -308,6 +325,7 @@ function update_tree(source) {
 				.style('stroke', 'steelblue')
 		}
 
+		// show the satistics information
 		let str  = `Feature: ${attrs[d['feature']]}; `
 		 	+ `Support: ${d3.format('.2%')(d['support'])}, ${d3.sum(d['value'])}; `
 		 	+ `Fidelity: ${d3.format('.2%')(d['fidelity'])}; `
@@ -324,6 +342,33 @@ function update_tree(source) {
 			.attr('y', -size/2)
 			.attr('width', size)
 			.attr('height', size);
+
+		// highlight the ancestors
+		// get the linked node information
+		let linked_node_ids = find_connection(node_id);
+		linked_node_ids.sort((a,b) => a-b);
+
+		// link the node in the summary view
+		let summary_view = d3.select('#summary_view');
+
+		// highlight the path in the tree layout
+		linked_node_ids.forEach((id, i) => {
+			if (i == 0) {
+				return;
+			}
+			let parent = node_info[id]['parent'];
+			let present_node = id;
+			while (parent !== linked_node_ids[i-1]) {
+				summary_view.select(`#tree_link_${id}_${parent}`)
+					.style("stroke-width", "2px");
+				id = parent;
+				parent = node_info[id]['parent'];
+			}
+			
+			summary_view.select(`#tree_link_${id}_${parent}`)
+				.style('stroke', 'darkgrey')
+				.style("stroke-width", "2px");
+		})
 	}).on('mouseout', () => {
 		d3.select('#node_description').selectAll('p').remove();
 		d3.selectAll('.hovered_node').remove();
@@ -334,6 +379,7 @@ function update_tree(source) {
 			.style('visibility', "hidden");
 		d3.selectAll('.link')
 			.style('stroke', 'lightgrey')
+			.style('stroke-width', 1)
 	});
 
 	// Stash the old positions for transition.
