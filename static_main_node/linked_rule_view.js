@@ -26,7 +26,7 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, row_o
     let yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]),
         tab_idx = idx !== "" ? idx-1 : 0;
 
-    render_feature_names_and_grid(col_svg, col_order);
+    render_feature_names_and_grid(stat_legend, rule_svg, col_svg, stat_svg, idx, col_order);
 
     // render by rows
     let row = rule_svg.selectAll(".row")

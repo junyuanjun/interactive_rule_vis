@@ -260,7 +260,8 @@ function click_rule(clicked_g, rule_idx, rule, tab_p) {
 	// update data table
 	let url = "get_matched_data"
 	postData(url, JSON.stringify({"rules": rules['rules']}), (data) => {
-		render_feature_names_and_grid(d3.select("#column_svg5"), col_order);
+		stat_legend, rule_svg, column_svg, stat_svg, tab_id, col_order
+		render_feature_names_and_grid('', '', d3.select("#column_svg5"), '', 5, col_order);
 		d3.select("#data-table tbody").remove();
 
 		let matched_data = data['matched_data'];

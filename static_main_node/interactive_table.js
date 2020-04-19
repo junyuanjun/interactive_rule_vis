@@ -184,12 +184,6 @@ function loadData() {
                 case BAND_RULE_VIS:
                     generate_band_bars(listData);
                     break;
-                case GRADIENT_RULE_VIS:
-                    generate_gradient_bars(listData, col_order);
-                    break;
-                case MEDIAN_VAL_VIS:
-                    generate_value_cells(listData);
-                    break;
             }
 
             render_legend_label("#legend1");
@@ -265,12 +259,11 @@ function scroll_data(width, height,) {
     }); 
 }
 
-function render_feature_names_and_grid(column_svg, col_order) {
+function render_feature_names_and_grid(stat_legend, rule_svg, column_svg, stat_svg, tab_id, col_order) {
     column_svg.selectAll(".column").remove();
     column_svg.selectAll(".hist").remove();
 
-    let tab_id = column_svg._groups[0][0].id.substr(10),
-        tab_idx = tab_id=="" ? 0 : parseInt(tab_id)-1;
+    let tab_idx = tab_id=="" ? 0 : tab_id-1;
 
     let column = column_svg.selectAll(".column").data(attrs)
         .enter().append("g")
@@ -680,11 +673,6 @@ function render_confusion_bars(stat_svg, listData, row_order) {
         .style('fill', 'black')
         .text(d => `${d3.format('.2%')(node_info[d['node_id']]['fidelity'])}`)
 
-}
-
-
-function generate_gradient_bars(listData) {
-    render_feature_names_and_grid(col_svg, col_order);
 }
 
 function update_column_rendering(svg, col_order) {
