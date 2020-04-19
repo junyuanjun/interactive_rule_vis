@@ -145,7 +145,7 @@ function loadData() {
             height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
 
             // scale for placing cells
-            xScale = d3.scaleBand(d3.range(attrs.length+1),[0, width]);
+            xScale = d3.scaleBand(d3.range(attrs.length+1),[1, width]);
             yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
             
             scroll_functions(width, height, "");
@@ -269,10 +269,13 @@ function render_feature_names_and_grid(column_svg, col_order) {
     column_svg.selectAll(".column").remove();
     column_svg.selectAll(".hist").remove();
 
+    let tab_id = column_svg._groups[0][0].id.substr(10),
+        tab_idx = tab_id=="" ? 0 : parseInt(tab_id)-1;
+
     let column = column_svg.selectAll(".column").data(attrs)
         .enter().append("g")
         .attr("class", `column`)
-        .attr("id", (d, i) => `col-title-${i}`)
+        .attr("id", (d, i) => `coltitle-${tab_idx}-${i}`)
         .attr("transform", function(d, i) { 
             return `translate(${xScale(col_order[i])+rectMarginH}, 
             ${feat_name_height+yScale(0)-font_size})rotate(330)`; });
@@ -294,7 +297,53 @@ function render_feature_names_and_grid(column_svg, col_order) {
             return txt;
         })
         .append('title')
-        .text(d => d);
+        .text(d => d)
+
+    column.append('rect')
+        .classed('unselected-stat', true)
+        .classed('mask', true)
+        .attr('x', 5)
+        .attr('width', feat_name_height * 2 - 30)
+        .attr('height', 15);
+
+    column.on('mouseover', function (){
+        d3.select(this).select('.mask')
+            .classed('unselected-stat', false)
+            .classed('highlight-stat', true);
+    }).on('mouseout', function() {
+        let col_id = d3.select(this)._groups[0][0].id.split('-'),
+            tab_idx = parseInt(col_id[1]),
+            feat_idx = parseInt(col_id[2]);
+        if (row_sorted[tab_idx]!=='column' || col_clicked !== feat_idx) {
+            d3.select(this).select('.highlight-stat')
+                .classed('unselected-stat', true)
+                .classed('highlight-stat', false);
+        }
+    }).on('click', function() {
+        let col_id = d3.select(this)._groups[0][0].id.split('-'),
+            tab_idx = parseInt(col_id[1]),
+            feat_idx = parseInt(col_id[2]);
+            
+        if (row_sorted[tab_idx]!=='column' || col_clicked !== feat_idx) {
+            row_sorted[tab_idx] = "column";
+            row_order = generate_row_order_by_feature(tab_rules[tab_idx], feat_idx, true);
+            col_clicked = feat_idx;
+            d3.select(`#header${tab_idx+1}`).selectAll('.mask')
+                        .classed('highlight-stat', false)
+                        .classed('unselected-stat', true);
+            d3.select(this).select('.mask')
+                .classed('highlight-stat', true)
+                .classed('unselected-stat', false)
+                .attr('r', rule_radius);   
+        } else {
+            row_sorted[tab_idx] = false;
+            col_clicked = false;
+            d3.select(this).select('.mask')
+                .classed('highlight-stat', false)
+                .classed('unselected-stat', true);
+        }
+        update_rule_rendering(rule_svg, col_svg, stat_svg, tab_id, tab_rules[tab_idx], row_order,)
+    });
 
     let max_hist = d3.max(histogram, (d) => d3.max(d['hist']));
 
@@ -712,6 +761,7 @@ function render_stat_legend(stat_legend, rule_svg, col_svg, stat_svg, tab_id) {
             
         if (row_sorted[tab_idx]!=='label') {
             row_sorted[tab_idx] = "label";
+            col_clicked = false;
             row_order = generate_row_order_by_label(tab_rules[tab_idx]);
             d3.select(this.parentNode).selectAll('.mask')
                         .classed('highlight-stat', false)
@@ -784,6 +834,7 @@ function render_stat_legend(stat_legend, rule_svg, col_svg, stat_svg, tab_id) {
 
                 if (row_sorted[tab_idx]!==`conf_${conf_idx}`) {
                     row_sorted[tab_idx] = `conf_${conf_idx}`;
+                    col_clicked = false;
                     row_order = generate_row_order_by_confmat(tab_rules[tab_idx], conf_idx);
                     d3.select(this.parentNode).selectAll('.mask')
                         .classed('highlight-stat', false)
@@ -855,6 +906,7 @@ function render_stat_legend(stat_legend, rule_svg, col_svg, stat_svg, tab_id) {
             
         if (row_sorted[tab_idx]!=='support') {
             row_sorted[tab_idx] = "support";
+            col_clicked = false;
             row_order = generate_row_order_by_key(tab_rules[tab_idx], 'support');
             d3.select(this.parentNode).selectAll('.mask')
                         .classed('highlight-stat', false)
@@ -875,25 +927,25 @@ function render_stat_legend(stat_legend, rule_svg, col_svg, stat_svg, tab_id) {
 
     // fidelity 
     xoffset += supportRectWidth;
-    let feidelity_g = res.append('g')
+    let fidelity_g = res.append('g')
         .attr('transform', `translate(${xoffset}, ${rectHeight/4})`)
         .attr('id', `stat_legend_fidelity_${tab_idx}`)
 
-    feidelity_g.append('text')
+    fidelity_g.append('text')
         .attr('class', 'label1-text')
         .attr("x", 10)
         .attr('y', rectMarginTop+3)
         .style('fill', 'black')
         .text("fidelity");
 
-    feidelity_g.append('rect')
+    fidelity_g.append('rect')
         .classed('unselected-stat', true)
         .classed('mask', true)
         .attr('x', 8)
         .attr('width', supportRectWidth * .65)
         .attr('height', glyphCellHeight);
 
-    feidelity_g.on('mouseover', function (){
+    fidelity_g.on('mouseover', function (){
         d3.select(this).select('.mask')
             .classed('unselected-stat', false)
             .classed('highlight-stat', true);
@@ -911,6 +963,7 @@ function render_stat_legend(stat_legend, rule_svg, col_svg, stat_svg, tab_id) {
             
         if (row_sorted[tab_idx]!=='fidelity') {
             row_sorted[tab_idx] = "fidelity";
+            col_clicked = false;
             row_order = generate_row_order_by_key(tab_rules[tab_idx], 'fidelity');
             d3.select(this.parentNode).selectAll('.mask')
                         .classed('highlight-stat', false)

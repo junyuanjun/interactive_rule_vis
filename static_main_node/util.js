@@ -9,7 +9,8 @@ let filter_threshold = {
 let node2rule = [{}, {}, {}, {}];
 let rule2node = [{}, {}, {}, {}];
 let tab_rules = [[], [], [], []];
-let row_sorted = [false, false, false, false];
+let row_sorted = [false, false, false, false],
+  col_clicked = false;
 
 let new_node_shown = {};
 
@@ -148,7 +149,7 @@ function column_order_by_feat_freq(listData) {
 }
 
 function generate_row_order_by_label(listData) {
-  let row_info = [];
+  let row_info = [], row_order = {};
 
   // initialize label.
   listData.forEach((d, i)=> {
@@ -173,7 +174,7 @@ function generate_row_order_by_label(listData) {
 }
 
 function generate_row_order_by_confmat(listData, conf_idx) {
- let row_info = [];
+ let row_info = [], row_order = {};
 
   // initialize conf val.
   listData.forEach((d, i)=> {
@@ -198,7 +199,7 @@ function generate_row_order_by_confmat(listData, conf_idx) {
 }
 
 function generate_row_order_by_key(listData, key) {
-  let row_info = [];
+  let row_info = [], row_order = {};
 
   // initialize val.
   listData.forEach((d, i)=> {
@@ -222,20 +223,56 @@ function generate_row_order_by_key(listData, key) {
   return row_order;
 }
 
-function generate_row_order_by_feature(listData) {
-  let row_info = [];
+function generate_row_order_by_feature(listData, feat_idx, ascending) {
+  let row_info = [], row_order = {};
 
-  for (let i = 0; i<attrs.length; i++) {
-    col_info.push({
+  listData.forEach((d, i)=> {
+    let rule = d['rules'],
+      th0, th1;
+
+    if (ascending) {
+      th0 = MAXINT;
+      th1 = MAXINT;
+    } else {
+      th0 = -MAXINT;
+      th1 = -MAXINT;
+    }
+
+    rule.forEach(cond => {
+      if (cond['feature'] == feat_idx) {
+        if (cond['sign'] == 'range') {
+          th0 = cond['threshold0'];
+          th1 = cond['threshold1'];
+        } else if (cond['sign'] == '<=') {
+          th1 = cond['threshold'];
+          th0 = real_min[feat_idx];
+        } else if (cond['sign'] == '>') {
+          th0 = cond['threshold'];
+          th1 = real_max[feat_idx];
+        } 
+        return;
+      }
+    })
+    
+    row_info.push({
       'idx': i,
-    });
-    col_order.push(i);
-  }
-
-  listData.forEach((d)=> {
-    let rule = d['rules']
-    rule.forEach((r) => {
-      col_info[r['feature']].freq++;
+      'node_id': d['node_id'],
+      'th0': th0,
+      'th1': th1,
     });
   })
+
+  // sort columns by feature ranges
+  // left to right for the same label
+  row_info.sort((a, b) => {
+    if (a.th0 !== b.th0)
+      return ascending ? a.th0 - b.th0 : b.th0 - a.th0;
+    else if (a.th1 !== b.th1)
+      return ascending ? a.th1 - b.th1 : b.th1 - a.th1;
+    else   
+      return pre_order[a.node_id].order - pre_order[b.node_id].order;
+  });
+  row_info.forEach((d, i) => row_order[d.idx] = i);
+
+  return row_order;
 }

@@ -162,7 +162,6 @@ function click_summary_node(node_id, add_to_selection) {
 				node2rule[3][node_id] = idx;
 				rule2node[3][idx] = node_id;
 			});
-			update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, multiple_rules, col_order);
 
 			// update overview
 			// the subtree nodes have pre-order larger than the clicked nodes, but 
@@ -199,7 +198,9 @@ function click_summary_node(node_id, add_to_selection) {
 				node2rule[0][node_id] = idx;
 				rule2node[0][idx] = node_id;
 			});
+    		col_order = column_order_by_feat_freq(multiple_rules);
 			update_rule_rendering(rule_svg, col_svg, stat_svg, "", new_rules, col_order);
+			update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, multiple_rules, col_order);
 
 			// get multiple selection summary
 			render_stat_summary(summary_info);
