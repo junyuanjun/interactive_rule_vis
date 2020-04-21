@@ -369,6 +369,23 @@ function update_tree(source) {
 				.style('stroke', 'darkgrey')
 				.style("stroke-width", "2px");
 		})
+
+		// highlight the rule in the rule view.
+		// overview
+		let rule_idx = node2rule[0][node_id];
+		d3.select('#rule_svg').select(`#back-rect-${rule_idx}`)
+			.classed('rule_hover', true);
+		// highlight in the stat
+		d3.select(`#stat-back-rect-${rule_idx}`)
+			.classed('rule_hover', true);
+
+		// multiple selection
+		rule_idx = node2rule[3][node_id];
+		d3.select('#rule_svg4').select(`#back-rect-${rule_idx}`)
+			.classed('rule_hover', true);
+		// highlight in the stat
+		d3.select(`#stat4-back-rect-${rule_idx}`)
+			.classed('rule_hover', true);
 	}).on('mouseout', () => {
 		d3.select('#node_description').selectAll('p').remove();
 		d3.selectAll('.hovered_node').remove();
@@ -379,7 +396,17 @@ function update_tree(source) {
 			.style('visibility', "hidden");
 		d3.selectAll('.link')
 			.style('stroke', 'lightgrey')
-			.style('stroke-width', 1)
+			.style('stroke-width', 1);
+		// overview
+		d3.select('#rule_svg').selectAll('.back-rect')
+			.classed('rule_hover', false);
+		d3.select(`#stat`).selectAll('.back-rect')
+			.classed('rule_hover', false);
+		// multiple selection
+		d3.select('#rule_svg4').selectAll('.back-rect')
+			.classed('rule_hover', false);
+		d3.select(`#stat4`).selectAll('.back-rect')
+			.classed('rule_hover', false);
 	});
 
 	// Stash the old positions for transition.
