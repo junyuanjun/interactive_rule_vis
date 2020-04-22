@@ -126,7 +126,21 @@ function update_summary(node_info, ) {
     d3.selectAll('#summary_x_tick > *').remove();
     d3.selectAll('#summary_view > *:not(.depth-line)').remove();
 
-    generate_tree(treeData);
+    let visible_tree = {};
+    Object.assign(visible_tree, treeData);
+    update_treeData(visible_tree)
+    generate_tree(visible_tree);
   }
 }
 
+function update_treeData(visible_tree) {
+  if (visible_tree.children === undefined) return;
+  for (let i = visible_tree.children.length-1; i >=0; i--) {
+    let d = visible_tree.children[i];
+    if (!new_node_shown[d['node_id']]) {
+      visible_tree.children.pop();
+    } else {
+      update_treeData(visible_tree.children[i]);
+    }
+  }
+}
