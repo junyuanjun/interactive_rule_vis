@@ -81,15 +81,15 @@ function render_summary(node_info, max_depth) {
 	intialize_scales(max_depth);
 
   // check boxes before different levels
-  d3.select("#radio_group").selectAll("input")
-    .data(d3.range(max_depth+1)).enter()
-    .append("input")
-    .attr("name", "tree_level")
-    .attr("type", "radio")
-    .attr("value", (idx) => `level-${idx}`)
-    .on("click", (idx) => {
-      click_tree_level(idx);
-    });
+  // d3.select("#radio_group").selectAll("input")
+  //   .data(d3.range(max_depth+1)).enter()
+  //   .append("input")
+  //   .attr("name", "tree_level")
+  //   .attr("type", "radio")
+  //   .attr("value", (idx) => `level-${idx}`)
+  //   .on("click", (idx) => {
+  //     click_tree_level(idx);
+  //   });
 
 	// start rendering
 	let view = d3.select('#summary_view')

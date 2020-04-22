@@ -114,7 +114,6 @@ function click_summary_node(node_id, add_to_selection) {
 
 		if (add_to_selection) {
 	    	// add one selected rule to multiple selection
-			// TODO: remove multiple selection on the same path
 			if (node_id in multiple_selection) {
 				delete multiple_selection[node_id];
 			} else {
@@ -135,17 +134,37 @@ function click_summary_node(node_id, add_to_selection) {
 					.attr('height', size);
 			}
 
-			let multiple_rules = [];
+			let multiple_rules = [], candiate_rules = [];
+			
+			// keep only the ancestor node for multiple nodes on the same path
+			Object.keys(multiple_selection).forEach((node_id, idx) => {
+				candiate_rules.push(multiple_selection[node_id]);
+			});
+			candiate_rules.sort((a,b) => pre_order[a.node_id].order-pre_order[b.node_id].order);
+			let idx = 0;
+			while (idx < candiate_rules.length) {
+				let node_id = candiate_rules[idx].node_id;
+				multiple_rules.push(candiate_rules[idx]);
+				idx++;
+				while (idx < candiate_rules.length 
+					&& pre_order[node_id].order < pre_order[candiate_rules[idx].node_id].order 
+					&& pre_order[candiate_rules[idx].node_id].order <= pre_order[node_id].max_descendant) {
+					idx++;
+				}
+			}
+
 			node2rule[3] = {};
 			rule2node[3] = {}
+
+			// multiple_rules.sort((a,b) => pre_order[a.node_id].order-pre_order[b.node_id].order);
 
 			let summary_info = {
 				'support': 0,
 				'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0,
 				'r-squared': [0, 0]
 			}
-			Object.keys(multiple_selection).forEach((node_id, idx) => {
-				multiple_rules.push(multiple_selection[node_id]);
+			multiple_rules.forEach((rule, idx) => {
+				let node_id = rule['node_id'];
 				summary_info['support'] += d3.sum(node_info[node_id]['value'])
 				summary_info['tp'] += Math.floor(node_info[node_id]['conf_mat'][0][0] * d3.sum(node_info[node_id]['value']))
 				summary_info['fp'] += Math.floor(node_info[node_id]['conf_mat'][0][1] * d3.sum(node_info[node_id]['value']))
@@ -153,8 +172,10 @@ function click_summary_node(node_id, add_to_selection) {
 				summary_info['fn'] += Math.floor(node_info[node_id]['conf_mat'][1][0] * d3.sum(node_info[node_id]['value']))
 				// summary_info['r-squared'][0] += summary_info['tp'] + summary_info['tn'];
 				// summary_info['r-squared'][1] += 
-			})
-			multiple_rules.sort((a,b) => pre_order[a.node_id].order-pre_order[b.node_id].order);
+			});
+    		render_stat_summary(summary_info);
+
+
 			tab_rules[3] = multiple_rules;
 
 			multiple_rules.forEach((rule, idx)=>{
@@ -202,8 +223,6 @@ function click_summary_node(node_id, add_to_selection) {
 			update_rule_rendering(rule_svg, col_svg, stat_svg, "", new_rules, col_order);
 			update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, multiple_rules, col_order);
 
-			// get multiple selection summary
-			render_stat_summary(summary_info);
 		}
 
 		// highlight in the rule view TODO: DEBUG 
@@ -260,7 +279,6 @@ function click_rule(clicked_g, rule_idx, rule, tab_p) {
 	// update data table
 	let url = "get_matched_data"
 	postData(url, JSON.stringify({"rules": rules['rules']}), (data) => {
-		stat_legend, rule_svg, column_svg, stat_svg, tab_id, col_order
 		render_feature_names_and_grid('', '', d3.select("#column_svg5"), '', 5, col_order);
 		d3.select("#data-table tbody").remove();
 

@@ -55,15 +55,15 @@ function render_stat_summary(summary_info) {
 			.text(`${summary_info[key_list[i]]} / ${size_list[i]}`);
 	}
 
-	render_histogram(svg);
+	// render_histogram(svg);
 
-	let node_list = [];
+	// let node_list = [];
 
-	Object.keys(multiple_selection).forEach((node_id) => node_list.push(+node_id));
-	postData("get_histogram", node_list, (res) => {
-		covered_hist = res['res'];
-		update_histogram(covered_hist);
-	})
+	// Object.keys(multiple_selection).forEach((node_id) => node_list.push(+node_id));
+	// postData("get_histogram", node_list, (res) => {
+	// 	covered_hist = res['res'];
+	// 	update_histogram(covered_hist);
+	// })
 }
 
 function render_histogram(svg) {

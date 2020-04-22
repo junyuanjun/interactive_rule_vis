@@ -189,6 +189,13 @@ function loadData() {
             render_legend_label("#legend1");
             find_leaf_rules(summary_nodes, node_info, 0);
             render_summary(summary_nodes, max_depth);
+
+            let summary_info = {
+                'support': 0,
+                'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0,
+                'r-squared': [0, 0]
+            }
+            render_stat_summary(summary_info);
     });
 }
 
