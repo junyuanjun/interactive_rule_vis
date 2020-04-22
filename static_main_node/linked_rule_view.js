@@ -49,7 +49,7 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, row_o
 
             d3.select('#rule_description').selectAll('p').remove();
         })
-        .on('click', function (d, r_i) {
+        .on('dblclick', function (d, r_i) {
             click_rule(d3.select(this), r_i, d, idx);
         })
 

@@ -1,6 +1,7 @@
 let tree,
 	root1,
-	tree_hierarchy;
+	tree_hierarchy,
+	id2hierarchy = {};
 
 let multiple_selection = {};
 let timeout = null;
@@ -31,10 +32,15 @@ function generate_tree(treeData) {
 	// Compute the new tree layout.
 	tree_hierarchy = tree(root1);
 
-	update_tree(root1);
+	// initialize id2hierarchy
+	tree_hierarchy.descendants().forEach((vo) => {
+		id2hierarchy[vo['data']['node_id']] = vo;
+	})
+
+	update_tree();
 }
 
-function update_tree(source) {
+function update_tree() {
 	let view = d3.select('#tree_structure');
 
 	view.selectAll('*').remove();
@@ -127,15 +133,6 @@ function update_tree(source) {
 			}
 		});
 
-	// Transition exiting nodes to the parent's new position.
-	var nodeExit = node.exit().transition()
-	  .duration(duration)
-	  .attr("transform", function(d) { return "translate(" + source.x + "," + source.y + ")"; })
-	  .remove();
-
-	nodeExit.select("circle")
-	  .attr("r", 1e-6);
-
 	// Update the links…
 
 	var link = view.selectAll("path.link")
@@ -147,10 +144,6 @@ function update_tree(source) {
 	let linkEnter = link.enter().insert("path", "g")
 	  .attr("class", "link")
 	  .attr("id", d => `tree_link_${d['data']['node_id']}_${d['data']['parent']}`)
-	  .attr("d", function(d) {
-		var o = {x: source.x0, y: source.y0};
-		return diagonal(o, o);
-	  })
 	  .style('fill', 'none')
 	  .style('stroke', 'lightgrey')
 	  .style("stroke-width", d => {
@@ -168,13 +161,7 @@ function update_tree(source) {
       });
 
 	// Transition exiting nodes to the parent's new position.
-	let linkExit = link.exit().transition()
-	  .duration(duration)
-	  .attr("d", function(d) {
-		var o = {x: source.x, y: source.y};
-		return diagonal(o, o);
-	  })
-	  .remove();
+	let linkExit = link.exit().remove();
 
 	// Update the link text
     var linktext = view.selectAll("g.link-text")

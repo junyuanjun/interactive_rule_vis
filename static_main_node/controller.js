@@ -271,6 +271,17 @@ function click_rule(clicked_g, rule_idx, rule, tab_p) {
 	clicked_g.select('.back-rect')
 		.classed('rule_highlight', true);
 
+
+	let tab_id;
+	if (tab_p == '') {
+		tab_id = 0;
+	} else {
+		tab_id = +tab_p - 1;
+	}
+	dblclick(id2hierarchy[rule2node[tab_id][rule_idx]]);
+}
+
+function render_data(rule_idx) {
 	// get rule content
 	let rules = listData[rule_idx];
 	if (rule) {
