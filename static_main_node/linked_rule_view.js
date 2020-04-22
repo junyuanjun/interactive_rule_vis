@@ -102,13 +102,17 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, row_o
             }
         })
         .attr("width", function(d) {
+            let x;
             if (d["sign"] === "<=") {
-                return widthScale[d["feature"]](d["threshold"]);
+                x = widthScale[d["feature"]](d["threshold"]);
             } else if (d["sign"] === ">"){
-                return rectWidth - widthScale[d["feature"]](d["threshold"]);
+                x = rectWidth - widthScale[d["feature"]](d["threshold"]);
+                
             } else if (d["sign"] === "range") {
-                return (widthScale[d["feature"]](d["threshold1"]-d["threshold0"]))
+                x = (widthScale[d["feature"]](d["threshold1"]-d["threshold0"]))
             }
+            if (x > 0) return x;
+            return 1;
             // if (d["sign"] === "<=") {
             //     return widthScale(d["threshold"]);
             //     // return widthScale(Math.round(d['threshold']))

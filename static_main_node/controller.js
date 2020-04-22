@@ -413,14 +413,15 @@ function hover_rule(clicked_g, rule_idx, rule, tab_p) {
 		}
 		str += `<u>${attrs[d['feature']]}</u>`;
 		if (d['sign'] !== 'range') {
-			str += " " + d['sign'] + d['threshold'] + " "
-			
+			str += " " + d['sign'];
+			if (d['sign'] == '>') str += '=';
+			str += d['threshold'] + " "
 		} else {
 			// str += " btw. (" + d['threshold0'] + ', ' + d['threshold1'] + '] '
 			// let threshold0 = real_percentile['percentile_table'][Math.ceil(d['threshold0'])][d['feature']],
 			// 	threshold1 = real_percentile['percentile_table'][Math.floor(d['threshold1'])][d['feature']]
 
-			str += " from " + d['threshold0'] + " to " + d['threshold1'];
+			str += " from " + d['threshold0'] + " to " + d['threshold1'] + " ";
 		}
 	})
 
