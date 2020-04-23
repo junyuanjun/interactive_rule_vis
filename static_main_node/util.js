@@ -181,7 +181,7 @@ function generate_row_order_by_confmat(listData, conf_idx) {
     row_info.push({
       'idx': i,
       'node_id': d['node_id'],
-      'conf_val': node_info[d['node_id']]['conf_mat'][Math.floor(conf_idx/2)][conf_idx%2] * d3.sum(node_info[d['node_id']]['value']),
+      'conf_val': node_info[d['node_id']]['conf_mat'][Math.floor(conf_idx/2)][conf_idx%2],
     })
   })
 

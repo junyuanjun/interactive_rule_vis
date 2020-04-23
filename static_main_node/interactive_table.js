@@ -95,10 +95,13 @@ let pre_order = {};
 function loadData() {
     let path = "/data/" + folder;
 
-    // fetch(domain + "initialize/" + folder);
-    postData("initialize/" + folder, {}, (info) => {
-        pre_order = info['pre_order'];
-    })
+
+    if (folder !== 'fico_rf') {
+        // fetch(domain + "initialize/" + folder);
+        postData("initialize/" + folder, {}, (info) => {
+            pre_order = info['pre_order'];
+        })
+    } 
 
     d3.queue()
         .defer(d3.json, path + "/test.json")
@@ -187,8 +190,31 @@ function loadData() {
             }
 
             render_legend_label("#legend1");
-            find_leaf_rules(summary_nodes, node_info, 0);
             render_summary(summary_nodes, max_depth);
+
+            // TO BE CHANGED BACK
+            if (folder !== 'fico_rf') {
+                find_leaf_rules(summary_nodes, node_info, 0);
+            } else {
+                present_rules = listData;
+                col_order = column_order_by_feat_freq(listData);
+
+                // rule
+                tab_rules[0] = listData;
+                // update node2rule pos
+                node2rule[0] = {};
+                rule2node[0] = {};
+                listData.forEach((d, idx) => {
+                  node2rule[0][d['node_id']] = idx;
+                  rule2node[0][idx] = d['node_id'];
+                  pre_order[d['node_id']] = {'order': idx, 'max': idx};
+                })
+
+                update_rule_rendering(rule_svg, col_svg, stat_svg, "", listData, col_order);
+                d3.select("#rule-num")
+                    .text(listData.length);
+                update_summary(summary_nodes);
+            }
 
             let summary_info = {
                 'support': 0,
