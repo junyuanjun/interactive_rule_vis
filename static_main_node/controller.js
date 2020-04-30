@@ -37,6 +37,19 @@ d3.select('#dataset')
 		loadData();
 	})
 
+d3.select('#rule_encoding')
+	.on('change', function() {
+		let val = d3.select(this).property('value');
+		if (val == 'bar'){
+			BAR = true;
+		} else {
+			BAR = false;
+			d3.select('#color_scale')
+			    .attr('visibility', "visible")
+		}
+		update_rule_rendering(rule_svg, col_svg, stat_svg, "", listData, row_order);
+	})
+
 function generate_rules() {
 	let support_val, num_feat_val;
 		d3.select('#support_val')

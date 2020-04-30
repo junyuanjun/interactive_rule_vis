@@ -20,6 +20,15 @@ input {
   font-size: 12px;
 }
 
+.pos {
+  fill: grey;
+  fill-opacity: .5;
+}
+
+.summary_hist {
+  margin: 5px;
+}
+
 .selection {
   border: 1px solid lightgrey;
 }
@@ -74,7 +83,7 @@ rect {
   margin-left: 5px;
   font-weight: bold;
   font-size: 12px;
-  border-left: 1px solid grey;
+  /*border-left: 1px solid grey;*/
 }
 
 .title span{

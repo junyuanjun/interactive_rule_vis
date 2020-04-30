@@ -1,11 +1,16 @@
 import numpy as np
 import pandas as pd
 import copy
+from sklearn.metrics.pairwise import cosine_similarity
+from scipy.cluster.hierarchy import ward, leaves_list
+from scipy.spatial.distance import pdist
 
 class Forest():
-	def initialize(self, node_info, real_min, real_max, real_percentile, df, y_pred, y_gt):
+	def initialize(self, node_info, real_min, real_max, real_percentile, df, y_pred, y_gt, rules):
 		self.node_info = { int(x) : node_info[x] for x in node_info }
 		# self.node_info = node_info
+		self.real_min = real_min
+		self.real_max = real_max
 		ranges = np.zeros(shape=(len(real_max), 2))
 		ranges[:, 0] = 0
 		ranges[:, 1] = real_percentile['num_threshold']
@@ -21,6 +26,7 @@ class Forest():
 		self.df = df
 		self.y_pred = np.array(y_pred)
 		self.y_gt = np.array(y_gt)
+		self.rules = rules
 		# cate_X initialization
 		# self.initialize_cate_X(self.df.values)
 
@@ -34,10 +40,10 @@ class Forest():
 			self.rep_range[idx][2] = np.array([real_percentile['percentile_table'][i+1][idx], real_max[idx]])
 
 		# generate node pre_order (root < left < right)
-		self.preOrder = {}
-		self.tot_idx = 0
-		self.preOrderTraverse(0)
-		return {"pre_order": self.preOrder}
+		# self.preOrder = {}
+		# self.tot_idx = 0
+		# self.preOrderTraverse(0)
+		# return {"pre_order": self.preOrder}
 
 	def initialize_cate_X(self, X):
 		self.real_3_1 = np.percentile(X, q=33, axis=0)
@@ -48,6 +54,30 @@ class Forest():
 
 		cate_X = np.transpose(np.array(cate_X))
 		self.cate_X = cate_X
+
+	def initialize_rule_match_table(self):
+		cols = self.df.columns
+		self.rule_matched_table = np.zeros(shape=(len(self.rules), self.df.shape[0]))
+		rid = 0
+		for rule in self.rules:
+			conds = rule['rules']
+			matched_data = pd.DataFrame(self.df)
+			# matched_data = pd.DataFrame(data=self.cate_X, columns=cols)
+			for cond in conds:
+				col = cols[cond['feature']]
+				if (cond['sign'] == '<='):	
+					matched_data = matched_data[matched_data[col] <= cond['threshold']]
+				elif (cond['sign'] == '>'):
+					matched_data = matched_data[matched_data[col] >= cond['threshold']]
+				elif (cond['sign'] == 'range'):
+					matched_data = matched_data[(matched_data[col] >= cond['threshold0']) & (matched_data[col] <= cond['threshold1'])]
+				else:
+					print("!!!!!! Error rule !!!!!!")
+			matched_index = matched_data.index.values.astype(int)
+			self.rule_matched_table[rid, matched_index] = 1
+			rid += 1
+		self.rule_similarity = pdist(X=self.rule_matched_table, metric='jaccard')
+
 
 	def transform_func(self, col_idx, ele):
 		if (ele < self.real_3_1[col_idx]):
@@ -194,10 +224,10 @@ class Forest():
 			col = cols[cond['feature']]
 			if (cond['sign'] == '<='):	
 				matched_data = matched_data[matched_data[col] <= cond['threshold']]
-			elif (cond['sign'] == '>='):
-				matched_data = matched_data[matched_data[col] > cond['threshold']]
+			elif (cond['sign'] == '>'):
+				matched_data = matched_data[matched_data[col] >= cond['threshold']]
 			elif (cond['sign'] == 'range'):
-				matched_data = matched_data[(matched_data[col] > cond['threshold0']) & (matched_data[col] <= cond['threshold1'])]
+				matched_data = matched_data[(matched_data[col] >= cond['threshold0']) & (matched_data[col] <= cond['threshold1'])]
 			else:
 				print("!!!!!! Error rule !!!!!!")
 
@@ -292,4 +322,67 @@ class Forest():
 		if (self.node_info[root]['left'] > 0):
 			self.preOrderTraverse(self.node_info[root]['left'])
 		self.preOrder[self.node_info[root]['node_id']]['max_descendant'] = self.tot_idx-1
+
+	def find_the_min_set(self):
+		# initialize distance
+		# D[i] means how many instances that rule i can cover but are not covered by rules in the targe set
+		target_set = []
+		D = {i: self.rule_matched_table[i].sum() for i in range(len(self.rules))}
+		target_matched_vector = np.zeros(shape=self.df.shape[0])
+
+		# find the most differet rule every time, 
+		# until all instances are covered, or cannot cover new instances
+		go_on = True
+		rid = max(D, key=D.get)
+		while (go_on):
+			target_set.append(rid)
+			target_matched_vector = np.logical_or(target_matched_vector, self.rule_matched_table[rid])
+			del D[rid]
+			if (len(D) == 0):
+				go_on = False
+			else:
+				# update distance to target set
+				D = {key: np.logical_or(target_matched_vector, self.rule_matched_table[key]).sum() - target_matched_vector.sum() for key in D}
+				rid = max(D, key=D.get)
+				if (D[rid] == 0):
+					go_on = False
+
+		self.target_set = target_set
+		# get the row order
+		hierarchy_leaves = self.hierarchical_clustering(target_set)
+		target_rule_set = []
+		for rule_ord in hierarchy_leaves:
+			rid = target_set[rule_ord]
+			target_rule_set.append(self.rules[rid])
+		return {'rules': target_rule_set}
+
+	def hierarchical_clustering(self, target_set):
+		# construct vectors of rules for clusters
+		vectors = []
+		for rid in target_set:
+			vect = np.ones(shape=self.df.shape[1])
+			vect = np.negative(vect) * 2
+			for d in self.rules[rid]['rules']:
+				vmin = self.real_min[d['feature']]
+				vmax = self.real_max[d['feature']]
+				# vmin = 0
+				# vmax = 2
+				if (d['sign'] == '<='):
+					vmax = d['threshold']
+				elif (d['sign'] == '>'):
+					vmin = d['threshold']
+				else:
+					vmin = d['threshold0']
+					vmax = d['threshold1']
+				med = (vmin + vmax) / 2
+				val = (med-self.real_min[d['feature']]) / (self.real_max[d['feature']] - self.real_min[d['feature']])
+				vect[d['feature']] = val
+			vectors.append(vect)
+		X = np.array(vectors)
+		# clustering
+		Z = ward(pdist(X))
+		leaves = leaves_list(Z)
+		return leaves
+
+	# def get_top_similar_coverage_rules(rid):
 

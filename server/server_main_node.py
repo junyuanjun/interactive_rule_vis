@@ -44,10 +44,14 @@ def initialize(dataname):
 		df = pd.DataFrame(columns=data['columns'], data=data['data'])
 		y_pred = data['y_pred']
 		y_gt = data['y_gt']
+	with open(folder + 'list.json', 'r') as json_input:
+		rules = json.load(json_input)['rule_lists']
 
-	info = forest.initialize(node_info, real_min, real_max, real_percentile, df, y_pred, y_gt)
+	forest.initialize(node_info, real_min, real_max, real_percentile, df, y_pred, y_gt,rules)
+	forest.initialize_rule_match_table()
+	rule_to_show = forest.find_the_min_set()
 	print("====initialized====")
-	return info
+	return rule_to_show
 
 @app.route("/find_leaf_rules", methods=['POST'])
 def find_leaf_rules():

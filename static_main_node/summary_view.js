@@ -36,7 +36,7 @@ let clicked_tree_level = -1;
 function intialize_scales(max_depth) {
 	tree_height = max_depth * depth_height;
   d3.select('#summary_div')
-    .style("height", `${tree_height+view_margin.top+view_margin.bottom}px`);
+    .style("height", `${hist_height+hist_margin.top+hist_margin.bottom}px`);
 
   let min_support = filter_threshold['support'] / d3.sum(node_info[0]['value']);
 

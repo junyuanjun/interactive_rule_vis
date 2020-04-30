@@ -1,4 +1,5 @@
-let hist_size = [200, 50],
+let hist_size = [80, 50],
+	proj_size = [200, 200]
 	hist_width = hist_size[0],
 	hist_height = hist_size[1];
 
@@ -6,15 +7,18 @@ let hist_margin = {'top': 5, 'bottom': 15, left:5, right:5};
 let summary_height = 18, 
 		summary_bar_width = 80,
 		summary_bar_height = 10;
+let proj_x = d3.scaleLinear().range([0, proj_size[0]]),
+	proj_y = d3.scaleLinear().range([0, proj_size[1]]);
 
 function render_stat_summary(summary_info) {
-	d3.selectAll('#selection_summary svg *').remove();
+	d3.selectAll('#selection_coverage *').remove();
 
-	let svg = d3.select('#selection_summary svg')
-		.attr('height', summary_height * 5 + summary_bar_height + 22*hist_height)
+	let svg = d3.select('#selection_coverage')
+		.attr('height', summary_height * 5 + summary_bar_height)
+		// .attr('height', summary_height * 5 + summary_bar_height + 22*hist_height)
 
-	d3.select('#selection_summary svg')
-		.attr('height', summary_height * 5 + summary_bar_height + 22*hist_height)
+	d3.select('#selection_coverage')
+		.attr('height', summary_height * 5 + summary_bar_height)
 
 	let margin = {left: 5, top: -10},
 		xoffset = 50;
@@ -54,6 +58,9 @@ function render_stat_summary(summary_info) {
 			.attr('class', 'des_text')
 			.text(`${summary_info[key_list[i]]} / ${size_list[i]}`);
 	}
+	// render_projection();
+
+	// render_histogram();
 
 	// render_histogram(svg);
 
@@ -66,7 +73,31 @@ function render_stat_summary(summary_info) {
 	// })
 }
 
-function render_histogram(svg) {
+function render_projection() {
+	let proj_svg = d3.select("#projection");
+
+	let proj_dict = [];
+	projection.forEach((d) => {
+		proj_dict.push({'x': d[0], 'y': d[1]});
+	})
+	proj_x.domain([d3.min(proj_dict, d=>d.x), d3.max(proj_dict, d=>d.x)]);
+	proj_y.domain([d3.min(proj_dict, d=>d.y), d3.max(proj_dict, d=>d.y)]);
+	proj_svg.selectAll('.pos')
+		.data(proj_dict)
+		.enter()
+		.append('circle')
+		.attr('class', 'pos')
+		.attr('cx', d => proj_x(d.x))
+		.attr('cy', d => proj_y(d.y))
+		.attr('r', 1);
+}
+
+function update_projection() {
+
+
+}
+
+function render_histogram_curve(svg) {
 	let max_hist = d3.max(histogram, (d) => d3.max(d['hist']));
 
 	let y = d3.scaleLinear().domain([0, max_hist])
@@ -122,8 +153,80 @@ function render_histogram(svg) {
 		.style('fill-opacity', .5)
 }
 
+function render_histogram() {
+	let max_hist = d3.max(histogram, (d) => d3.max(d['hist']));
 
-function update_histogram(selected_hist) {
+    let y = d3.scaleLinear().domain([0, max_hist])
+        .range([ 0, hist_height]);
+    let x = d3.scaleLinear().domain([0, histogram[0]['hist'].length])
+        .range([0, hist_width]);
+
+    let svg = d3.select('#summary_hist')
+    	.attr('width', (hist_width + hist_margin.left + hist_margin.right) * attrs.length)
+    let hist_span = (hist_width + hist_margin.left + hist_margin.right)
+
+    let column = svg.selectAll(".col_hist").data(attrs)
+        .enter().append("g")
+        .attr("class", `col_hist`)
+        .attr("id", (d, i) => `colhist-${i}`)
+        .attr("transform", function(d, i) { 
+            return `translate(${col_order[i] * hist_span + rectMarginH}, 
+            ${yScale(0)})`; });
+
+    column.append("text")
+        .attr("x", 6)
+        .attr("y", yScale.bandwidth() / 1.5 - 5)
+        .attr("dy", ".32em")
+        .attr("text-anchor", "start")
+        .text((d) => {
+            let textLength = ctx.measureText(d).width;
+            let text = d;
+            let txt = d;
+            while (textLength > hist_width-20) {
+                text = text.slice(0, -1);
+                textLength = ctx.measureText(text+'...').width;
+                txt = text+'...';
+            }
+            return txt;
+        })
+        .append('title')
+        .text(d => d)
+
+    let histEnter = svg.selectAll(".summary_hist")
+        .data(histogram)
+        .enter()
+        .append('g')
+        .attr('class', 'summary_hist')
+        .attr('transform', (d,i) => 
+            `translate(${col_order[i]*hist_span+rectMarginH}, ${yScale(0)+font_size*2})`);
+
+    stepWidth = hist_width / 10;
+    histEnter.append('rect')
+        .style('width', hist_width)
+        .style('height', hist_height)
+        .style('fill', 'none')
+        .style('stroke', 'dimgrey')
+
+    histEnter.selectAll('.hist_rect')
+        .data(d=> d['hist'])
+        .enter()
+        .append('rect')
+        .attr('class', 'hist_rect')
+        .style('x', (d, i) => i * stepWidth)
+        .style('y', d => hist_height - y(d))
+        .style('width', stepWidth)
+        .style('height', d => y(d))
+        .style('fill', 'darkgrey');
+    histEnter.append('line')
+        .attr('x1', 0)
+        .attr('x2', rectWidth)
+        .attr('y1', hist_height)
+        .attr('y2', hist_height)
+        .style('stroke', 'darkgrey')
+}
+
+
+function update_histogram_curve(selected_hist) {
 	let max_hist = d3.max(histogram, (d) => d3.max(d['hist']));
 
 	let y = d3.scaleLinear().domain([0, max_hist])

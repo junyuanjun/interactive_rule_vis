@@ -1,4 +1,4 @@
-var legendHeight = 50, legendWidth = 200;
+var legendHeight = 50, legendWidth = 300;
 
 var colors = ["steelblue", "#fb9a99"];
 var conf_colors = ['#2887a1', '#cf597e'];
@@ -22,15 +22,18 @@ var legend_r = 5;
 
 function render_legend_label(id) {
   d3.select(id).select('g').remove();
-  var yoffset = 5;
+  var yoffset = 7;
   var indent = 20;
 
   var legend = d3.select(id)
       .style("width", legendWidth)
       .style("height", legendHeight)
       .append("g")
+      .attr("transform", "translate(0, 4)");
+
+
 	var g = legend.append("g")	
-		.attr("class", "legend");
+		.attr("class", "label legend")
 
 	// color legend
 	var r = legend_r;
@@ -91,7 +94,13 @@ function render_legend_label(id) {
 
 
  	// color legend
-    let linear_gradient = legend.append('defs')
+  color_legend = legend.append('g')
+    .classed('legend', true)
+    .attr('id', 'color_scale')
+    .attr('transform', `translate(${xoffset}, ${yoffset-r})`)
+    .attr('visibility', "hidden")
+
+  let linear_gradient = legend.append('defs')
         .append('linearGradient')
       .attr('id', "summary-linear-gradient")
       .attr("x1", "0%")
@@ -99,6 +108,7 @@ function render_legend_label(id) {
       .attr("x2", "100%")
       .attr("y2", "0%");
 
+    let stop_colors = ['#f0f0f0', '#969696', '#252525'];
     linear_gradient.append('stop')
       .attr('offset', '0%')
       .attr('stop-color', stop_colors[0]);
@@ -111,43 +121,46 @@ function render_legend_label(id) {
       .attr('offset', '100%')
       .attr('stop-color', stop_colors[2]);
 
-    // g.append('rect')
-    // 	.attr('x', view_margin.left)
-    // 	.attr('y', tree_height + view_margin.top )
-    // 	.attr('width', 60)
-    // 	.attr('height', 10)
-    // 	.attr('fill', `url(#summary-linear-gradient)`)
+    color_legend.append('rect')
+    	.attr('width', 60)
+    	.attr('height', 10)
+    	.attr('fill', `url(#summary-linear-gradient)`)
+
+    color_legend.append('text')
+     .attr('x',  65)
+     .attr('y', 2*r-2)
+     .text('range: low→high')
 
     // g.append('text')
-    // 	.attr('x', view_margin.left + 80)
+    // 	.attr('x', xoffset +  + 80)
     // 	.attr('y', tree_height + view_margin.top + 10)
     // 	.text('accuracy: [0, 100%]')
 
-    if (NODE_ENCODING !== 'purity') {
-      yoffset += indent
-      g.append('rect')
-        .attr('class', 'node_encoding_legend')
-        .attr('x', indent-r)
-        .attr('y', yoffset-r)
-        .attr('width', rectWidth)
-        .attr('height', 10)
-        .attr('fill', `url(#summary-linear-gradient)`)
+    // if (NODE_ENCODING !== 'purity') {
+    //   yoffset += indent
+    //   g.append('rect')
+    //     .attr('class', 'node_encoding_legend')
+    //     .attr('x', indent-r)
+    //     .attr('y', yoffset-r)
+    //     .attr('width', rectWidth)
+    //     .attr('height', 10)
+    //     .attr('fill', `url(#summary-linear-gradient)`)
 
-      g.append('text')
-        .attr('class', 'node_encoding_legend')
-        .attr('x', indent + rectWidth)
-        .attr('y', yoffset+r)
-        .text(() => {
-          switch (NODE_ENCODING) {
-            case 'accuracy':
-              return `accuracy: [${filter_threshold['accuracy'][0]}, ${filter_threshold['accuracy'][1]}]`
-            case 'fidelity':
-              return `fidelity: [${filter_threshold['fidelity']}, 1]`
-          }
-        })
-      } else {
+    //   g.append('text')
+    //     .attr('class', 'node_encoding_legend')
+    //     .attr('x', indent + rectWidth)
+    //     .attr('y', yoffset+r)
+    //     .text(() => {
+    //       switch (NODE_ENCODING) {
+    //         case 'accuracy':
+    //           return `accuracy: [${filter_threshold['accuracy'][0]}, ${filter_threshold['accuracy'][1]}]`
+    //         case 'fidelity':
+    //           return `fidelity: [${filter_threshold['fidelity']}, 1]`
+    //       }
+    //     })
+    //   } else {
 
-      }
+    //   }
     
 }
 

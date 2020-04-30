@@ -6,7 +6,7 @@ let margin = {top: 0, right: 45, bottom: 5, left: 0},
     height;
 let overviewWidth = 150;
 
-let folder = "fico";
+let folder = "fico_rf";
 
 height = 650 - margin.top - margin.bottom;
 
@@ -15,9 +15,9 @@ let handleWidth = 0.5,
     handleHeight, 
     handleLedge = 3;
 let rectMarginTop = 5, rectMarginBottom = 5, 
-    rectMarginH = 10;
+    rectMarginH = 5;
 
-let glyphCellWidth = 5, glyphCellHeight = 10;
+let glyphCellWidth = 4, glyphCellHeight = 10;
 let rectHeight, rectWidth;
 let supportRectWidth = 50, fidelityChartWidth = 50, rule_radius = 7;
 let statWidth = supportRectWidth * 2 + fidelityChartWidth + rule_radius * 2 + 20;
@@ -91,138 +91,153 @@ let RULE_MODE = GRADIENT_RULE_VIS;
 
 let added_filters = [];
 let pre_order = {};
+let rule_similarity = []
 
 function loadData() {
     let path = "/data/" + folder;
 
-
-    if (folder !== 'fico_rf') {
+    if (folder == 'fico_rf_cat' || folder == 'fico_rf' || folder=='wine_red') {
         // fetch(domain + "initialize/" + folder);
         postData("initialize/" + folder, {}, (info) => {
-            pre_order = info['pre_order'];
+            // rule_similarity = info['rule_similarity'];
+            listData = info['rules'];
+
+            d3.queue()
+                .defer(d3.json, path + "/test.json")
+                // .defer(d3.json, path + "/list.json")
+                .defer(d3.json, path + "/histogram.json")
+                .defer(d3.json, path + "/node_info.json")
+                .defer(d3.json, path + "/tree.json")
+                .defer(d3.json, path + "/projection.json")
+                .await((err, file1, file3, file4, file5, file6) => {
+                    if (err) {
+                        console.log(err);
+                        return;
+                    }
+                    // assign values
+                    attrs = file1["columns"];
+                    raw_data = file1["data"];
+                    real_min = file1["real_min"];
+                    real_max = file1["real_max"];
+                    median = file1["median"]
+                    real_percentile = file1["real_percentile"];
+                    // listData = file2["rule_lists"];
+                    target_names = file1["target_names"];
+                    tot_data = file1['data'].length;
+                    node_info = file4['node_info_arr'];
+                    max_depth = file4['max_depth'];
+                    tot_train = node_info[0]['value'][0] + node_info[0]['value'][1];
+                    treeData = file5['tree'][0];
+                    histogram = file3['histogram'];
+                    projection = file6['projection'];
+
+                    present_rules = listData;
+                    summary_nodes = filter_nodes(node_info);
+                    if (folder == 'fico_rf'){
+                        d3.range(listData.length).forEach(d => pre_order[d] = d);
+                    }
+                    // render_matrix(rule_similarity);
+
+                    // adjust width and height
+                    if (RULE_MODE === MEDIAN_VAL_VIS) {
+                        glyphCellWidth *= 2;
+                        rectMarginH = 1;
+                        rectMarginBottom = 1;
+                        rectMarginTop = 1;
+
+                        width = attrs.length * (glyphCellWidth + rectMarginH);
+                    } else {
+                        width = attrs.length * (glyphCellWidth * 5 + rectMarginH * 2);
+                    }
+
+                    height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
+
+                    // scale for placing cells
+                    xScale = d3.scaleBand(d3.range(attrs.length+1),[1, width]);
+                    yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
+                    
+                    scroll_functions(width, height, "");
+                    scroll_functions(width, height, 2);
+                    scroll_functions(width, height, 3);
+                    scroll_functions(width, height, 4);
+                    scroll_data(width, height);
+
+                    // scale for render the support bar
+                    fidelityScale = d3.scaleLinear([0, 1], [0, fidelityChartWidth]);
+                    confScale = d3.scaleLinear([0, 1], [0, supportRectWidth]);
+                    // scale for filling rule ranges
+                    // rectHeight = yScale.bandwidth() - rectMarginTop - rectMarginBottom;
+                    rectHeight = glyphCellHeight;
+                    rectWidth = glyphCellWidth * 5
+                    handleHeight = rectHeight + handleLedge * 2;
+                    widthScale = [];
+                    colorScale = [];
+
+                    attrs.forEach((d, i) => {
+                        widthScale.push(d3.scaleLinear()
+                            .range([0, rectWidth])
+                            .domain([real_min[i], real_max[i]]));
+
+                        let bin1 = (real_min[i] + real_percentile['percentile_table'][0][i])/2,
+                            bin2 = (real_percentile['percentile_table'][0][i] + real_percentile['percentile_table'][1][i])/2,
+                            bin3 = (real_percentile['percentile_table'][1][i] + real_max[i])/2
+                        colorScale.push(d3.scaleLinear()
+                            // .domain([bin1, bin2, bin3])
+                            .domain([real_min[i], real_percentile['percentile_table'][0][i], real_percentile['percentile_table'][1][i], real_max[i]])
+                            // .range([d3.lab("#91bfdb"),d3.lab("#ffffbf"),d3.lab("#fc8d59")])
+                            // .range(['#f0f0f0', '#969696', '#252525'])
+                            .range(['#f0f0f0', '#969696', '#636363', '#252525'])
+                            // .clamp(true)
+                            .interpolate(d3.interpolateLab)
+                            );
+                    });
+
+                    // render_slider();
+
+                    switch (RULE_MODE) {
+                        case BAND_RULE_VIS:
+                            generate_band_bars(listData);
+                            break;
+                    }
+
+                    render_legend_label("#legend1");
+                    render_summary(summary_nodes, max_depth);
+
+                    // TO BE CHANGED BACK
+                    // if (folder !== 'fico_rf') {
+                    //     find_leaf_rules(summary_nodes, node_info, 0);
+                    // } else {
+                        present_rules = listData;
+                        col_order = column_order_by_feat_freq(listData);
+
+                        // rule
+                        tab_rules[0] = listData;
+                        // update node2rule pos
+                        node2rule[0] = {};
+                        rule2node[0] = {};
+                        listData.forEach((d, idx) => {
+                          node2rule[0][d['node_id']] = idx;
+                          rule2node[0][idx] = d['node_id'];
+                          pre_order[d['node_id']] = {'order': idx, 'max': idx};
+                        })
+
+                        update_rule_rendering(rule_svg, col_svg, stat_svg, "", listData, col_order);
+                        d3.select("#rule-num")
+                            .text(listData.length);
+                        update_summary(summary_nodes);
+                    // }
+
+                    let summary_info = {
+                        'support': 0,
+                        'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0,
+                        'r-squared': [0, 0]
+                    }
+                    render_stat_summary(summary_info);
+            });
         })
+
     } 
 
-    d3.queue()
-        .defer(d3.json, path + "/test.json")
-        .defer(d3.json, path + "/list.json")
-        .defer(d3.json, path + "/histogram.json")
-        .defer(d3.json, path + "/node_info.json")
-        .defer(d3.json, path + "/tree.json")
-        .await((err, file1, file2, file3, file4, file5) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            // assign values
-            attrs = file1["columns"];
-            raw_data = file1["data"];
-            real_min = file1["real_min"];
-            real_max = file1["real_max"];
-            median = file1["median"]
-            real_percentile = file1["real_percentile"];
-            listData = file2["rule_lists"];
-            target_names = file2["target_names"];
-            tot_data = file1['data'].length;
-            node_info = file4['node_info_arr'];
-            max_depth = file4['max_depth'];
-            tot_train = node_info[0]['value'][0] + node_info[0]['value'][1];
-            treeData = file5['tree'][0];
-            histogram = file3['histogram'];
-
-            present_rules = listData;
-            summary_nodes = filter_nodes(node_info);
-
-            // adjust width and height
-            if (RULE_MODE === MEDIAN_VAL_VIS) {
-                glyphCellWidth *= 2;
-                rectMarginH = 1;
-                rectMarginBottom = 1;
-                rectMarginTop = 1;
-
-                width = attrs.length * (glyphCellWidth + rectMarginH);
-            } else {
-                width = attrs.length * (glyphCellWidth * 5 + rectMarginH * 2);
-            }
-
-            height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
-
-            // scale for placing cells
-            xScale = d3.scaleBand(d3.range(attrs.length+1),[1, width]);
-            yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
-            
-            scroll_functions(width, height, "");
-            scroll_functions(width, height, 2);
-            scroll_functions(width, height, 3);
-            scroll_functions(width, height, 4);
-            scroll_data(width, height);
-
-            // scale for render the support bar
-            fidelityScale = d3.scaleLinear([0, 1], [0, fidelityChartWidth]);
-            confScale = d3.scaleLinear([0, 1], [0, supportRectWidth]);
-            // scale for filling rule ranges
-            // rectHeight = yScale.bandwidth() - rectMarginTop - rectMarginBottom;
-            rectHeight = glyphCellHeight;
-            rectWidth = glyphCellWidth * 5;
-            handleHeight = rectHeight + handleLedge * 2;
-            widthScale = [];
-            colorScale = [];
-
-            attrs.forEach((d, i) => {
-                widthScale.push(d3.scaleLinear()
-                    .range([0, rectWidth])
-                    .domain([real_min[i], real_max[i]]));
-
-                colorScale.push(d3.scaleLinear()
-                    .domain([real_min[i], (real_min[i]+real_max[i])/2, real_max[i]])
-                    .range([d3.lab("#91bfdb"),d3.lab("#ffffbf"),d3.lab("#fc8d59")])
-                    .interpolate(d3.interpolateLab));
-            });
-
-            // render_slider();
-
-            column_order_by_feat_freq(listData);
-
-            switch (RULE_MODE) {
-                case BAND_RULE_VIS:
-                    generate_band_bars(listData);
-                    break;
-            }
-
-            render_legend_label("#legend1");
-            render_summary(summary_nodes, max_depth);
-
-            // TO BE CHANGED BACK
-            if (folder !== 'fico_rf') {
-                find_leaf_rules(summary_nodes, node_info, 0);
-            } else {
-                present_rules = listData;
-                col_order = column_order_by_feat_freq(listData);
-
-                // rule
-                tab_rules[0] = listData;
-                // update node2rule pos
-                node2rule[0] = {};
-                rule2node[0] = {};
-                listData.forEach((d, idx) => {
-                  node2rule[0][d['node_id']] = idx;
-                  rule2node[0][idx] = d['node_id'];
-                  pre_order[d['node_id']] = {'order': idx, 'max': idx};
-                })
-
-                update_rule_rendering(rule_svg, col_svg, stat_svg, "", listData, col_order);
-                d3.select("#rule-num")
-                    .text(listData.length);
-                update_summary(summary_nodes);
-            }
-
-            let summary_info = {
-                'support': 0,
-                'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0,
-                'r-squared': [0, 0]
-            }
-            render_stat_summary(summary_info);
-    });
 }
 
 function scroll_functions(width, height, idx) {
@@ -377,9 +392,6 @@ function render_feature_names_and_grid(stat_legend, rule_svg, column_svg, stat_s
         .range([ 0, col_hist_height]);
     let x = d3.scaleLinear().domain([0, histogram[0]['hist'].length])
         .range([0, rectWidth]);
-
-    let col_hist = column.append('g')
-        .classed('col_hist', true);
 
     let histEnter = column_svg.selectAll(".hist")
         .data(histogram)
