@@ -11,9 +11,6 @@ let folder = "fico_rf";
 height = 650 - margin.top - margin.bottom;
 
 let radiusRange = [4, 20];
-let handleWidth = 0.5, 
-    handleHeight, 
-    handleLedge = 3;
 let rectMarginTop = 5, rectMarginBottom = 5, 
     rectMarginH = 5;
 
@@ -21,6 +18,7 @@ let glyphCellWidth = 4, glyphCellHeight = 10;
 let rectHeight, rectWidth;
 let supportRectWidth = 50, fidelityChartWidth = 50, rule_radius = 7;
 let statWidth = supportRectWidth * 2 + fidelityChartWidth + rule_radius * 2 + 20;
+let compWidth = 90;
 
 let tot_train;
 
@@ -32,6 +30,10 @@ let col_svg = d3.select("#column_svg")
 let stat_svg = d3.select('#stat')
     .style("width", `${statWidth}px`)
     .style("height", `${height + margin.top + margin.bottom}px`);
+let comp_svg = d3.select('#compare')
+    .style("width", `${compWidth+10}px`)
+    .style("height", `${height + margin.top + margin.bottom}px`);
+
 
 let rule_svg2 = d3.select("#rule_svg2");
 
@@ -51,6 +53,10 @@ let stat_svg4 = d3.select("#stat4")
     .style("width", `${statWidth}px`);
 let col_svg4 = d3.select("#column_svg4")
     .style("height", `${column_height}px`);
+let comp_svg4 = d3.select('#compare4')
+    .style("width", `${compWidth+10}px`)
+    .style("height", `${height + margin.top + margin.bottom}px`);
+
 
 let widthScale, radiusScale, xScale, yScale, colorScale, 
     supportScale, fidelityScale, confScale;
@@ -64,6 +70,8 @@ ctx.font = '10px sans-serif';
 let selected_range = [];
 let rule_attr_ranges = [];
 let rules_to_keep = [];
+
+let selected_rule = -1;
 
 let histogram = [];
 
@@ -85,7 +93,7 @@ let i = 0,
     max_depth,
     target_names;
 
-let present_rules;
+let present_rules, tot_rule;
 
 let RULE_MODE = GRADIENT_RULE_VIS;
 
@@ -96,11 +104,12 @@ let rule_similarity = []
 function loadData() {
     let path = "/data/" + folder;
 
-    if (folder == 'fico_rf_cat' || folder == 'fico_rf' || folder=='wine_red') {
+    if (folder == 'wine_white' || folder == 'fico_rf' || folder=='wine_red') {
         // fetch(domain + "initialize/" + folder);
         postData("initialize/" + folder, {}, (info) => {
             // rule_similarity = info['rule_similarity'];
             listData = info['rules'];
+            tot_rule = info['tot_rule']
 
             d3.queue()
                 .defer(d3.json, path + "/test.json")
@@ -108,8 +117,7 @@ function loadData() {
                 .defer(d3.json, path + "/histogram.json")
                 .defer(d3.json, path + "/node_info.json")
                 .defer(d3.json, path + "/tree.json")
-                .defer(d3.json, path + "/projection.json")
-                .await((err, file1, file3, file4, file5, file6) => {
+                .await((err, file1, file3, file4, file5) => {
                     if (err) {
                         console.log(err);
                         return;
@@ -129,7 +137,6 @@ function loadData() {
                     tot_train = node_info[0]['value'][0] + node_info[0]['value'][1];
                     treeData = file5['tree'][0];
                     histogram = file3['histogram'];
-                    projection = file6['projection'];
 
                     present_rules = listData;
                     summary_nodes = filter_nodes(node_info);
@@ -169,7 +176,6 @@ function loadData() {
                     // rectHeight = yScale.bandwidth() - rectMarginTop - rectMarginBottom;
                     rectHeight = glyphCellHeight;
                     rectWidth = glyphCellWidth * 5
-                    handleHeight = rectHeight + handleLedge * 2;
                     widthScale = [];
                     colorScale = [];
 
@@ -213,26 +219,26 @@ function loadData() {
                         // rule
                         tab_rules[0] = listData;
                         // update node2rule pos
-                        node2rule[0] = {};
-                        rule2node[0] = {};
-                        listData.forEach((d, idx) => {
-                          node2rule[0][d['node_id']] = idx;
-                          rule2node[0][idx] = d['node_id'];
-                          pre_order[d['node_id']] = {'order': idx, 'max': idx};
-                        })
+                        // node2rule[0] = {};
+                        // rule2node[0] = {};
+                        // listData.forEach((d, idx) => {
+                        //   node2rule[0][d['node_id']] = idx;
+                        //   rule2node[0][idx] = d['node_id'];
+                        //   pre_order[d['node_id']] = {'order': idx, 'max': idx};
+                        // })
 
                         update_rule_rendering(rule_svg, col_svg, stat_svg, "", listData, col_order);
                         d3.select("#rule-num")
-                            .text(listData.length);
-                        update_summary(summary_nodes);
+                            .text(`${listData.length}/ ${tot_rule}`);
+                        // update_summary(summary_nodes);
                     // }
 
-                    let summary_info = {
-                        'support': 0,
-                        'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0,
-                        'r-squared': [0, 0]
-                    }
-                    render_stat_summary(summary_info);
+                    // let summary_info = {
+                    //     'support': 0,
+                    //     'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0,
+                    //     'r-squared': [0, 0]
+                    // }
+                    // render_stat_summary(summary_info);
             });
         })
 
@@ -536,32 +542,12 @@ function prune_nodes() {
     find_leaf_rules(new_nodes, node_info, 0);
 }
 
-function render_size_circle(listData) {
-    stat_svg.selectAll(".label_circle").remove();
-    height = listData.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
-    stat_svg.attr("height", height + margin.top + margin.bottom);
-
-
-    let circles = stat_svg.selectAll(".label_circle")
-        .data(listData)
-        .enter()
-        .append("circle")
-        .attr("class", "label_circle")
-        .attr("cx", xScale.bandwidth()/2)
-        .attr("cy", (d, i) => {
-            return yScale(i) + yScale.bandwidth()/2
-        })
-        // .attr("r", d => radiusScale(d["coverage"]))
-        .attr("r", 7)
-        .attr("fill", d => colorCate[d["label"]])
-        .attr("stroke", "none")
-}
-
 function render_confusion_bars(stat_svg, listData, row_order) {
     let yScale = d3.scaleBand(d3.range(listData.length+1), [margin.top, height]);
     stat_svg.selectAll('.support').remove();
 
     stat_svg.style('height', `${height}px`)
+    comp_svg.style('height', `${height}px`)
 
     let stat_id = stat_svg._groups[0][0].id,
         tab_idx = stat_id.substr(4).length > 0 ? parseInt(stat_id.substr(4))-1 : 0;
@@ -614,7 +600,7 @@ function render_confusion_bars(stat_svg, listData, row_order) {
         .attr("x", xoffset+2)
         .attr("y", rectMarginTop + glyphCellHeight /2 +2)
         .style('fill', 'white')
-        .text(d => node_info[d['node_id']]['conf_mat'][0][0] > .1 
+        .text(d => node_info[d['node_id']]['conf_mat'][0][0] > .3 
             ? Math.floor(node_info[d['node_id']]['conf_mat'][0][0] * d3.sum(node_info[d['node_id']]['value'])) : "")
 
     // fp
@@ -633,7 +619,7 @@ function render_confusion_bars(stat_svg, listData, row_order) {
         .attr("x", d=>2+xoffset+confScale(node_info[d['node_id']]['conf_mat'][0][0]))
         .attr("y", rectMarginTop + glyphCellHeight /2 +2)
         .style('fill', 'white')
-        .text(d => node_info[d['node_id']]['conf_mat'][0][1] > .1 
+        .text(d => node_info[d['node_id']]['conf_mat'][0][1] > .3 
             ? Math.floor(node_info[d['node_id']]['conf_mat'][0][1] * d3.sum(node_info[d['node_id']]['value'])) : "")
 
     // covered instances of label 1, true negative
@@ -654,7 +640,7 @@ function render_confusion_bars(stat_svg, listData, row_order) {
             + node_info[d['node_id']]['conf_mat'][0][1]))
         .attr("y", rectMarginTop + glyphCellHeight /2 +2)
         .style('fill', 'white')
-        .text(d => node_info[d['node_id']]['conf_mat'][1][1] > .1 
+        .text(d => node_info[d['node_id']]['conf_mat'][1][1] > .3 
             ? Math.floor(node_info[d['node_id']]['conf_mat'][1][1] * d3.sum(node_info[d['node_id']]['value'])) : "")
 
     // false negative
@@ -675,7 +661,7 @@ function render_confusion_bars(stat_svg, listData, row_order) {
             + node_info[d['node_id']]['conf_mat'][0][1] + node_info[d['node_id']]['conf_mat'][1][1]))
         .attr("y", rectMarginTop + glyphCellHeight /2 +2)
         .style('fill', 'white')
-        .text(d => node_info[d['node_id']]['conf_mat'][1][0] > .1 
+        .text(d => node_info[d['node_id']]['conf_mat'][1][0] > .3 
             ? Math.floor(node_info[d['node_id']]['conf_mat'][1][0] * d3.sum(node_info[d['node_id']]['value'])) : "")
 
     // overall support
@@ -736,15 +722,47 @@ function render_stat_legend(stat_legend, rule_svg, col_svg, stat_svg, tab_id) {
     }
 
     stat_legend.style('height', `${column_height}px`)
-        .style('width', `${statWidth}px`);
+        .style('width', `${compWidth+statWidth}px`);
 
     let tab_idx = tab_id=="" ? 0 : tab_id-1;
 
     let rectHeight = glyphCellHeight + rectMarginTop + rectMarginBottom;
+ 
+    // comparison
+    let row = stat_legend.append("g")
+        .attr('calss', 'legend')
+        .attr("transform", `translate(0, ${column_height-rectHeight+rectHeight/4})`)
+
+    row.append('rect')
+        .attr('x', 5)
+        .attr('fill', 'white')
+        .attr('stroke', 'black')
+        .attr('width', compWidth-10)
+        .attr('height', glyphCellHeight);
+
+    row.selectAll(".compare-fill")
+        .data([{'x': 5, 'width': 10, 'color': '#636363'},
+            {'x': 15, 'width': 15,'color': '#969696'}, 
+            {'x': 30, 'width': 15,'color': '#cccccc'}]
+        )
+        .enter()
+        .append("rect")
+        .attr("x", d=>d.x)
+        .attr('class', 'compare-fill')
+        .attr("width", d=>d.width)
+        .attr("y",  0)
+        .attr("height", glyphCellHeight)
+        .attr("fill", d => d.color);
+    row.append('text')
+        .attr("x", 10)
+        .attr("y", rectMarginTop+3)
+        .style('fill', 'black')
+        .text('comparison');
+
 
     let res = stat_legend.append('g')
         .attr('class', 'legend')
-        .attr('transform', `translate(0, ${column_height-rectHeight})`);
+        .attr('transform', `translate(${compWidth+10}, ${column_height-rectHeight})`);
 
     // rule prediction
     let pie = d3.pie()

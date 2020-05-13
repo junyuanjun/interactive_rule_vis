@@ -109,6 +109,15 @@ def get_histogram():
 	selected_hist = forest.get_histogram(selection)
 	return {'res': selected_hist}
 
+@app.route("/get_compare_data/<rid>", methods=['POST', 'GET'])
+def get_compare_data(rid):
+	print("===== GET COMPARE DATA ======")
+	try:
+		rid = int(rid)
+	except:
+		return "Please enter a number"
+	res = forest.get_compare_data(rid)
+	return res
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=6060)

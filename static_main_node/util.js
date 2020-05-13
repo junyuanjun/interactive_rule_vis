@@ -163,10 +163,10 @@ function generate_row_order_by_label(listData) {
   // sort columns by label, ascending
   // left to right for the same label
   row_info.sort((a, b) => {
-    if (a.label !== b.label)
+    // if (a.label !== b.label)
       return a.label - b.label;
-    else
-      return pre_order[a.node_id].order - pre_order[b.node_id].order;
+    // else
+    //   return pre_order[a.node_id].order - pre_order[b.node_id].order;
   });
   row_info.forEach((d, i) => row_order[d.idx] = i);
 
@@ -188,10 +188,10 @@ function generate_row_order_by_confmat(listData, conf_idx) {
   // sort columns by conf_val, descending
   // left to right for the same label
   row_info.sort((a, b) => {
-    if (a.conf_val !== b.conf_val)
+    // if (a.conf_val !== b.conf_val)
       return b.conf_val - a.conf_val;
-    else
-      return pre_order[a.node_id].order - pre_order[b.node_id].order;
+    // else
+    //   return pre_order[a.node_id].order - pre_order[b.node_id].order;
   });
   row_info.forEach((d, i) => row_order[d.idx] = i);
 
@@ -213,10 +213,10 @@ function generate_row_order_by_key(listData, key) {
   // sort columns by val, descending
   // left to right for the same label
   row_info.sort((a, b) => {
-    if (a.val !== b.val)
+    // if (a.val !== b.val)
       return b.val - a.val;
-    else
-      return pre_order[a.node_id].order - pre_order[b.node_id].order;
+    // else
+    //   return pre_order[a.node_id].order - pre_order[b.node_id].order;
   });
   row_info.forEach((d, i) => row_order[d.idx] = i);
 
@@ -269,8 +269,8 @@ function generate_row_order_by_feature(listData, feat_idx, ascending) {
       return ascending ? a.th0 - b.th0 : b.th0 - a.th0;
     else if (a.th1 !== b.th1)
       return ascending ? a.th1 - b.th1 : b.th1 - a.th1;
-    else   
-      return pre_order[a.node_id].order - pre_order[b.node_id].order;
+    // else   
+    //   return pre_order[a.node_id].order - pre_order[b.node_id].order;
   });
   row_info.forEach((d, i) => row_order[d.idx] = i);
 

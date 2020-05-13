@@ -3,7 +3,7 @@ import pandas as pd
 import copy
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.cluster.hierarchy import ward, leaves_list
-from scipy.spatial.distance import pdist
+from scipy.spatial import distance
 
 class Forest():
 	def initialize(self, node_info, real_min, real_max, real_percentile, df, y_pred, y_gt, rules):
@@ -76,8 +76,8 @@ class Forest():
 			matched_index = matched_data.index.values.astype(int)
 			self.rule_matched_table[rid, matched_index] = 1
 			rid += 1
-		self.rule_similarity = pdist(X=self.rule_matched_table, metric='jaccard')
-
+		d = distance.pdist(X=self.rule_matched_table, metric='jaccard')
+		self.rule_similarity = distance.squareform(d)
 
 	def transform_func(self, col_idx, ele):
 		if (ele < self.real_3_1[col_idx]):
@@ -349,12 +349,14 @@ class Forest():
 
 		self.target_set = target_set
 		# get the row order
-		hierarchy_leaves = self.hierarchical_clustering(target_set)
+		self.hierarchy_leaves = self.hierarchical_clustering(target_set)
 		target_rule_set = []
-		for rule_ord in hierarchy_leaves:
+		for rule_ord in self.hierarchy_leaves:
 			rid = target_set[rule_ord]
-			target_rule_set.append(self.rules[rid])
-		return {'rules': target_rule_set}
+			r = self.rules[rid]
+			r['rid'] = rid
+			target_rule_set.append(r)
+		return {'rules': target_rule_set, "tot_rule": len(self.rules)}
 
 	def hierarchical_clustering(self, target_set):
 		# construct vectors of rules for clusters
@@ -380,9 +382,58 @@ class Forest():
 			vectors.append(vect)
 		X = np.array(vectors)
 		# clustering
-		Z = ward(pdist(X))
+		Z = ward(distance.pdist(X))
 		leaves = leaves_list(Z)
 		return leaves
 
-	# def get_top_similar_coverage_rules(rid):
+	def get_compare_data(self, rid):
+		# get the most similar rules
+		r_info = []
+		for rid_1 in range(len(self.rules)):
+			r_info.append({
+				'rid': rid_1,
+				'simi': 1-self.rule_similarity[rid][rid_1]
+			})
+		r_info = sorted(r_info, key=lambda x: x['simi'], reverse=True)
+		top_simi = []
+		for i in range(20):
+			inter = np.logical_and(self.rule_matched_table[rid], self.rule_matched_table[r_info[i]['rid']]).sum()
+			if (inter > 20):
+				r = self.rules[r_info[i]['rid']]
+				r['rid'] = r_info[i]['rid']
+				top_simi.append(r)
+			else:
+				break
+
+		# get the difference b/w this and other rules
+		# target and other rules in the min set
+		same_set_stat = []
+		# for r_id in self.target_set:
+		# 	
+		for rule_ord in self.hierarchy_leaves:
+			r_id = self.target_set[rule_ord]
+			union = np.logical_or(self.rule_matched_table[rid], self.rule_matched_table[r_id]).sum()
+			inter = np.logical_and(self.rule_matched_table[rid], self.rule_matched_table[r_id]).sum()
+			same_set_stat.append({
+				'r_id': r_id,
+				'same': int(inter),
+				'target_unique': int(self.rule_matched_table[rid].sum() - inter),
+				'rule_unique': int(self.rule_matched_table[r_id].sum() - inter),
+			})
+
+		# target and other similar rules
+		similar_set_stat = []
+		for r in top_simi:
+			r_id = r['rid']
+			union = np.logical_or(self.rule_matched_table[rid], self.rule_matched_table[r_id]).sum()
+			inter = np.logical_and(self.rule_matched_table[rid], self.rule_matched_table[r_id]).sum()
+			similar_set_stat.append({
+				'r_id': r_id,
+				'same': int(inter),
+				'target_unique': int(self.rule_matched_table[rid].sum() - inter),
+				'rule_unique': int(self.rule_matched_table[r_id].sum() - inter),
+			})
+		return {'top_simi': top_simi, 'same_set_stat': same_set_stat, 'similar_set_stat': similar_set_stat}
+
+
 

@@ -291,10 +291,36 @@ function click_rule(clicked_g, rule_idx, rule, tab_p) {
 	} else {
 		tab_id = +tab_p - 1;
 	}
-	dblclick(id2hierarchy[rule2node[tab_id][rule_idx]]);
+	// dblclick(id2hierarchy[rule2node[tab_id][rule_idx]]);
+	selected_rule = rule_idx;
+	get_compare_data(listData[rule_idx]['rid']);
+	render_data(rule_idx);
 }
 
-function render_data(rule_idx) {
+
+let same_set_stat, similar_set_stat;
+
+function get_compare_data(selected_rule) {
+	// find similiar rules 
+	let url = "get_compare_data/" + selected_rule
+	postData(url, {}, (data) => {
+		let top_simi = data['top_simi'];
+		same_set_stat = data['same_set_stat'];
+		similar_set_stat = data['similar_set_stat'];
+		tab_rules[3] = top_simi;
+
+		// render the comparsion stat for svg 1
+		render_comparison_bar(comp_svg, "", row_order, same_set_stat)
+
+		// render compareison stat for similar svg
+		render_comparison_bar(comp_svg4, 4, row_order, similar_set_stat)
+
+		// render rules for similar rules
+		update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, top_simi, col_order);
+	})
+}
+
+function render_data(rule_idx, rule) {
 	// get rule content
 	let rules = listData[rule_idx];
 	if (rule) {
@@ -312,7 +338,7 @@ function render_data(rule_idx) {
 
 		d3.selectAll('#data-table *').remove();
 		
-		let table_width = attrs.length* (glyphCellWidth * 5 + rectMarginH * 2 - 2);
+		let table_width = attrs.length* (glyphCellWidth * 5 + rectMarginH * 2 - 2) + 5;
 		let rows = d3.select('#data-table').append('table')
 			.style('width', `${table_width}px`)
 			.style('padding-left', `${margin.left}px`)
@@ -339,7 +365,7 @@ function render_data(rule_idx) {
 		d3.selectAll('#data-pred svg *').remove();
 
 		d3.select('#data-pred svg')
-			.attr('width', "50px")
+			.attr('width', "25px")
 			.attr('height', 18*matched_gt.length)
 			.append('g')
 			.attr('class', 'instance-conf')
@@ -381,30 +407,33 @@ function hover_rule(clicked_g, rule_idx, rule, tab_p) {
 	// highlight in the stat
 	d3.select(`#stat${tab_p}-back-rect-${rule_idx}`)
 		.classed('rule_hover', true);
+	// highlight in the compare
+	d3.select(`#comp${tab_p}-back-rect-${rule_idx}`)
+		.classed('rule_hover', true);
 
 	// highlight the node in the tree view
-	let node_id = rule2node[tab_id][rule_idx];
-	d3.select(`.rule_clicked_node`).remove();
+	// let node_id = rule2node[tab_id][rule_idx];
+	// d3.select(`.rule_clicked_node`).remove();
 
 	// d3.select(`#tree_node-${node_id}`)
 	// 	.append('circle')
 	// 	.attr('class', 'rule_clicked_node')
 	// 	.attr('r', summary_size(node_info[node_id]['support']))
-	let node = d3.select(`#tree_node-${node_id}`)
+	// let node = d3.select(`#tree_node-${node_id}`)
 
-	if (NODE_ENCODING == 'purity') {
-		let size = summary_size_(node_info[node_id]['support'])
-		node.append('rect')
-			.attr('class', 'rule_clicked_node')
-			.attr('x', -size/2)
-			.attr('y', -size/2)
-			.attr('width', size)
-			.attr('height', size);
-	} else {
-		node.append('circle')
-			.attr('class', 'rule_clicked_node')
-			.attr('r', summary_size(node_info[node_id]['support']));
-	}
+	// if (NODE_ENCODING == 'purity') {
+	// 	let size = summary_size_(node_info[node_id]['support'])
+	// 	node.append('rect')
+	// 		.attr('class', 'rule_clicked_node')
+	// 		.attr('x', -size/2)
+	// 		.attr('y', -size/2)
+	// 		.attr('width', size)
+	// 		.attr('height', size);
+	// } else {
+	// 	node.append('circle')
+	// 		.attr('class', 'rule_clicked_node')
+	// 		.attr('r', summary_size(node_info[node_id]['support']));
+	// }
 
 	// update rule description
 	let rule_des = d3.select('#rule_description');
@@ -439,6 +468,11 @@ function hover_rule(clicked_g, rule_idx, rule, tab_p) {
 	})
 
 	str += "<b>THEN</b> " + `<span style="color: ${colorCate[rules['label']]}">` + target_names[rules['label']] + "</span>.";
+	let node_id = rule['node_id']
+	str += `<br> tp: ${Math.floor(node_info[node_id]['conf_mat'][0][0] * d3.sum(node_info[node_id]['value']))}, `
+	str += `fp: ${Math.floor(node_info[node_id]['conf_mat'][0][1] * d3.sum(node_info[node_id]['value']))}, `
+	str += `tn: ${Math.floor(node_info[node_id]['conf_mat'][1][1] * d3.sum(node_info[node_id]['value']))}, `
+	str += `fn: ${Math.floor(node_info[node_id]['conf_mat'][1][0] * d3.sum(node_info[node_id]['value']))}.`
 
 	rule_des.append('p')
 		.html(str);

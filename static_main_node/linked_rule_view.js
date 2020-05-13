@@ -1,6 +1,7 @@
 let BAR = true;
 
-function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, row_order,) {
+function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, row_order,) 
+{
     // remove the column lines and the outdated rules
     rule_svg.selectAll(".grid-col").remove();
     rule_svg.selectAll(".grid-row").remove();
@@ -180,6 +181,13 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, row_o
 
     // render_size_circle(listData);
     render_confusion_bars(stat_svg, listData, row_order);
+
+    // re-render compare view
+    if (tab_idx==0) {
+        render_comparison_bar(comp_svg, "", row_order, same_set_stat)
+    } else {
+        render_comparison_bar(comp_svg4, 4, row_order, similar_set_stat)
+    }
 }
 
 function generate_value_cells(row,) {
@@ -235,3 +243,77 @@ function generate_cells(row) {
         .attr('stroke', 'black')
         .attr("fill", (d) => d['covered'] ? 'dimgray' : 'white')
 }
+
+function render_comparison_bar(comp_svg, idx, row_order, compare_data) {
+    // if (comp_svg.select('g')._groups[0][0] == undefined) {
+    //     return;
+    // }
+    comp_svg.selectAll('g').remove();
+    height = compare_data.length * (glyphCellHeight + rectMarginTop + rectMarginBottom) + margin.top + margin.bottom;
+    
+    // scale for placing cells
+    let yScale = d3.scaleBand(d3.range(compare_data.length+1), [margin.top, height]),
+        tab_idx = idx !== "" ? idx-1 : 0;
+
+    comp_svg.style('height', height);
+
+    let row = comp_svg.selectAll(".row")
+        .data(compare_data)
+        .enter().append("g")
+        .attr("class", "row")
+        .attr("transform", function(d, i) { 
+            if (row_sorted[tab_idx]) {
+                return `translate(0, ${yScale(row_order[i])+rectMarginTop})`; 
+            }
+            return `translate(0, ${yScale(i)+rectMarginTop})`; 
+        })
+
+    let rectHeight = glyphCellHeight;
+    // back-rect
+    row.append('rect')
+        .attr('id', (d, r_i) => `comp${idx}-back-rect-${r_i}`)
+        .attr('class', 'back-rect')
+        .attr('x', -rectMarginH)
+        .attr('y', -rectMarginTop)
+        .attr('height', `${yScale.bandwidth()}px`)
+        .attr('width', `${width-xScale.bandwidth()}px`)
+        .attr('fill', 'white');
+
+    row.append('rect')
+        .attr('x', 5)
+        .attr('fill', 'white')
+        .attr('stroke', 'black')
+        .attr('width', compWidth-10)
+        .attr('height', rectHeight);
+
+    let tot = d3.sum(node_info[0]['value']),
+        widthScale = d3.scaleLinear().domain([0, tot]).range([5, compWidth-5])
+
+    row.selectAll(".compare-fill")
+        .data(d => {
+            let temp = [];
+            // intersection
+            temp.push({'x': widthScale(0), 'width': widthScale(d.same)-5, 'color': '#636363'});
+
+            // target_unique
+            temp.push({'x': widthScale(d.same), 
+                'width': widthScale(d.target_unique)-5,
+                'color': '#969696'});
+
+            // rule unique
+            temp.push({'x': widthScale(d.same+d.target_unique), 
+                'width': widthScale(d.rule_unique)-5,
+                'color': '#cccccc'});
+            return temp;
+        })
+        .enter()
+        .append("rect")
+        .attr("x", d=>d.x)
+        .attr('class', 'compare-fill')
+        .attr("width", d=>d.width)
+        .attr("y",  0)
+        .attr("height", rectHeight)
+        .attr("fill", d => d.color);
+}
+
+
