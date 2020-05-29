@@ -52,7 +52,9 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, row_o
             d3.select('#rule_description').selectAll('p').remove();
         })
         .on('click', function (d, r_i) {
-            click_rule(d3.select(this), r_i, d, idx);
+            if (tab_idx === 0) {
+                click_rule(d3.select(this), r_i, d, idx);
+            }
         })
         .on('dblclick', function(d, r_i) {
             d3.select(this).select('.back-rect')
@@ -67,10 +69,10 @@ function update_rule_rendering(rule_svg, col_svg, stat_svg, idx, listData, row_o
         .attr('y', -rectMarginTop)
         .attr('height', `${yScale.bandwidth()}px`)
         .attr('width', `${width-xScale.bandwidth()}px`)
-        // .attr('fill', 'white')
-        .attr('fill', (d) => 
-            new_node_shown[d['node_id']] ? 'white': 'rgba(0,0,0,.05)'
-        );
+        .attr('fill', 'white')
+        // .attr('fill', (d) => 
+        //     new_node_shown[d['node_id']] ? 'white': 'rgba(0,0,0,.05)'
+        // );
 
     if (BAR) {
         // render the horizontal_line
@@ -295,15 +297,15 @@ function render_comparison_bar(comp_svg, idx, row_order, compare_data) {
             // intersection
             temp.push({'x': widthScale(0), 'width': widthScale(d.same)-5, 'color': '#636363'});
 
-            // target_unique
-            temp.push({'x': widthScale(d.same), 
-                'width': widthScale(d.target_unique)-5,
-                'color': '#969696'});
+            // // target_unique
+            // temp.push({'x': widthScale(d.same), 
+            //     'width': widthScale(d.target_unique)-5,
+            //     'color': '#969696'});
 
-            // rule unique
-            temp.push({'x': widthScale(d.same+d.target_unique), 
-                'width': widthScale(d.rule_unique)-5,
-                'color': '#cccccc'});
+            // // rule unique
+            // temp.push({'x': widthScale(d.same+d.target_unique), 
+            //     'width': widthScale(d.rule_unique)-5,
+            //     'color': '#cccccc'});
             return temp;
         })
         .enter()

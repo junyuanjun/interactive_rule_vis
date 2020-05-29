@@ -106,18 +106,26 @@ function loadData() {
 
     if (folder == 'wine_white' || folder == 'fico_rf' || folder=='wine_red') {
         // fetch(domain + "initialize/" + folder);
-        postData("initialize/" + folder, {}, (info) => {
+        postData("generate_surrogate_rules/", JSON.stringify({
+            "filter_threshold": filter_threshold,
+            "dataname": folder,
+        }), (info) => {
             // rule_similarity = info['rule_similarity'];
             listData = info['rules'];
-            tot_rule = info['tot_rule']
+            tot_rule = info['tot_rule'];
+
+            node_info = info['node_info_arr'];
+            // max_depth = info['max_depth'];
+            tot_train = node_info[0]['value'][0] + node_info[0]['value'][1];
+            // treeData = info['tree'][0];
 
             d3.queue()
                 .defer(d3.json, path + "/test.json")
                 // .defer(d3.json, path + "/list.json")
                 .defer(d3.json, path + "/histogram.json")
-                .defer(d3.json, path + "/node_info.json")
-                .defer(d3.json, path + "/tree.json")
-                .await((err, file1, file3, file4, file5) => {
+                // .defer(d3.json, path + "/node_info.json")
+                // .defer(d3.json, path + "/tree.json")
+                .await((err, file1, file3) => {
                     if (err) {
                         console.log(err);
                         return;
@@ -132,14 +140,15 @@ function loadData() {
                     // listData = file2["rule_lists"];
                     target_names = file1["target_names"];
                     tot_data = file1['data'].length;
-                    node_info = file4['node_info_arr'];
-                    max_depth = file4['max_depth'];
-                    tot_train = node_info[0]['value'][0] + node_info[0]['value'][1];
-                    treeData = file5['tree'][0];
                     histogram = file3['histogram'];
 
+                    // node_info = file4['node_info_arr'];
+                    // max_depth = file4['max_depth'];
+                    // tot_train = node_info[0]['value'][0] + node_info[0]['value'][1];
+                    // treeData = file5['tree'][0];
+
                     present_rules = listData;
-                    summary_nodes = filter_nodes(node_info);
+                    // summary_nodes = filter_nodes(node_info);
                     if (folder == 'fico_rf'){
                         d3.range(listData.length).forEach(d => pre_order[d] = d);
                     }
@@ -207,7 +216,7 @@ function loadData() {
                     }
 
                     render_legend_label("#legend1");
-                    render_summary(summary_nodes, max_depth);
+                    // render_summary(summary_nodes, max_depth);
 
                     // TO BE CHANGED BACK
                     // if (folder !== 'fico_rf') {
@@ -547,7 +556,6 @@ function render_confusion_bars(stat_svg, listData, row_order) {
     stat_svg.selectAll('.support').remove();
 
     stat_svg.style('height', `${height}px`)
-    comp_svg.style('height', `${height}px`)
 
     let stat_id = stat_svg._groups[0][0].id,
         tab_idx = stat_id.substr(4).length > 0 ? parseInt(stat_id.substr(4))-1 : 0;
@@ -589,7 +597,13 @@ function render_confusion_bars(stat_svg, listData, row_order) {
         .attr("class", "label0_0")
         .attr("x", xoffset)
         .attr("y", yScale.bandwidth()/4)
-        .attr("width", d => confScale(node_info[d['node_id']]['conf_mat'][0][0]))
+        .attr("width", d => {
+            if (node_info[d['node_id']] === undefined) {
+                let a = 0;
+                a++;
+            }
+            return confScale(node_info[d['node_id']]['conf_mat'][0][0])
+        })
         .attr("height", glyphCellHeight)
         .attr("fill", d => colorCate[0])
         .append('title')

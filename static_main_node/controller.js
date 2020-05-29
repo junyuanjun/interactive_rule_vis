@@ -55,12 +55,28 @@ function generate_rules() {
 		d3.select('#support_val')
 	        .attr('value', function() {
 	            support_val = this.value;
+	            filter_threshold['support'] = support_val;
+	            return this.value;
+	        });
+
+	    d3.select('#fidelity_val')
+	    	.attr('value', function() {
+	            fidelity= this.value;
+	            filter_threshold['fidelity'] = fidelity;
 	            return this.value;
 	        });
 
 	    d3.select('#feature_val')
 	        .attr('value', function() {
 	            num_feat_val = this.value;
+	            filter_threshold['num_feat'] = num_feat_val;
+	            return this.value;
+	        });
+
+	    d3.select('#feature_bin')
+	    	.attr('value', function() {
+	            num_feat_bin= this.value;
+	            filter_threshold['num_bin'] = num_feat_bin;
 	            return this.value;
 	        });
 
@@ -72,11 +88,8 @@ function generate_rules() {
 
 		d3.select(".modal")
 			.style("display", "none");
-		if (!param_set) {
-			loadData();
-		} else {
-			update_rules();
-		}
+		
+		loadData();
 }
 
 function click_setting() {
@@ -298,7 +311,7 @@ function click_rule(clicked_g, rule_idx, rule, tab_p) {
 }
 
 
-let same_set_stat, similar_set_stat;
+let same_set_stat=[], similar_set_stat=[];
 
 function get_compare_data(selected_rule) {
 	// find similiar rules 
@@ -313,7 +326,7 @@ function get_compare_data(selected_rule) {
 		render_comparison_bar(comp_svg, "", row_order, same_set_stat)
 
 		// render compareison stat for similar svg
-		render_comparison_bar(comp_svg4, 4, row_order, similar_set_stat)
+		// render_comparison_bar(comp_svg4, 4, row_order, similar_set_stat)
 
 		// render rules for similar rules
 		update_rule_rendering(rule_svg4, col_svg4, stat_svg4, 4, top_simi, col_order);

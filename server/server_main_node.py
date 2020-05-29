@@ -6,6 +6,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask import request
 from flask import send_from_directory
+import tree_node_info
 
 app = Flask(__name__, static_folder="../static_main_node", template_folder="../static_main_node")
 CORS(app)
@@ -16,6 +17,11 @@ forest = Forest()
 def index():
 	print("return index.html")
 	return send_from_directory('../static_main_node/', 'interactive_rule_table.html')
+
+@app.route("/interactive_rule_tree.html")
+def index_tree():
+	print("return index.html")
+	return send_from_directory('../static_main_node/', 'interactive_rule_tree.html')
 
 @app.route('/static_main_node/<path:path>')
 def send_static(path):
@@ -52,6 +58,66 @@ def initialize(dataname):
 	rule_to_show = forest.find_the_min_set()
 	print("====initialized====")
 	return rule_to_show
+
+@app.route("/generate_surrogate_rules/", methods=['POST'])
+def generate_surrogate_rules():
+	print("===== generate surrogate rules ======")
+	para = json.loads(str(request.get_json(force=True)))
+	filter_threshold = para['filter_threshold']
+	for key in filter_threshold:
+		if (key!='fidelity'):
+			filter_threshold[key] = int(filter_threshold[key])
+		else:
+			filter_threshold[key] = float(filter_threshold[key])
+
+	num_bin = para['filter_threshold']['num_bin']
+	dataname = para['dataname']
+	folder = "./data/" + dataname + "/"
+
+	node_info = []
+	real_min = []
+	real_max = []
+	with open(folder + 'node_info.json', 'r') as json_input:
+		node_info = json.load(json_input)['node_info_arr']
+	with open(folder + 'test.json', 'r') as json_input:
+		data = json.load(json_input)
+		real_min = data['real_min']
+		real_max = data['real_max']
+		real_percentile = data['real_percentile']
+		df = pd.DataFrame(columns=data['columns'], data=data['data'])
+		y_pred = data['y_pred']
+		y_gt = data['y_gt']
+	
+	# train surrogate
+	surrogate_obj = tree_node_info.tree_node_info()
+	to_keep = df.columns
+	X = df.values
+	surrogate_obj.initialize(X=X, y=y_gt, y_pred=y_pred, 
+	                         attrs=to_keep, filter_threshold=filter_threshold,
+	                         num_bin=num_bin, verbose=True
+	).train_surrogate_random_forest().tree_pruning()
+
+	# extract rules
+	forest_obj = tree_node_info.forest()
+	forest_obj.initialize(
+	    trees=surrogate_obj.tree_list, cate_X=surrogate_obj.cate_X, 
+	    y=y_gt, y_pred=y_pred, attrs=to_keep, num_bin=num_bin,
+	    real_percentiles=surrogate_obj.real_percentiles,
+	    real_min=surrogate_obj.real_min, real_max=surrogate_obj.real_max,
+	).construct_tree().extract_rules()
+
+	# find min set
+	# rs = tree_node_info.forest_rules()
+	# rs.initialize(pd.DataFrame(data=X, columns=to_keep), forest_obj.rule_lists, surrogate_obj.real_min, surrogate_obj.real_max)
+	# ts = rs.find_the_min_set()
+
+	# initialize info for front-end
+	forest.initialize(node_info, real_min, real_max, real_percentile, df, y_pred, y_gt, forest_obj.rule_lists)
+	forest.initialize_rule_match_table()
+	res = forest.find_the_min_set()
+	res['node_info_arr'] = forest_obj.tree_node_dict
+	return res
+
 
 @app.route("/find_leaf_rules", methods=['POST'])
 def find_leaf_rules():

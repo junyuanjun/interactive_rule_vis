@@ -1,9 +1,8 @@
 let filter_threshold = {
-	'support': 20,
-	'fidelity': 0,
-	'accuracy': [0, 1.],
-  'num_feat': 5,
-  'depth': 20,
+	"support": 20,
+	"fidelity": .8,
+  "num_feat": 3,
+  "num_bin": 3,
 }
 
 let node2rule = [{}, {}, {}, {}];
