@@ -1,0 +1,6 @@
+cryptography
+Flask
+flask_cors
+pandas
+sklearn
+scipy
