@@ -6,7 +6,7 @@ let margin = {top: 0, right: 45, bottom: 5, left: 0},
     height;
 let overviewWidth = 150;
 
-let folder = "fico";
+let folder = "chemistry_tree";
 
 height = 650 - margin.top - margin.bottom;
 
